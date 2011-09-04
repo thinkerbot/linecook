@@ -44,6 +44,14 @@ module Linecook
     # built by this command.
     #
     class Build < Compile
+      class << self
+        def set_common_options(options)
+          super(options)
+          options[:input_dir]  = 'packages'
+          options[:output_dir] = 'packages'
+          options
+        end
+      end
       undef_config :package_file
 
       def input_dir=(input)

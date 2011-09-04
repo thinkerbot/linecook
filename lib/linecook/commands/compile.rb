@@ -34,14 +34,19 @@ module Linecook
             end
 
             options.on('-c', '--common', 'use common flags') do
-              (options[:cookbook_path] ||= []) << '.'
-              (options[:helper_dirs] ||= []) << 'helpers'
+              set_common_options(options)
             end
 
             if block_given?
               yield(options)
             end
           end
+        end
+
+        def set_common_options(options)
+          (options[:cookbook_path] ||= []) << '.'
+          (options[:helper_dirs] ||= []) << 'helpers'
+          options
         end
       end
 

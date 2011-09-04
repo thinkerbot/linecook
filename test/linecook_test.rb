@@ -269,18 +269,17 @@ class LinecookTest < Test::Unit::TestCase
       ---
       write "echo #{str.upcase}"
     }
-
-    recipe_path = prepare 'recipe.rb', %{
+    prepare 'example.rb', %{
       attributes 'example'
       helper 'example'
       upper_echo attrs['message']
     }
 
     assert_script %{
-      $ linecook compile -c '#{recipe_path}'
+      $ linecook compile -c example.rb
     }
 
-    assert_equal 'echo HELLO WORLD', content('recipe')
+    assert_equal 'echo HELLO WORLD', content('example')
   end
 
   def test_compile_with_method_chaining
@@ -593,6 +592,32 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_equal 'got milk', content('recipe/run')
+  end
+
+  def test_build_with_common_flag_compiles_helpers_and_sets_cookbook_path
+    prepare 'attributes/example.yml', %q{
+      greeting: hello
+    }
+    prepare 'packages/example.yml', %q{
+      thing: world
+    }
+    prepare 'helpers/example/upper_echo.rb', %q{
+      (str)
+      ---
+      write "echo #{str.upcase}"
+    }
+    prepare 'recipes/example.rb', %q{
+      attributes 'example'
+      helper 'example'
+      upper_echo "#{attrs['greeting']} #{attrs['thing']}"
+    }
+
+    assert_script %{
+      $ linecook build -c recipes/example.rb
+      #{path('packages/example')}
+    }
+
+    assert_equal 'echo HELLO WORLD', content('packages/example/run')
   end
 
   #
