@@ -206,7 +206,7 @@ class TestTest < Test::Unit::TestCase
 
     prepare "recipes/#{host}.rb", %{
       $:.unshift '#{path('lib')}'
-      helper 'project_test_helper'
+      helpers 'project_test_helper'
       echo *attrs['letters']
     }
 

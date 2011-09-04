@@ -204,7 +204,7 @@ echo 'x y z'
     lib_path = path 'lib'
     begin
       $:.unshift lib_path
-      recipe.helper 'helper_module'
+      recipe.helpers 'helper_module'
     ensure
       $:.delete lib_path
     end

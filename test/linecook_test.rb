@@ -249,7 +249,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      helper 'example'
+      helpers 'example'
       upper_echo 'hello world'
     }
 
@@ -271,7 +271,7 @@ class LinecookTest < Test::Unit::TestCase
     }
     prepare 'example.rb', %{
       attributes 'example'
-      helper 'example'
+      helpers 'example'
       upper_echo attrs['message']
     }
 
@@ -296,7 +296,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      helper 'example'
+      helpers 'example'
       cat.heredoc do
         writeln 'a'
         writeln 'b'
@@ -325,7 +325,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %q{
-      helper 'example'
+      helpers 'example'
       write _echo('xyz').upcase
     }
 
@@ -368,7 +368,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      helper 'example'
+      helpers 'example'
       cat.heredoc do
         writeln 'a'
         writeln 'b'
@@ -566,7 +566,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      helper 'example'
+      helpers 'example'
       upper_echo 'hello world'
     }
 
@@ -608,7 +608,7 @@ class LinecookTest < Test::Unit::TestCase
     }
     prepare 'recipes/example.rb', %q{
       attributes 'example'
-      helper 'example'
+      helpers 'example'
       upper_echo "#{attrs['greeting']} #{attrs['thing']}"
     }
 
@@ -632,7 +632,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %q{
-      helper 'example'
+      helpers 'example'
       echo 'abc'
     }
 
@@ -659,7 +659,7 @@ class LinecookTest < Test::Unit::TestCase
       echo b <%= str %>
     }
     recipe_path = prepare 'recipe.rb', %q{
-      helper 'example'
+      helpers 'example'
       echo_a 'abc'
       echo_b 'xyz'
     }

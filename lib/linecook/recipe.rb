@@ -95,8 +95,8 @@ module Linecook
       @attrs ||= Utils.deep_merge(@attributes, _package_.env)
     end
 
-    # Looks up and extends self with the specified helper.
-    def helper(*helper_names)
+    # Looks up and extends self with the specified helper(s).
+    def helpers(*helper_names)
       helper_names.each do |helper_name|
         module_name = Utils.camelize(helper_name)
         constant = Utils.constantize(module_name) do
