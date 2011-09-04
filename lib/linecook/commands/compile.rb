@@ -33,6 +33,11 @@ module Linecook
               require(path)
             end
 
+            options.on('-c', '--common', 'use common flags') do
+              (options[:cookbook_path] ||= []) << '.'
+              (options[:helper_dirs] ||= []) << 'helpers'
+            end
+
             if block_given?
               yield(options)
             end

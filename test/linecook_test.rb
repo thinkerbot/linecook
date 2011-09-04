@@ -260,6 +260,29 @@ class LinecookTest < Test::Unit::TestCase
     assert_equal 'echo HELLO WORLD', content('recipe')
   end
 
+  def test_compile_with_common_flag_compiles_helpers_and_sets_cookbook_path
+    prepare 'attributes/example.yml', %q{
+      message: hello world
+    }
+    prepare 'helpers/example/upper_echo.rb', %q{
+      (str)
+      ---
+      write "echo #{str.upcase}"
+    }
+
+    recipe_path = prepare 'recipe.rb', %{
+      attributes 'example'
+      helper 'example'
+      upper_echo attrs['message']
+    }
+
+    assert_script %{
+      $ linecook compile -c '#{recipe_path}'
+    }
+
+    assert_equal 'echo HELLO WORLD', content('recipe')
+  end
+
   def test_compile_with_method_chaining
     prepare 'helpers/example/cat.erb', %{
       cat
