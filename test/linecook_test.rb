@@ -235,7 +235,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ linecook compile -P '#{package_file}' '#{a}' '#{b}'
+      $ linecook compile -p '#{package_file}' '#{a}' '#{b}'
     }
 
     assert_equal 'value', content('a')

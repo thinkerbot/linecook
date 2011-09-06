@@ -84,7 +84,7 @@ module Linecook
 
       config :cookbook_path, [], :delimiter => ':'     # -C PATH : cookbook path
       config :helper_dirs, []                          # -L DIRECTORY : compile helpers
-      config :package_file, nil                        # -P PATH : package config file
+      config :package_file, nil                        # -p PATH : package config file
       config :input_dir, '.', :writer => :input_dir=   # -i DIRECTORY : the input dir
       config :output_dir, '.', :writer => :output_dir= # -o DIRECTORY : the output dir
       config :force, false                             # -f, --force : overwrite existing
