@@ -41,7 +41,7 @@ module Linecook
               (options[:cookbook_path] ||= []) << specs.first.full_gem_path
             end
 
-            options.on('-g', '--cookbook-gems', 'add latest cookbook gems') do |name|
+            options.on('-g', '--gems', 'add latest cookbook gems') do |name|
               (options[:cookbook_path] ||= []).concat cookbook_gem_paths
             end
 
