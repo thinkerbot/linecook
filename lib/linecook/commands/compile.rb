@@ -41,6 +41,10 @@ module Linecook
               (options[:cookbook_path] ||= []) << specs.first.full_gem_path
             end
 
+            options.on('-g', '--cookbook-gems', 'add latest cookbook gems') do |name|
+              (options[:cookbook_path] ||= []).concat cookbook_gem_paths
+            end
+
             options.on('-c', '--common', 'use common flags') do
               set_common_options(options)
             end
@@ -55,6 +59,12 @@ module Linecook
           (options[:cookbook_path] ||= []) << '.'
           (options[:helper_dirs] ||= []) << 'helpers'
           options
+        end
+
+        def cookbook_gem_paths(latest=true)
+          Cookbook.gemspecs(latest).collect do |gemspec|
+            gemspec.full_gem_path
+          end
         end
 
         def gemspecs(latest=true)

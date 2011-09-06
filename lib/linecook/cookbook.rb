@@ -15,6 +15,18 @@ module Linecook
       def default_file_name
         @default_file_name ||= 'cookbook.yml'
       end
+
+      def gemspecs(latest=true)
+        return [] unless Object.const_defined?(:Gem)
+
+        index = Gem.source_index
+        specs = latest ? index.latest_specs : index.gems.values
+
+        specs.select do |spec|
+          cookbook_file = File.expand_path(default_file_name, spec.full_gem_path)
+          File.exists?(cookbook_file)
+        end
+      end
     end
 
     attr_reader :registry

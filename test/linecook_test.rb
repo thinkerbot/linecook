@@ -311,6 +311,41 @@ class LinecookTest < Test::Unit::TestCase
     }, content('recipe')
   end
 
+  def test_compile_allows_automatic_discovery_of_latest_cookbook_gems
+    build_gem_fixture 'a', '1.0' do |spec|
+      prepare_default_module(spec)
+      prepare_gem_file spec, "cookbook.yml"
+    end
+    build_gem_fixture 'a', '2.0' do |spec|
+      prepare_default_module(spec)
+      prepare_gem_file spec, "cookbook.yml"
+    end
+    build_gem_fixture 'b', '1.0' do |spec|
+      prepare_default_module(spec)
+      prepare_gem_file spec, "cookbook.yml"
+    end
+    build_gem_fixture 'c', '1.0' do |spec|
+      prepare_default_module(spec)
+    end
+    recipe_path = prepare 'recipe.rb', %{
+      #{check_default_module('a')}
+      #{check_default_module('b')}
+      #{check_default_module('c')}
+    }
+
+    with_gem_fixtures do
+      assert_script %{
+        $ linecook compile -g '#{recipe_path}'
+      }
+    end
+
+    assert_str_equal %{
+      a 2.0 is available
+      b 1.0 is available
+      c is not available
+    }, content('recipe')
+  end
+
   def test_compile_with_common_flag_compiles_helpers_and_sets_cookbook_path
     prepare 'attributes/example.yml', %q{
       message: hello world
