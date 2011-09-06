@@ -56,7 +56,9 @@ module Linecook
         end
 
         def set_common_options(options)
-          (options[:cookbook_path] ||= []) << '.'
+          cookbook_path = (options[:cookbook_path] ||= [])
+          cookbook_path << '.'
+          cookbook_path.concat cookbook_gem_paths
           (options[:helper_dirs] ||= []) << 'helpers'
           options
         end
