@@ -33,6 +33,14 @@ module Linecook
               require(path)
             end
 
+            options.on('-G GEMNAME', 'add gem to cookbook path', :option_type => :list) do |name|
+              specs = Gem.source_index.find_name(name)
+              if specs.empty?
+                raise CommandError, "could not find gem: #{name.inspect}"
+              end
+              (options[:cookbook_path] ||= []) << specs.first.full_gem_path
+            end
+
             options.on('-c', '--common', 'use common flags') do
               set_common_options(options)
             end
@@ -47,6 +55,18 @@ module Linecook
           (options[:cookbook_path] ||= []) << '.'
           (options[:helper_dirs] ||= []) << 'helpers'
           options
+        end
+
+        def gemspecs(latest=true)
+          return [] unless Object.const_defined?(:Gem)
+
+          index = Gem.source_index
+          specs = latest ? index.latest_specs : index.gems.values
+
+          specs.select do |spec|
+            cookbook_file = File.expand_path(default_file_name, spec.full_gem_path)
+            File.exists?(cookbook_file)
+          end
         end
       end
 

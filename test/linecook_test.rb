@@ -3,6 +3,7 @@ require 'linecook/test'
 
 class LinecookTest < Test::Unit::TestCase
   include Linecook::Test
+  include GemTestHelpers
 
   def setup
     super
@@ -258,6 +259,56 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_equal 'echo HELLO WORLD', content('recipe')
+  end
+
+  def prepare_default_module(spec)
+    name, version = spec.name, spec.version
+    prepare_gem_file spec, "templates/#{name}.erb", %{
+      #{name} #{version} <%= msg %>
+    }
+    prepare_gem_file spec, "lib/#{name}.rb", %{
+      module #{name.capitalize}
+        def #{name}(str)
+          write render('#{name}.erb', :msg => str)
+        end
+      end
+    }
+  end
+
+  def check_default_module(name)
+    %{
+      begin
+        helpers '#{name}'
+        #{name} 'is available'
+      rescue
+        writeln '#{name} is not available'
+      end
+    }
+  end
+
+  def test_compile_allows_specification_of_gems_to_add_to_cookbook_path
+    build_gem_fixture 'a', '1.0' do |spec|
+      prepare_default_module(spec)
+    end
+    build_gem_fixture 'b', '1.0' do |spec|
+      prepare_default_module(spec)
+    end
+
+    recipe_path = prepare 'recipe.rb', %{
+      #{check_default_module('a')}
+      #{check_default_module('b')}
+    }
+
+    with_gem_fixtures do
+      assert_script %{
+        $ linecook compile -G a '#{recipe_path}'
+      }
+    end
+
+    assert_str_equal %{
+      a 1.0 is available
+      b is not available
+    }, content('recipe')
   end
 
   def test_compile_with_common_flag_compiles_helpers_and_sets_cookbook_path
