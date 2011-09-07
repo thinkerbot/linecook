@@ -265,9 +265,9 @@ module Linecook
           #  
           if value.nil? 
           write "export "; write(( key ).to_s); write "\n"
-          else 
+          ;  else 
           write "export "; write(( key ).to_s); write "="; write(( quote(value) ).to_s); write "\n"
-          end 
+          ;  end 
 
           _chain_proxy_
         end

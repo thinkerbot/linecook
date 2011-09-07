@@ -217,8 +217,8 @@ module Linecook
         #  <% end %>
         if function?('check_status') 
         write "check_status "; write(( expect_status ).to_s); write " $? "; write(( fail_status ).to_s); write " $LINENO\n"
-        write "\n"
-        end 
+        ; write "\n"
+        ;  end 
         _chain_proxy_
       end
 
@@ -294,8 +294,8 @@ module Linecook
         #  <%= match[2] %>
         write(( match[1] ).to_s)
         write "elif "; write(( expression ).to_s); write "\n"
-        write "then\n"
-        indent { yield } 
+        ; write "then\n"
+        ;  indent { yield } 
         write(( match[2] ).to_s)
         _chain_proxy_
       end
@@ -317,7 +317,7 @@ module Linecook
         #  <%= match[2] %>
         write(( match[1] ).to_s)
         write "else\n"
-        indent { yield } 
+        ;  indent { yield } 
         write(( match[2] ).to_s)
         _chain_proxy_
       end
@@ -341,7 +341,7 @@ module Linecook
         #  <% check_status %>
         write(( command_str(command, *args) ).to_s)
         write "\n"
-        check_status 
+        ;  check_status 
         _chain_proxy_
       end
 
@@ -362,9 +362,9 @@ module Linecook
         #  
         if status.nil? 
         write "exit\n"
-        else 
+        ;  else 
         write "exit "; write(( status ).to_s); write "\n"
-        end 
+        ;  end 
 
         _chain_proxy_
       end
@@ -410,10 +410,10 @@ module Linecook
         #  <%= tail %>
         #  
         write "<<"; write(( options[:outdent] ? '-' : ' ').to_s); write(( options[:quote] ? "\"#{delimiter}\"" : delimiter ).to_s);  outdent(" # :#{delimiter}:") do ; write "\n"
-        yield 
+        ;  yield 
         write(( delimiter ).to_s);  end 
         write "\n"
-        write(( tail ).to_s)
+        ; write(( tail ).to_s)
 
         _chain_proxy_
       end
@@ -433,10 +433,10 @@ module Linecook
         #  
         #  
         write "if "; write(( expression ).to_s); write "\n"
-        write "then\n"
-        indent { yield } 
+        ; write "then\n"
+        ;  indent { yield } 
         write "fi\n"
-        write "\n"
+        ; write "\n"
 
         _chain_proxy_
       end
@@ -475,9 +475,9 @@ module Linecook
         #  
         if status.nil? 
         write "return\n"
-        else 
+        ;  else 
         write "return "; write(( status ).to_s); write "\n"
-        end 
+        ;  end 
 
         _chain_proxy_
       end
@@ -540,10 +540,10 @@ module Linecook
         #  
         #  
         write "until "; write(( expression ).to_s); write "\n"
-        write "do\n"
-        indent { yield } 
+        ; write "do\n"
+        ;  indent { yield } 
         write "done\n"
-        write "\n"
+        ; write "\n"
 
         _chain_proxy_
       end
@@ -580,10 +580,10 @@ module Linecook
         #  
         #  
         write "while "; write(( expression ).to_s); write "\n"
-        write "do\n"
-        indent { yield } 
+        ; write "do\n"
+        ;  indent { yield } 
         write "done\n"
-        write "\n"
+        ; write "\n"
 
         _chain_proxy_
       end

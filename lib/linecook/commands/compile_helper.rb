@@ -246,6 +246,9 @@ module Linecook
           compiler.insert_cmd = "write"
           code = [compiler.compile(body)].flatten.first
 
+          # remove encoding comment in 1.9 because it is not needed
+          code = code.sub(/\A#coding:.*?\n/, '')
+
           "#{source}\n#{code}".gsub(/^(\s*)/) do |m| 
             indent = 2 + $1.length - ($1.length % 2)
             ' ' * indent
