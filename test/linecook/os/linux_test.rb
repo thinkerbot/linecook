@@ -25,11 +25,11 @@ class LinuxTest < Test::Unit::TestCase
       su { echo "$(whoami):$(pwd):$A:$B" }      # => root:/home/linecook:a:
     end
 
-    assert_str_equal %{
+    assert_package %{
       linecook:/home/linecook:a:b
       root:/root::
       root:/home/linecook:a:
-    }, *run_package
+    }
   end
 
   #
@@ -75,12 +75,12 @@ class LinuxTest < Test::Unit::TestCase
       writeln CONTEXT_CHECK
     end
 
-    assert_str_equal %{
+    assert_package %{
       linecook:/home/linecook:a
       root:/root:
       root:/root:b
       linecook:/home/linecook:a
-    }, *run_package
+    }
   end
 
   def test_login_does_not_preserve_functions
@@ -95,10 +95,11 @@ class LinuxTest < Test::Unit::TestCase
       end
     end
 
-    assert_str_match %{
+    assert_package_match %{
       is defined: false
       :...: say_hello: command not found
-    }, *run_package
+      :....:
+    }
   end
 
   def test_nested_login
@@ -122,7 +123,7 @@ class LinuxTest < Test::Unit::TestCase
       writeln CONTEXT_CHECK
     end
 
-    assert_str_equal %{
+    assert_package %{
       linecook:/home/linecook:a
       root:/root:
       root:/root:b
@@ -130,6 +131,6 @@ class LinuxTest < Test::Unit::TestCase
       linecook:/home/linecook:c
       root:/root:b
       linecook:/home/linecook:a
-    }, *run_package
+    }
   end
 end

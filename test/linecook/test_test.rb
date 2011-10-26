@@ -166,7 +166,7 @@ class TestTest < Test::Unit::TestCase
 
   def test_assert_recipe_matches_passes_if_expected_and_actual_contents_match
     assert_recipe_matches %q{
-      co:..:nt
+      co:...:nt
     } do
       writeln "content"
     end
@@ -190,11 +190,9 @@ class TestTest < Test::Unit::TestCase
       echo(*attrs['letters'])
     end
 
-    assert_str_equal %{
+    assert_package %{
       a b c
-    }, *run_package
-
-    assert_equal 0, $?.exitstatus
+    }
   end
 
   def test_a_project
@@ -214,13 +212,8 @@ class TestTest < Test::Unit::TestCase
       letters: [a, b, c]
     }
 
-    stdout, msg = build_project
-    assert_equal 0, $?.exitstatus, msg
-
-    stdout, msg = run_project
-    assert_str_equal %q{
+    assert_project %q{
       a b c
-    }, stdout, msg
-    assert_equal 0, $?.exitstatus, msg
+    }
   end
 end
