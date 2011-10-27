@@ -157,10 +157,13 @@ module Linecook
 
     def linecook(cmd, options={}, *args, &block)
       command = linecook_cmd(cmd, options, *args)
-      session = _pty("$ #{command}\n", options)
+      session = Session.new(options)
+      session.on :ps1, "#{command}\n"
+      session.on :ps1, "exit\n"
+      session.run
 
       log = session.log
-      [log[2].chomp("$ "), log.join]
+      [log[2].chomp(session.ps1), log.join]
     end
 
     def linecook_cmd(cmd, options={}, *args)
