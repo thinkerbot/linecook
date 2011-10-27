@@ -131,7 +131,8 @@ module Linecook
         'L' => 'helpers',
         'C' => method_dir,
         'i' => path('packages'),
-        'o' => path('packages')
+        'o' => path('packages'),
+        :max_run_time => 3
       }.merge(options)
 
       Dir.chdir method_dir do
@@ -147,7 +148,8 @@ module Linecook
       options = {
         'F' => ssh_config_file,
         'D' => remote_dir,
-        'q' => true
+        'q' => true,
+        :max_run_time => 3
       }.merge(options)
 
       linecook('run', options, *package_dirs, &block)
@@ -155,41 +157,18 @@ module Linecook
 
     def linecook(cmd, options={}, *args, &block)
       command = linecook_cmd(cmd, options, *args)
-      output, status = pty(command, &block)
+      session = _pty("$ #{command}\n", options)
 
-      [output.to_s.gsub(/\r\n/, "\n"), "$ #{command}"]
-    end
-
-    def pty(command)
-      buffer  = ''
-      timeout = 5
-      PTY.spawn(command) do |r,w,pid|
-        while true
-          if !IO.select([r],nil,nil,timeout)
-            Process.kill(9, pid)
-            break
-          end
-
-          if r.eof?
-            break
-          end
-
-          # Use readpartial instead of read because it will not block if the
-          # length is not fully available.
-          #
-          # Use readpartial+select instead of read_nonblock to avoid polling
-          # in a tight loop.
-          buffer << r.readpartial(1024)
-        end
-        Process.wait(pid)
-      end
-      buffer
+      log = session.log
+      [log[2].chomp("$ "), log.join]
     end
 
     def linecook_cmd(cmd, options={}, *args)
       opts = []
       options.each_pair do |key, value|
-        key = key.to_s.gsub('_', '-')
+        next unless key.kind_of?(String)
+
+        key = key.gsub('_', '-')
         key = key.length == 1 ? "-#{key}" : "--#{key}"
 
         case value

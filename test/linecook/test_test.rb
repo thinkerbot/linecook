@@ -166,7 +166,7 @@ class TestTest < Test::Unit::TestCase
 
   def test_assert_recipe_matches_passes_if_expected_and_actual_contents_match
     assert_recipe_matches %q{
-      co:..:nt
+      co:...:nt
     } do
       writeln "content"
     end
