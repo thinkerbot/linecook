@@ -1,5 +1,6 @@
 require 'shell_test'
 require 'linecook/recipe'
+require 'pty'
 
 module Linecook
   module Test
@@ -120,36 +121,9 @@ module Linecook
       package_dir
     end
 
-    def assert_package(expected, options={}, host=self.host)
-      _assert_package outdent(expected), options, host
-    end
-
-    def _assert_package(expected, options={}, host=self.host)
-      options = {
-        'F' => ssh_config_file,
-        'D' => remote_dir,
-        'q' => true,
-        'S' => runlist.join(',')
-      }.merge(options)
-
-      cmd = linecook('run', options, export_package(host))
-      _assert_script %{$ #{cmd}\n#{expected}}, options
-    end
-
-    def assert_package_match(expected, options={}, host=self.host)
-      options = {
-        'F' => ssh_config_file,
-        'D' => remote_dir,
-        'q' => true,
-        'S' => runlist.join(',')
-      }.merge(options)
-
-      cmd = linecook('run', options, export_package(host))
-      _assert_script_match %{$ #{cmd}\n#{outdent(expected)}}, options
-    end
-
-    def assert_package_success
-      assert_package '', :exitstatus => 0, :max_run_time => 2
+    def run_package(options={}, host=self.host, &block)
+      options['S'] ||= runlist.join(',')
+      run_project options, export_package(host), &block
     end
 
     def build_project(options={})
@@ -161,14 +135,11 @@ module Linecook
       }.merge(options)
 
       Dir.chdir method_dir do
-        cmd = linecook('build', options, *glob('recipes/*.rb'))
-        _assert_script_match %{$ #{cmd}\n:....:}, options
+        linecook('build', options, *glob('recipes/*.rb'))
       end
     end
 
-    def assert_project(expected, options={}, *package_dirs)
-      build_project(options)
-
+    def run_project(options={}, *package_dirs, &block)
       if package_dirs.empty?
         package_dirs = glob('packages/*').select {|path| File.directory?(path) }
       end
@@ -179,14 +150,45 @@ module Linecook
         'q' => true
       }.merge(options)
 
-      cmd = linecook('run', options, *package_dirs)
-      _assert_script %{$ #{cmd}\n#{outdent(expected)}}, options
+      linecook('run', options, *package_dirs, &block)
     end
 
-    def linecook(cmd, options={}, *args)
+    def linecook(cmd, options={}, *args, &block)
+      command = linecook_cmd(cmd, options, *args)
+      output, status = pty(command, &block)
+
+      [output.to_s.gsub(/\r\n/, "\n"), "$ #{command}"]
+    end
+
+    def pty(command)
+      buffer  = ''
+      timeout = 5
+      PTY.spawn(command) do |r,w,pid|
+        while true
+          if !IO.select([r],nil,nil,timeout)
+            Process.kill(9, pid)
+            break
+          end
+
+          if r.eof?
+            break
+          end
+
+          # Use readpartial instead of read because it will not block if the
+          # length is not fully available.
+          #
+          # Use readpartial+select instead of read_nonblock to avoid polling
+          # in a tight loop.
+          buffer << r.readpartial(1024)
+        end
+        Process.wait(pid)
+      end
+      buffer
+    end
+
+    def linecook_cmd(cmd, options={}, *args)
       opts = []
       options.each_pair do |key, value|
-        next unless key.kind_of?(String)
         key = key.to_s.gsub('_', '-')
         key = key.length == 1 ? "-#{key}" : "--#{key}"
 

@@ -81,10 +81,10 @@ class PosixTest < Test::Unit::TestCase
       writeln 'echo pass_false'
     end
 
-    assert_package %{
+    assert_str_equal %{
       pass_true
       pass_false
-    }
+    }, *run_package
   end
 
   def test_check_status_exits_with_error_status_if_status_is_not_as_expected
@@ -108,11 +108,10 @@ class PosixTest < Test::Unit::TestCase
 
     # note the LINENO output is not directly tested here because as of 10.10
     # sh on Ubuntu does not support LINENO
-    assert_package_match %{
+    assert_str_match %{
       [0] :...:/fail_true:...:
       [1] :...:/fail_false:...:
-      :....:
-    }, :exitstatus => 1
+    }, *run_package
   end
 
   def test_redirect_works_with_check_status
@@ -215,11 +214,10 @@ class PosixTest < Test::Unit::TestCase
       writeln 'echo fail'
     end
 
-    assert_package_match %{
+    assert_str_match %{
       success
       [1] :...:/recipe:...:
-      :....:
-    }, :exitstatus => 1
+    }, *run_package
   end
 
   def test_execute_sets_up_pipe_on_chain
@@ -331,9 +329,9 @@ class PosixTest < Test::Unit::TestCase
       writeln "say_hello world"
     end
 
-    assert_package_match %q{
+    assert_str_equal %q{
       hello world
-    }
+    }, *run_package
   end
 
   def test_function_defines_a_method_to_execute_the_function
@@ -344,9 +342,9 @@ class PosixTest < Test::Unit::TestCase
       say_hello 'world'
     end
 
-    assert_package_match %q{
+    assert_str_equal %q{
       hello world
-    }
+    }, *run_package
   end
 
   def test_function_substitutes_positional_params_for_variable_names
@@ -358,10 +356,10 @@ class PosixTest < Test::Unit::TestCase
       writeln "get one two"
     end
 
-    assert_package_match %q{
+    assert_str_equal %q{
       got one
       got two
-    }
+    }, *run_package
   end
 
   def test_function_supports_splat_signatures
@@ -374,11 +372,11 @@ class PosixTest < Test::Unit::TestCase
       writeln "get one two three four five"
     end
 
-    assert_package %q{
+    assert_str_equal %q{
       got one
       got two
       got three four five
-    }
+    }, *run_package
   end
 
   def test_function_allows_multiple_declarations_of_the_same_function
@@ -391,9 +389,9 @@ class PosixTest < Test::Unit::TestCase
       writeln "say_hello world"
     end
 
-    assert_package %q{
+    assert_str_equal %q{
       hello world
-    }
+    }, *run_package
   end
 
   def test_function_raises_an_error_for_the_same_name_and_different_content
@@ -466,9 +464,9 @@ class PosixTest < Test::Unit::TestCase
       end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 
   def test_heredoc_outdents_heredoc_body
@@ -498,14 +496,14 @@ class PosixTest < Test::Unit::TestCase
       writeln "#"
     end
 
-    assert_package %{
+    assert_str_equal %{
       a
       \tb
       \t\tc
           x
         y
       z
-    }
+    }, *run_package
   end
 
   def test_heredoc_works_with_indent_when_outdent_is_true
@@ -535,14 +533,14 @@ class PosixTest < Test::Unit::TestCase
       writeln "#"
     end
 
-    assert_package %{
+    assert_str_equal %{
       a
       b
       c
           x
         y
       z
-    }
+    }, *run_package
   end
 
   def test_heredoc_rstrips_on_chain
@@ -887,9 +885,9 @@ class PosixTest < Test::Unit::TestCase
       end.from('file')
     end
 
-    assert_package %{
+    assert_str_equal %{
       b c a
       y z x
-    }
+    }, *run_package
   end
 end

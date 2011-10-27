@@ -48,12 +48,13 @@ For preventing the children of poor people in Ireland...
       end
     end
 
-    _assert_package %{      3 the
+    _assert_str_equal %{
+      3 the
       3 of
       3 A
       2 Swift
       2 Proposal
-}
+}.sub("\n", ''), *run_package
   end
 
   #
@@ -69,11 +70,11 @@ For preventing the children of poor people in Ireland...
       end
     end
 
-    assert_package %{
+    assert_str_equal %{
       a
       b
       c
-    }
+    }, *run_package
   end
 
   #
@@ -94,12 +95,12 @@ For preventing the children of poor people in Ireland...
       pwd
     end
 
-    assert_package %{
+    assert_str_equal %{
       /tmp
       /tmp/a
       /tmp/a/b
       /tmp
-    }
+    }, *run_package
   end
 
   #
@@ -138,10 +139,10 @@ For preventing the children of poor people in Ireland...
       writeln 'ls -la file'
     end
 
-    assert_package_match %{
+    assert_str_match %{
       -rw-r--r-- :...: file
       -rw------- :...: file
-    }
+    }, *run_package
   end
 
   def test_chomd_converts_fixnums_to_octal
@@ -223,9 +224,9 @@ For preventing the children of poor people in Ireland...
       if_ _directory?('non')  do echo 'fail' end
     end
 
-    assert_package %{
+    assert_str_equal %{
       dir
-    }
+    }, *run_package
   end
 
   #
@@ -256,9 +257,9 @@ For preventing the children of poor people in Ireland...
       if_ _executable?('file')  do echo 'fail'  end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 
   #
@@ -279,11 +280,11 @@ For preventing the children of poor people in Ireland...
       if_ _exists?('fail') do echo 'fail' end
     end
 
-    assert_package %{
+    assert_str_equal %{
       dir
       file
       link
-    }
+    }, *run_package
   end
 
   #
@@ -318,10 +319,10 @@ For preventing the children of poor people in Ireland...
       if_ _file?('non')  do echo 'fail' end
     end
 
-    assert_package %{
+    assert_str_equal %{
       file
       link
-    }
+    }, *run_package
   end
 
   #
@@ -339,9 +340,9 @@ For preventing the children of poor people in Ireland...
       if_ _has_content?('file')  do echo 'success'  end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 
   #
@@ -362,9 +363,9 @@ For preventing the children of poor people in Ireland...
       if_ _link?('non')  do echo 'fail' end
     end
 
-    assert_package %{
+    assert_str_equal %{
       link
-    }
+    }, *run_package
   end
 
   #
@@ -443,9 +444,9 @@ For preventing the children of poor people in Ireland...
       if_ _readable?('file')  do echo 'fail'  end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 
   #
@@ -462,9 +463,9 @@ For preventing the children of poor people in Ireland...
       unless_ _exists?('file') do echo 'success' end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 
   def test_rm
@@ -489,15 +490,17 @@ For preventing the children of poor people in Ireland...
       writeln 'echo c'
     end
 
-    assert_package_match %{
+    # the number of set operations echoed is a little unpredicatable
+    stdout, msg = run_package
+    stdout.gsub!(/^set.*\n/, '')
+
+    assert_str_equal %{
       echo a
       a
-      :....:
       b
-      :....:
       echo c
       c
-    }
+    }, stdout, msg
   end
 
   #
@@ -518,9 +521,9 @@ For preventing the children of poor people in Ireland...
       end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 
   #
@@ -555,8 +558,8 @@ For preventing the children of poor people in Ireland...
       end
     end
 
-    assert_package %{
+    assert_str_equal %{
       success
-    }
+    }, *run_package
   end
 end

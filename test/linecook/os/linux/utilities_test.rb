@@ -51,7 +51,8 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       end
     end
 
-    assert_package_success
+    stdout, msg = run_package
+    assert_equal 0, $?.exitstatus, msg
   end
 
   #
@@ -75,7 +76,8 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       end
     end
 
-    assert_package_success
+    stdout, msg = run_package
+    assert_equal 0, $?.exitstatus, msg
   end
 
   #
@@ -103,7 +105,8 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       end
     end
 
-    assert_package_success
+    stdout, msg = run_package
+    assert_equal 0, $?.exitstatus, msg
   end
 
   #
@@ -125,9 +128,9 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       groups(TEST_USER)
     end
 
-    assert_package %{
+    assert_str_equal %{
       #{TEST_USER} : #{TEST_GROUP_TWO} #{TEST_GROUP}
-    }, :max_run_time => 2
+    }, *run_package
   end
 
   #
@@ -143,9 +146,9 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       cat 'target'
     end
 
-    assert_package %{
+    assert_str_equal %{
       content
-    }
+    }, *run_package
   end
 
   def test_install_backs_up_existing_target_if_specified
@@ -160,10 +163,10 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       cat 'target'
     end
 
-    assert_package %{
+    assert_str_equal %{
       old
       new
-    }
+    }, *run_package
   end
 
   #
@@ -209,12 +212,12 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       writeln CONTEXT_CHECK
     end
 
-    assert_package %{
+    assert_str_equal %{
       linecook:/home/linecook:a
       root:/home/linecook:a
       root:/home/linecook:b
       linecook:/home/linecook:a
-    }
+    }, *run_package
   end
 
   def test_su_preserves_functions
@@ -230,11 +233,11 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       writeln "say_hello $(whoami)"
     end
 
-    assert_package %{
+    assert_str_equal %{
       hello linecook
       hello root
       hello linecook
-    }
+    }, *run_package
   end
 
   def test_nested_su
@@ -257,7 +260,7 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       writeln CONTEXT_CHECK
     end
 
-    assert_package %{
+    assert_str_equal %{
       linecook:/home/linecook:a
       root:/home/linecook:a
       root:/home/linecook:b
@@ -265,7 +268,7 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       linecook:/home/linecook:c
       root:/home/linecook:b
       linecook:/home/linecook:a
-    }
+    }, *run_package
   end
 
   #
@@ -290,7 +293,8 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       end
     end
 
-    assert_package_success
+    stdout, msg = run_package
+    assert_equal 0, $?.exitstatus, msg
   end
 
   #
@@ -313,7 +317,8 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       end
     end
 
-    assert_package_success
+    stdout, msg = run_package
+    assert_equal 0, $?.exitstatus, msg
   end
 
   #
@@ -340,6 +345,7 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
       end
     end
 
-    assert_package_success
+    stdout, msg = run_package
+    assert_equal 0, $?.exitstatus, msg
   end
 end

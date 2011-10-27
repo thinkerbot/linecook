@@ -11,35 +11,36 @@ class LinecookTest < Test::Unit::TestCase
     Dir.chdir(method_dir)
   end
 
+  def parse_script(script, options={})
+    super.each {|triplet| triplet[0] = "2>&1 #{triplet[0].gsub(/^linecook/, LINECOOK_EXE)}" }
+  end
+
   def test_linecook_prints_version_and_website
-    assert_script %{
-      $ #{LINECOOK_EXE} -v
+    assert_script %Q{
+      $ linecook -v
       linecook version #{Linecook::VERSION} -- #{Linecook::WEBSITE}
     }
   end
 
   def test_linecook_prints_help
-    assert_script_match %{
-      $ #{LINECOOK_EXE} -h
+    assert_script_match %q{
+      $ linecook -h
       usage: linecook [options] COMMAND [ARGS]
-      :....:
     }
   end
 
   def test_linecook_prints_help_when_no_args_are_given
-    assert_script_match %{
-      $ #{LINECOOK_EXE}
+    assert_script_match %q{
+      $ linecook
       usage: linecook [options] COMMAND [ARGS]
-      :....:
     }
   end
 
   def test_linecook_prints_command_help
-    assert_script_match %{
-      % #{LINECOOK_EXE} compile -h
+    assert_script_match %q{
+      $ linecook compile -h
       usage: linecook compile :...:
-      :....:
-    }, :ps1 => '%'
+    }
   end
 
   #
@@ -68,7 +69,7 @@ class LinecookTest < Test::Unit::TestCase
   def test_compile_documentation
     assert_script %{
       $ echo "write 'echo hello world'" > recipe.rb
-      $ #{LINECOOK_EXE} compile recipe.rb
+      $ linecook compile recipe.rb
       $ sh recipe
       hello world
     }
@@ -80,7 +81,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile '#{recipe_path}'
+      $ linecook compile '#{recipe_path}'
     }
 
     assert_equal "echo hello world", content('path/to/recipe')
@@ -93,7 +94,7 @@ class LinecookTest < Test::Unit::TestCase
     name = File.basename(tempfile.path)
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile '#{tempfile.path}'
+      $ linecook compile '#{tempfile.path}'
     }
 
     assert_equal "echo hello world", content(name)
@@ -108,7 +109,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile '#{a}' '#{b}'
+      $ linecook compile '#{a}' '#{b}'
     }
 
     assert_equal "echo hello a", content('a')
@@ -123,7 +124,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile - < '#{recipe_path}'
+      $ linecook compile - < '#{recipe_path}'
       echo hello world
     }
   end
@@ -134,7 +135,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -i '#{path('path/to')}' '#{recipe_path}'
+      $ linecook compile -i '#{path('path/to')}' '#{recipe_path}'
     }
 
     assert_equal "echo hello world", content('recipe')
@@ -146,7 +147,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -o dir '#{recipe_path}'
+      $ linecook compile -o dir '#{recipe_path}'
     }
 
     assert_equal "echo hello world", content('dir/recipe')
@@ -159,7 +160,7 @@ class LinecookTest < Test::Unit::TestCase
     prepare 'recipe', 'previous'
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile '#{recipe_path}' 2>&1 # [1]
+      $ linecook compile '#{recipe_path}' 2>&1 # [1]
       already exists: "#{path('recipe')}"
     }
 
@@ -173,7 +174,7 @@ class LinecookTest < Test::Unit::TestCase
     prepare 'recipe', 'previous'
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -f '#{recipe_path}'
+      $ linecook compile -f '#{recipe_path}'
     }
 
     assert_equal 'current', content('recipe')
@@ -195,7 +196,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -Ilib '#{recipe_path}'
+      $ linecook compile -Ilib '#{recipe_path}'
     }
 
     assert_equal 'echo HELLO WORLD', content('recipe')
@@ -216,7 +217,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -r'#{echo_path}' '#{recipe_path}'
+      $ linecook compile -r'#{echo_path}' '#{recipe_path}'
     }
 
     assert_equal 'echo HELLO WORLD', content('recipe')
@@ -234,7 +235,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -p '#{package_file}' '#{a}' '#{b}'
+      $ linecook compile -p '#{package_file}' '#{a}' '#{b}'
     }
 
     assert_equal 'value', content('a')
@@ -254,7 +255,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -L helpers '#{recipe_path}'
+      $ linecook compile -L helpers '#{recipe_path}'
     }
 
     assert_equal 'echo HELLO WORLD', content('recipe')
@@ -300,7 +301,7 @@ class LinecookTest < Test::Unit::TestCase
 
     with_gem_fixtures do
       assert_script %{
-        $ #{LINECOOK_EXE} compile -G a '#{recipe_path}'
+        $ linecook compile -G a '#{recipe_path}'
       }
     end
 
@@ -334,7 +335,7 @@ class LinecookTest < Test::Unit::TestCase
 
     with_gem_fixtures do
       assert_script %{
-        $ #{LINECOOK_EXE} compile -g '#{recipe_path}'
+        $ linecook compile -g '#{recipe_path}'
       }
     end
 
@@ -361,7 +362,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -c example.rb
+      $ linecook compile -c example.rb
     }
 
     assert_equal 'echo HELLO WORLD', content('example')
@@ -390,7 +391,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -L helpers '#{recipe_path}'
+      $ linecook compile -L helpers '#{recipe_path}'
     }
 
     assert_str_equal %{
@@ -415,7 +416,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -L helpers '#{recipe_path}'
+      $ linecook compile -L helpers '#{recipe_path}'
     }
 
     assert_equal 'ECHO XYZ', content('recipe')
@@ -432,7 +433,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile '#{a}' '#{b}'
+      $ linecook compile '#{a}' '#{b}'
     }
 
     assert_equal '', content('a')
@@ -462,7 +463,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -L helpers - < '#{recipe_path}'
+      $ linecook compile -L helpers - < '#{recipe_path}'
       cat <<DOC
       a
       b
@@ -479,7 +480,7 @@ class LinecookTest < Test::Unit::TestCase
     assert_script %{
       $ echo "write 'echo ' + attrs['msg']" > recipe.rb
       $ echo "msg: hello world" > recipe.yml
-      $ #{LINECOOK_EXE} build recipe.rb
+      $ linecook build recipe.rb
       #{path('recipe')}
       $ recipe/run
       hello world
@@ -487,7 +488,7 @@ class LinecookTest < Test::Unit::TestCase
     assert_script %{
       $ echo "write 'echo ' + attrs['msg']" > recipe.rb
       $ echo "msg: hello world" > input.yml
-      $ #{LINECOOK_EXE} build input.yml,recipe.rb,output
+      $ linecook build input.yml,recipe.rb,output
       #{path('output')}
       $ output/run
       hello world
@@ -500,7 +501,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build '#{recipe_path}'
+      $ linecook build '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -516,7 +517,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build '#{a}' '#{b}'
+      $ linecook build '#{a}' '#{b}'
       #{path('a')}
       #{path('b')}
     }
@@ -534,7 +535,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build '#{recipe_path}'
+      $ linecook build '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -550,7 +551,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -i '#{path('packages')}' '#{recipe_path}'
+      $ linecook build -i '#{path('packages')}' '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -563,7 +564,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -o '#{path('package')}' '#{recipe_path}'
+      $ linecook build -o '#{path('package')}' '#{recipe_path}'
       #{path('package/recipe')}
     }
 
@@ -577,7 +578,7 @@ class LinecookTest < Test::Unit::TestCase
     prepare 'recipe/run', 'previous'
 
     assert_script %{
-      $ #{LINECOOK_EXE} build '#{recipe_path}' 2>&1 # [1]
+      $ linecook build '#{recipe_path}' 2>&1 # [1]
       already exists: "#{path('recipe')}"
     }
 
@@ -591,7 +592,7 @@ class LinecookTest < Test::Unit::TestCase
     prepare 'recipe/run', 'previous'
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -f '#{recipe_path}'
+      $ linecook build -f '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -614,7 +615,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -Ilib '#{recipe_path}'
+      $ linecook build -Ilib '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -636,7 +637,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -r'#{echo_path}' '#{recipe_path}'
+      $ linecook build -r'#{echo_path}' '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -656,7 +657,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -L helpers '#{recipe_path}'
+      $ linecook build -L helpers '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -672,7 +673,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -C '#{method_dir}' '#{recipe_path}'
+      $ linecook build -C '#{method_dir}' '#{recipe_path}'
       #{path('recipe')}
     }
 
@@ -698,7 +699,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} build -c recipes/example.rb
+      $ linecook build -c recipes/example.rb
       #{path('packages/example')}
     }
 
@@ -722,9 +723,9 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper Example '#{source_file}'
+      $ linecook compile-helper Example '#{source_file}'
       #{path('lib/example.rb')}
-      $ #{LINECOOK_EXE} compile -Ilib '#{recipe_path}'
+      $ linecook compile -Ilib '#{recipe_path}'
     }
 
     assert_str_equal %{
@@ -750,9 +751,9 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper Example -i '#{path('a')}' -i '#{path('b')}'
+      $ linecook compile-helper Example -i '#{path('a')}' -i '#{path('b')}'
       #{path('lib/example.rb')}
-      $ #{LINECOOK_EXE} compile -Ilib '#{recipe_path}'
+      $ linecook compile -Ilib '#{recipe_path}'
     }
 
     assert_str_equal %{
@@ -763,40 +764,40 @@ class LinecookTest < Test::Unit::TestCase
 
   def test_compile_helper_has_sensible_error_for_no_sources_specified
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper Example
+      $ linecook compile-helper Example # [1]
       no sources specified
-    }, :exitstatus => 1
+    }
   end
 
   def test_compile_helper_has_sensible_error_for_invalid_constant_name
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper _Example
+      $ linecook compile-helper _Example # [1]
       invalid constant name: "_Example"
-    }, :exitstatus => 1
+    }
   end
 
   def test_compile_helper_has_sensible_error_for_invalid_source_file_names
     source_file = prepare('-.rb', '')
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper Example '#{source_file}'
+      $ linecook compile-helper Example '#{source_file}' # [1]
       invalid source file: "#{source_file}" (invalid method name "-")
-    }, :exitstatus => 1
+    }
   end
 
   def test_compile_helper_has_sensible_error_for_invalid_formats
     source_file = prepare('source_file.json', '')
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper Example '#{source_file}'
+      $ linecook compile-helper Example '#{source_file}' # [1]
       invalid source file: "#{source_file}" (unsupported format ".json")
-    }, :exitstatus => 1
+    }
   end
 
   def test_compile_helper_has_sensible_error_for_invalid_section_formats
     source_file = prepare('_section_file.json', '')
     assert_script %{
-      $ #{LINECOOK_EXE} compile-helper Example '#{source_file}'
+      $ linecook compile-helper Example '#{source_file}' # [1]
       invalid source file: "#{source_file}" (unsupported section format ".json")
-    }, :exitstatus => 1
+    }
   end
 
   #
@@ -810,7 +811,7 @@ class LinecookTest < Test::Unit::TestCase
   
     Dir.chdir(user_dir) do
       assert_script %{
-        $ #{LINECOOK_EXE} run -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' 2>/dev/null <&-
+        $ linecook run -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' 2>/dev/null <&-
         $ ssh -F '#{ssh_config_file}' '#{host}' -- cat '#{remote_dir}/mark.txt'
         #{mark}
       }
@@ -822,10 +823,9 @@ class LinecookTest < Test::Unit::TestCase
     FileUtils.chmod(0744, path)
 
     Dir.chdir(user_dir) do
-      assert_script %{
-        $ #{LINECOOK_EXE} run -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' 2>/dev/null <&-
-        non-zero exit status: 1
-      }, :exitstatus => 1
+      assert_script %Q{
+        $ linecook run -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' 2>/dev/null <&- # [1] ...
+      }
     end
   end
 
@@ -833,10 +833,9 @@ class LinecookTest < Test::Unit::TestCase
     prepare_dir(host)
 
     Dir.chdir(user_dir) do
-      assert_script %{
-        $ #{LINECOOK_EXE} run -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' 2>/dev/null <&-
-        non-zero exit status: 1
-      }, :exitstatus => 1
+      assert_script %Q{
+        $ linecook run -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' 2>/dev/null <&- # [1] ...
+      }
     end
   end
 
@@ -848,8 +847,8 @@ class LinecookTest < Test::Unit::TestCase
     FileUtils.chmod(0744, path)
 
     Dir.chdir(user_dir) do
-      assert_script %{
-        $ #{LINECOOK_EXE} run -F '#{ssh_config_file}' -D '/tmp/${HOME#/}' '#{path(host)}' 2>/dev/null <&-
+      assert_script %Q{
+        $ linecook run -F '#{ssh_config_file}' -D '/tmp/${HOME#/}' '#{path(host)}' 2>/dev/null <&-
       }
     end
   end
