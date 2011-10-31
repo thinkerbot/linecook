@@ -37,20 +37,6 @@ module FileMethodsShim
   end
 end
 
-# Patch - see issue:
-# https://github.com/thinkerbot/shell_test/issues/12
-module ShellTest
-  module FileTestMethods
-    def prepare_dir(relative_path)
-      target_dir = path(relative_path)
-      unless File.directory?(target_dir)
-        FileUtils.mkdir_p(target_dir)
-      end
-      target_dir
-    end
-  end
-end
-
 # Helpers for testing linecook with various gem fixtures installed.
 module GemTestHelpers
   FIXTURES_DIR = File.expand_path('../fixtures', __FILE__)
