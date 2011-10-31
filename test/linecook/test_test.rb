@@ -223,4 +223,31 @@ class TestTest < Test::Unit::TestCase
     }, stdout, msg
     assert_equal 0, $?.exitstatus, msg
   end
+
+  def test_a_project_with_inputs
+    prepare "recipes/#{host}.rb", %q{
+      target << %{
+      while true; do
+        printf "Do you wish to continue: "
+        read answer
+        case $answer in
+            y ) printf "\nOk!\n"; break;;
+            n ) printf "\nToo bad.\n"; break;;
+            * ) printf "\nPlease answer y or n.\n";;
+        esac
+      done
+      }
+    }
+
+    stdout, msg = build_project
+    assert_equal 0, $?.exitstatus, msg
+
+    assert_script %{
+      $ #{run_project_cmd}
+      Do you wish to continue: {{q}}
+      Please answer y or n.
+      Do you wish to continue: {{y}}
+      Ok!
+    }
+  end
 end

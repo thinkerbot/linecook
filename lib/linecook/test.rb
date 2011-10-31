@@ -155,6 +155,21 @@ module Linecook
       linecook('run', options, *package_dirs, &block)
     end
 
+    def run_project_cmd(options={}, *package_dirs, &block)
+      if package_dirs.empty?
+        package_dirs = glob('packages/*').select {|path| File.directory?(path) }
+      end
+
+      options = {
+        'F' => ssh_config_file,
+        'D' => remote_dir,
+        'q' => true,
+        :max_run_time => 3
+      }.merge(options)
+
+      linecook_cmd('run', options, *package_dirs, &block)
+    end
+
     def linecook(cmd, options={}, *args, &block)
       command = linecook_cmd(cmd, options, *args)
       session = Session.new(options)
