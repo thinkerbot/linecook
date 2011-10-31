@@ -122,8 +122,8 @@ task :multitest do
     FileUtils.mkdir_p(log_dir)
   end
 
-  threads = hosts.collect do |host|
-    Thread.new do
+  hosts.each do |host|
+    thread = Thread.new do
       logfile = File.join(log_dir, host)
       Thread.current["host"] = host
       Thread.current["logfile"] = logfile
@@ -137,9 +137,6 @@ task :multitest do
       results = stdout.grep(/^\d+ tests/)
       puts "Using Host: #{host}\n  #{time}\n  #{results}"
     end
-  end
-
-  threads.each do |thread|
     thread.join
   end
 end
