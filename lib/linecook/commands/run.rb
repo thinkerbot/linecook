@@ -24,6 +24,7 @@ module Linecook
       config :remote_dir, 'linecook'        # -D : the remote package dir
       config :remote_scripts, ['run']       # -S : the remote script(s)
       config :ssh_config_file, 'config/ssh' # -F : the ssh config file
+      config :xtrace, false                 # -x : xtrace local scripts
       config :scp, true                     # transfer package or not
 
       def full_path_to_remote_dir
@@ -33,7 +34,8 @@ module Linecook
       def process(*package_dirs)
         opts = {
           'D' => full_path_to_remote_dir,
-          'F' => ssh_config_file
+          'F' => ssh_config_file,
+          'x' => xtrace
         }
 
         if scp
@@ -50,7 +52,13 @@ module Linecook
         options = []
 
         opts.each_pair do |key, value|
-          unless value.to_s.strip.empty?
+          next if value.to_s.strip.empty?
+
+          case value
+          when true
+            options << "-#{key}"
+          when false
+          else
             options << "-#{key} '#{value}'"
           end
         end

@@ -3,10 +3,11 @@
 
 ssh_config_file=${SSH_CONFIG_FILE:-~/.ssh/config}
 remote_dir=${REMOTE_DIR:-\$(pwd)/linecook}
+xtrace="false"
 
-usage="usage: %s [-D REMOTE_DIR] [-F SSH_CONFIG_FILE] [-h] PACKAGE_DIRS...\n"
+usage="usage: %s [-D REMOTE_DIR] [-F SSH_CONFIG_FILE] [-h] [-x] PACKAGE_DIRS...\n"
 option="       %s   %s\n"
-while getopts "F:D:h" opt
+while getopts "F:D:h:x" opt
 do
   case $opt in
   F  )  ssh_config_file=$OPTARG ;;
@@ -15,12 +16,18 @@ do
         printf "$option" "-F" "the ssh config file"
         printf "$option" "-D" "the remote package dir"
         printf "$option" "-h" "prints this help"
+        printf "$option" "-x" "xtrace this script"
         exit 0 ;;
+  x  )  xtrace="true" ;;
   \? )  printf "$usage" $0
         exit 2 ;;
   esac
 done
 shift $(($OPTIND - 1))
+
+if [ "$xtrace" = "true" ]
+then set -x
+fi
 
 ################################### scp ####################################
 

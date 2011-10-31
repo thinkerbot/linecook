@@ -817,6 +817,24 @@ class LinecookTest < Test::Unit::TestCase
     end
   end
 
+  def test_run_allows_xtrace
+    mark = rand(1000)
+    path = prepare("#{host}/run", "echo '#{mark}' > '#{remote_dir}/mark.txt'")
+    FileUtils.chmod(0744, path)
+  
+    Dir.chdir(user_dir) do
+      assert_script_match %{
+        % #{LINECOOK_EXE} run -x -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' <&-
+        $ sh :...:linecook_scp:...:
+        + :....:
+        $ sh :...:linecook_run:...:
+        + :....:
+        % ssh -F '#{ssh_config_file}' '#{host}' -- cat '#{remote_dir}/mark.txt'
+        #{mark}
+      }, :ps1 => '%'
+    end
+  end
+
   def test_run_exits_with_status_1_for_failed_script
     path = prepare("#{host}/run", 'exit 8')
     FileUtils.chmod(0744, path)
