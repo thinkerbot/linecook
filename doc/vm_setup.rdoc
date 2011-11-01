@@ -28,7 +28,7 @@ convenience. Port forwarding allows you to ssh to yourself on one port (2220)
 and have that be received by the VM on another port (22).
 
   (Devices > CD/DVD Devices > Remove disk from virtual drive)
-  VBoxManage snapshot ubuntu take RAW
+  VBoxManage snapshot ubuntu take RAW --pause
   VBoxManage controlvm ubuntu poweroff
   # wait to fully power off
   VBoxManage modifyvm ubuntu --natpf1 'ubuntu-ssh,tcp,,2220,,22'
@@ -55,8 +55,8 @@ Remove the login banner (cleans up test output) and exit.
 Now take some standard snapshots. By taking them at the login screen you can
 reset to a running VM, which avoids startup overhead.
 
-  VBoxManage snapshot ubuntu take BASE
-  VBoxManage snapshot ubuntu take CURRENT
+  VBoxManage snapshot ubuntu take BASE --pause
+  VBoxManage snapshot ubuntu take CURRENT --pause
   VBoxManage controlvm ubuntu poweroff
 
 To cleanup the port forwarding (run later, if ever):

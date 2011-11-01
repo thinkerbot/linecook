@@ -97,7 +97,7 @@ module Linecook
           sh! "VBoxManage -q snapshot #{vm_name} edit #{snapshot} --name #{snapshot}_#{count - 1}"
         end
 
-        sh! "VBoxManage -q snapshot #{vm_name} take #{snapshot}"
+        sh! "VBoxManage -q snapshot #{vm_name} take #{snapshot} --pause"
       end
 
       private
