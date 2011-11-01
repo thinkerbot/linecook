@@ -173,8 +173,8 @@ module Linecook
     def linecook(cmd, options={}, *args, &block)
       command = linecook_cmd(cmd, options, *args)
       session = Session.new(options)
-      session.on :ps1, "#{command}\n"
-      session.on :ps1, "exit\n"
+      session.on :PS1, "#{command}\n"
+      session.on :PS1, "exit\n"
       session.run
 
       log = session.log

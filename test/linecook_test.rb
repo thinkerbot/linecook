@@ -805,8 +805,9 @@ class LinecookTest < Test::Unit::TestCase
 
   def test_run_runs_package_on_host_given_by_package_dir
     mark = rand(1000)
-    path = prepare("#{host}/run", "echo '#{mark}' > '#{remote_dir}/mark.txt'")
-    FileUtils.chmod(0744, path)
+    path = prepare "#{host}/run", %{
+      echo '#{mark}' > '#{remote_dir}/mark.txt'
+    }, :mode => 0744
   
     Dir.chdir(user_dir) do
       assert_script %{
@@ -819,25 +820,29 @@ class LinecookTest < Test::Unit::TestCase
 
   def test_run_allows_xtrace
     mark = rand(1000)
-    path = prepare("#{host}/run", "echo '#{mark}' > '#{remote_dir}/mark.txt'")
-    FileUtils.chmod(0744, path)
-  
+    path = prepare "#{host}/run", %{
+      echo '#{mark}' > '#{remote_dir}/mark.txt'
+    }, :mode => 0744
+
     Dir.chdir(user_dir) do
-      assert_script_match %{
-        % #{LINECOOK_EXE} run -x -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' <&-
-        $ sh :...:linecook_scp:...:
-        + :....:
-        $ sh :...:linecook_run:...:
-        + :....:
-        % ssh -F '#{ssh_config_file}' '#{host}' -- cat '#{remote_dir}/mark.txt'
-        #{mark}
-      }, :ps1 => '%'
+      with_env 'PS1' => '% ' do
+        assert_script_match %{
+          % #{LINECOOK_EXE} run -x -F '#{ssh_config_file}' -D '#{remote_dir}' '#{path(host)}' <&-
+          $ sh :...:linecook_scp:...:
+          + :....:
+          $ sh :...:linecook_run:...:
+          + :....:
+          % ssh -F '#{ssh_config_file}' '#{host}' -- cat '#{remote_dir}/mark.txt'
+          #{mark}
+        }, :max_run_time => 2
+      end
     end
   end
 
   def test_run_exits_with_status_1_for_failed_script
-    path = prepare("#{host}/run", 'exit 8')
-    FileUtils.chmod(0744, path)
+    path = prepare "#{host}/run", %{
+      exit 8
+    }, :mode => 0744
 
     Dir.chdir(user_dir) do
       assert_script %{
@@ -859,11 +864,10 @@ class LinecookTest < Test::Unit::TestCase
   end
 
   def test_run_can_use_remote_dirs_that_are_evaluated_on_the_host
-    path = prepare("#{host}/run", %{
+    path = prepare "#{host}/run", %{
       cd "${0%/*}"
       [ "$(pwd)" = "/tmp/${HOME#/}" ]
-    })
-    FileUtils.chmod(0744, path)
+    }, :mode => 0744
 
     Dir.chdir(user_dir) do
       assert_script %{
