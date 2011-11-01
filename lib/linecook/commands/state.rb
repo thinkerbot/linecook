@@ -2,7 +2,7 @@ require 'linecook/commands/virtual_box_command'
 
 module Linecook
   module Commands
-    
+
     # :startdoc::desc print a vm state
     #
     # Prints the state of one or more VirtualBox virtual machines. By default
@@ -10,11 +10,11 @@ module Linecook
     #
     class State < VirtualBoxCommand
       config :hosts, false       # -s, --hosts : print state by host
-      
+
       def state(vm_name)
         `VBoxManage showvminfo #{vm_name}` =~ /^State:\s+(.*)$/ ? $1 : 'unknown'
       end
-      
+
       def process(*hosts)
         vm_names = resolve_vm_names(hosts)
         if hosts

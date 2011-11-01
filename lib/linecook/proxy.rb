@@ -4,12 +4,12 @@ module Linecook
     def initialize(recipe)
       @recipe = recipe
     end
-    
+
     # Proxies to Recipe#_chain_
     def method_missing(*args, &block)
       @recipe._chain_(*args, &block)
     end
-    
+
     # Returns an empty string, such that the proxy makes no text when it is
     # accidentally put into a target by a helper.
     def to_s
