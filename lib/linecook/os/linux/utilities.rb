@@ -156,7 +156,7 @@ module Linecook
 
         # File archiver. {[Spec]}[http://pubs.opengroup.org/onlinepubs/007908799/xcu/tar.html]
         def tar(key, *files)
-          execute 'tar', key, files
+          execute 'tar', key, *files
           _chain_proxy_
         end
 

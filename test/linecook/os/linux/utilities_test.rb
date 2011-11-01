@@ -272,6 +272,18 @@ class LinuxUtilitiesTest < Test::Unit::TestCase
   end
 
   #
+  # tar test
+  #
+
+  def test_tar_writes_tar_command
+    assert_recipe %{
+      tar -xvf "path/to/a" "path/to/b"
+    } do
+      tar '-xvf', 'path/to/a', 'path/to/b'
+    end
+  end
+
+  #
   # useradd test
   #
 

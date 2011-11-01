@@ -2,4 +2,4 @@ File archiver. {[Spec]}[http://pubs.opengroup.org/onlinepubs/007908799/xcu/tar.h
 
 (key, *files)
 --
-  execute 'tar', key, files
+  execute 'tar', key, *files
