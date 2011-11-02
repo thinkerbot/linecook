@@ -310,10 +310,13 @@ For preventing the children of poor people in Ireland...
   def test_export_exports_variables
     assert_recipe %q{
       export ONE="A"
-      export TWO="B C"
+      export TWO
+      THREE="C"
+      export THREE
     } do
       export 'ONE', 'A'
-      export 'TWO', 'B C'
+      export 'TWO'
+      export var('THREE', 'C')
     end
   end
 
