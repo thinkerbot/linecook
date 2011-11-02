@@ -159,7 +159,7 @@ module Linecook
       # Returns an array of positional variables for use as inputs to a function
       # block.  Splat blocks are supported; the splat expression behaves like $*.
       def signature(arity)
-        variables = Array.new(arity.abs) {|i| var(i+1) }
+        variables = Array.new(arity.abs) {|i| Variable.new(i+1) }
         
         if arity < 0
           # This works for defaults...
@@ -172,8 +172,21 @@ module Linecook
         variables
       end
 
-      def var(name)
-        Variable.new(name)
+      # Set a variable.
+      def var(name, value=nil)
+        if block_given?
+          if value.nil?
+            value = "$(\n#{capture(&Proc.new).strip}\n)"
+          else
+            raise "value and block cannot both be specified"
+          end
+        end
+
+        unless value.nil?
+          writeln "#{name}=#{quote(value)}"
+        end
+
+        return Variable.new(name)
       end
 
       def trailer
@@ -550,23 +563,6 @@ module Linecook
 
       def _until_(*args, &block) # :nodoc:
         str = capture { until_(*args, &block) }
-        str.strip!
-        str
-      end
-
-      # Set a variable.
-      def variable(key, value)
-        #  <%= key %>=<%= quote(value) %>
-        #  
-        #  
-        write(( key ).to_s); write "="; write(( quote(value) ).to_s)
-        write "\n"
-
-        _chain_proxy_
-      end
-
-      def _variable(*args, &block) # :nodoc:
-        str = capture { variable(*args, &block) }
         str.strip!
         str
       end

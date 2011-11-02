@@ -838,22 +838,53 @@ class PosixTest < Test::Unit::TestCase
   end
 
   #
-  # variable test
+  # var test
   #
 
-  def test_variable_sets_a_variable
+  def test_var_sets_a_variable
     assert_recipe %q{
       KEY="VALUE"
     } do
-      variable 'KEY', 'VALUE'
+      var 'KEY', 'VALUE'
     end
   end
 
-  def test_variable_respects_quoted_values
+  def test_var_respects_quoted_values
     assert_recipe %q{
       KEY='VALUE'
     } do
-      variable 'KEY', "'VALUE'"
+      var 'KEY', "'VALUE'"
+    end
+  end
+
+  def test_var_writes_nothing_for_nil_value
+    assert_recipe %q{
+      before
+      after
+    } do
+      writeln 'before'
+      var 'KEY'
+      writeln 'after'
+    end
+  end
+
+  def test_var_return_stringifies_to_variable_name
+    assert_recipe %q{
+      ONE="A"
+      echo $ONE
+    } do
+      one = var 'ONE', 'A'
+      writeln "echo #{one}"
+    end
+  end
+
+  def test_var_evaluates_block_as_a_subprocess_to_determine_value_if_given
+    assert_recipe %q{
+      ONE="$(
+      echo 'A'
+      )"
+    } do
+      var('ONE') { writeln "echo 'A'"}
     end
   end
 
