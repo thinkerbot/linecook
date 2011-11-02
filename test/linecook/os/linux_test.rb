@@ -19,7 +19,7 @@ class LinuxTest < Test::Unit::TestCase
       set_package_dir command_dir
       cd
       export 'A', 'a'
-      variable 'B', 'b'
+      var 'B', 'b'
       echo "$(whoami):$(pwd):$A:$B"             # => linecook:/home/linecook:a:b
       login { echo "$(whoami):$(pwd):$A:$B" }   # => root:/root::
       su { echo "$(whoami):$(pwd):$A:$B" }      # => root:/home/linecook:a:
