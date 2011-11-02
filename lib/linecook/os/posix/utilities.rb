@@ -35,15 +35,13 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cd.html]
         def cd(directory=nil, options={})
           if block_given?
-            var = _package_.next_variable_name('cd')
-            writeln %{#{var}=$(pwd)}
-          end
-
-          execute 'cd', directory, options
-
-          if block_given?
-            yield
+            var = _package_.next_variable_name('OLDPWD_')
+            write %{#{var}=$(pwd); }
+            execute 'cd', directory, options
+            indent(&Proc.new)
             execute 'cd', "$#{var}"
+          else
+            execute 'cd', directory, options
           end
           _chain_proxy_
         end

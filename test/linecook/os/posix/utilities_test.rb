@@ -103,6 +103,22 @@ For preventing the children of poor people in Ireland...
     }, *run_package
   end
 
+  def test_cd_indents_block_if_given
+    assert_recipe_matches %q{
+      OLDPWD_0=$(pwd); cd "a"
+        OLDPWD_1=$(pwd); cd "b"
+          cd "c"
+        cd "$OLDPWD_1"
+      cd "$OLDPWD_0"
+    } do
+      cd 'a' do
+        cd 'b' do
+          cd 'c'
+        end
+      end
+    end
+  end
+
   #
   # chgrp test
   #

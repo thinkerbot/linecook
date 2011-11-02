@@ -4,13 +4,11 @@ Change the working directory, for the duration of a block if given.
 (directory=nil, options={})
 --
   if block_given?
-    var = _package_.next_variable_name('cd')
-    writeln %{#{var}=$(pwd)}
-  end
-
-  execute 'cd', directory, options
-
-  if block_given?
-    yield
+    var = _package_.next_variable_name('OLDPWD_')
+    write %{#{var}=$(pwd); }
+    execute 'cd', directory, options
+    indent(&Proc.new)
     execute 'cd', "$#{var}"
+  else
+    execute 'cd', directory, options
   end
