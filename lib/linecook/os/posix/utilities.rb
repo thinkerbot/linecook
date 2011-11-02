@@ -4,6 +4,25 @@ module Linecook
   module Os
     module Posix
       module Utilities
+        # Set the export attribute for variables.
+        # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_22]
+        def export(key, value=nil)
+          if block_given?
+            if value.nil?
+              value = "$(\n#{capture(&Proc.new).strip}\n)"
+            else
+              raise "value and block cannot both be specified"
+            end
+          end
+
+          if value.nil?
+            writeln "export #{key}"
+          else
+            writeln "export #{key}=#{quote(value)}"
+          end
+
+          return Variable.new(key)
+        end
         # Return non-directory portion of a pathname. If a suffix is provided and
         # present, then it will be removed.
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/basename.html]
@@ -248,30 +267,6 @@ module Linecook
 
         def _expand(*args, &block) # :nodoc:
           str = capture { expand(*args, &block) }
-          str.strip!
-          str
-        end
-
-        # Set the export attribute for variables.
-        # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_22]
-        def export(key, value=nil)
-          #  <% if value.nil? %>
-          #  export <%= key %>
-          #  <% else %>
-          #  export <%= key %>=<%= quote(value) %>
-          #  <% end %>
-          #  
-          if value.nil? 
-          write "export "; write(( key ).to_s); write "\n"
-          ;  else 
-          write "export "; write(( key ).to_s); write "="; write(( quote(value) ).to_s); write "\n"
-          ;  end 
-
-          _chain_proxy_
-        end
-
-        def _export(*args, &block) # :nodoc:
-          str = capture { export(*args, &block) }
           str.strip!
           str
         end

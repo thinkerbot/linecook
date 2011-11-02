@@ -317,6 +317,26 @@ For preventing the children of poor people in Ireland...
     end
   end
 
+  def test_export_return_stringifies_to_variable_name
+    assert_recipe %q{
+      export ONE="A"
+      echo $ONE
+    } do
+      one = export 'ONE', 'A'
+      writeln "echo #{one}"
+    end
+  end
+
+  def test_export_evaluates_block_as_a_subprocess_to_determine_value_if_given
+    assert_recipe %q{
+      export ONE="$(
+      echo 'A'
+      )"
+    } do
+      export('ONE') { writeln "echo 'A'"}
+    end
+  end
+
   #
   # file? test
   #
