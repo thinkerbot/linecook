@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   packages that can be used, for example, to provision servers.
   }.join(' ')
 
+  s.required_ruby_version = '~> 1.9.2'
   s.rubyforge_project = 'linecook'
   s.has_rdoc = true
   s.rdoc_options.concat %w{--main README.rdoc -S -N --title Linecook}
