@@ -189,8 +189,8 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      require 'echo'
-      extend Echo
+      Kernel.require 'echo'
+      Echo.__send__(:extend_object, self)
       upper_echo 'hello world'
     }
 
@@ -211,7 +211,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      extend Echo
+      Echo.__send__(:extend_object, self)
       upper_echo 'hello world'
     }
 
@@ -608,8 +608,8 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      require 'echo'
-      extend Echo
+      Kernel.require 'echo'
+      Echo.__send__(:extend_object, self)
       upper_echo 'hello world'
     }
 
@@ -631,7 +631,7 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     recipe_path = prepare 'recipe.rb', %{
-      extend Echo
+      Echo.__send__(:extend_object, self)
       upper_echo 'hello world'
     }
 

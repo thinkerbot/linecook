@@ -24,7 +24,7 @@ module Linecook
   #   end
   #
   #   recipe  = Recipe.new do
-  #     extend Helper
+  #     Helper.__send__(:extend_object, self)
   #     echo 'a', 'b c'
   #     echo 'X Y'.downcase, :z
   #   end
@@ -35,7 +35,11 @@ module Linecook
   #   # echo 'x y z'
   #   # }
   #
-  class Recipe
+  class Recipe < BasicObject
+    def self.const_missing(name)
+      ::Object.const_get(name)
+    end
+    
     # The recipe package
     attr_reader :_package_
 
@@ -62,7 +66,7 @@ module Linecook
       @indents  = []
       @outdents = []
 
-      if block_given?
+      if Kernel.block_given?
         instance_eval(&Proc.new)
       end
     end
@@ -79,7 +83,7 @@ module Linecook
         end
       end
 
-      if block_given?
+      if block
         attributes.instance_eval(&block)
       end
 
@@ -97,13 +101,18 @@ module Linecook
 
     # Looks up and extends self with the specified helper(s).
     def helpers(*helper_names)
-      helper_names.each do |helper_name|
-        module_name = Utils.camelize(helper_name)
-        constant = Utils.constantize(module_name) do
-          require Utils.underscore(helper_name)
-          Utils.constantize(module_name)
+      helper_names.each do |helper|
+        unless helper.respond_to?(:extend_object)
+          helper_name = helper
+          module_name = Utils.camelize(helper_name)
+
+          helper = Utils.constantize(module_name) do
+            # Don't use Kernel because the may evade RubyGems
+            Utils.__send__(:require, Utils.underscore(helper_name))
+            Utils.constantize(module_name)
+          end
         end
-        extend constant
+        helper.__send__(:extend_object, self)
       end
       self
     end
@@ -174,7 +183,9 @@ module Linecook
     def capture_path(target_name, options={})
       target = _package_.add(target_name, options)
 
-      _capture_(target) { yield } if block_given?
+      if Kernel.block_given?
+        _capture_(target) { yield }
+      end
 
       target.close unless target.closed?
       target_path target_name
@@ -275,7 +286,7 @@ module Linecook
       if current_indent.nil?
         yield
       else
-        flag ||= ":outdent_#{rand(10000000)}:"
+        flag ||= ":outdent_#{Kernel.rand(10000000)}:"
         @outdents << flag
 
         write "#{flag}#{current_indent.length}:#{_rstrip_}"
@@ -386,7 +397,7 @@ module Linecook
         target.truncate start
       end
 
-      block_given? ? yield(match) : match
+      Kernel.block_given? ? yield(match) : match
     end
 
     # Strips whitespace from the end of target and returns the stripped
@@ -401,7 +412,7 @@ module Linecook
     # typically invoked via _proxy_.
     def _chain_(method_name, *args, &block)
       @_chain_ = true
-      send(method_name, *args, &block)
+      __send__(method_name, *args, &block)
     end
 
     # Returns true if the current context was invoked through chain.

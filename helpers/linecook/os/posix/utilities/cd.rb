@@ -3,7 +3,7 @@ Change the working directory, for the duration of a block if given.
 
 (directory=nil, options={})
 --
-  if block_given?
+  if Kernel.block_given?
     var = _package_.next_variable_name('OLDPWD_')
     write %{#{var}=$(pwd); }
     execute 'cd', directory, options

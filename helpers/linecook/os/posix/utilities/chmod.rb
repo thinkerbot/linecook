@@ -7,7 +7,7 @@ sprintf "%o".
 --
   unless mode.nil?
     if mode.kind_of?(Fixnum)
-      mode = sprintf("%o", mode)
+      mode = Kernel.sprintf("%o", mode)
     end
     execute 'chmod', mode, *files
   end

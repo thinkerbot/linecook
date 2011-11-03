@@ -3,4 +3,4 @@ Locate a program file in the user's path
 
 (*program)
 --
-  execute *program
+  execute(*program)

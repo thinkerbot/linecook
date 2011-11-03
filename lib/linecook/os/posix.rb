@@ -132,7 +132,7 @@ module Linecook
         
         if function?(name)
           unless functions[name] == function
-            raise "function already defined: #{name.inspect}"
+            Kernel.raise "function already defined: #{name.inspect}"
           end
         else
           functions[name] = function
@@ -174,11 +174,11 @@ module Linecook
 
       # Set a variable.
       def var(name, value=nil)
-        if block_given?
+        if Kernel.block_given?
           if value.nil?
             value = "$(\n#{capture(&Proc.new).strip}\n)"
           else
-            raise "value and block cannot both be specified"
+            Kernel.raise "value and block cannot both be specified"
           end
         end
 
@@ -298,7 +298,7 @@ module Linecook
       # Chains to if_ to make an else-if statement.
       def elif_(expression)
         unless match = _rewrite_(/(\s+)(fi\s*)/)
-          raise "elif_ used outside of if_ statement"
+          Kernel.raise "elif_ used outside of if_ statement"
         end
         #  <%= match[1] %>
         #  elif <%= expression %>
@@ -322,7 +322,7 @@ module Linecook
       # Chains to if_ or unless_ to make an else statement.
       def else_()
         unless match = _rewrite_(/(\s+)(fi\s*)/)
-          raise "else_ used outside of if_ statement"
+          Kernel.raise "else_ used outside of if_ statement"
         end
         #  <%= match[1] %>
         #  else

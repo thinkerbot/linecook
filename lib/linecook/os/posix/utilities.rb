@@ -34,7 +34,7 @@ module Linecook
         # Change the working directory, for the duration of a block if given.
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cd.html]
         def cd(directory=nil, options={})
-          if block_given?
+          if Kernel.block_given?
             var = _package_.next_variable_name('OLDPWD_')
             write %{#{var}=$(pwd); }
             execute 'cd', directory, options
@@ -74,7 +74,7 @@ module Linecook
         def chmod(mode, *files)
           unless mode.nil?
             if mode.kind_of?(Fixnum)
-              mode = sprintf("%o", mode)
+              mode = Kernel.sprintf("%o", mode)
             end
             execute 'chmod', mode, *files
           end
@@ -539,7 +539,7 @@ module Linecook
         # If a block is given then options will only be reset when the block completes.
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_25]
         def set(options)
-          if block_given?
+          if Kernel.block_given?
             var = _package_.next_variable_name('set')
             patterns = options.keys.collect {|key| "-e #{key}" }.sort
             writeln %{#{var}=$(set +o | grep #{patterns.join(' ')})}
@@ -549,7 +549,7 @@ module Linecook
             writeln %{set #{options[opt] ? '-' : '+'}o #{opt}}
           end
 
-          if block_given?
+          if Kernel.block_given?
             yield
             writeln %{eval "$#{var}"}
           end

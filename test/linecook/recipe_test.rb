@@ -55,7 +55,7 @@ class RecipeTest < Test::Unit::TestCase
 
   def test_recipe_documentation
     recipe  = Recipe.new do
-      extend Helper
+      Helper.__send__(:extend_object, self)
       echo 'a', 'b c'
       echo 'X Y'.downcase, :z
     end
@@ -197,6 +197,7 @@ echo 'x y z'
     prepare 'lib/helper_module.rb', %{
       module HelperModule
         def helper_method
+          :pass
         end
       end
     }
@@ -209,7 +210,7 @@ echo 'x y z'
       $:.delete lib_path
     end
 
-    assert recipe.respond_to?(:helper_method)
+    assert_equal :pass, recipe.helper_method
   end
 
   #
