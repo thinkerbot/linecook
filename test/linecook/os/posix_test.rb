@@ -614,6 +614,20 @@ class PosixTest < Test::Unit::TestCase
     end
   end
 
+  def test_if__can_use_proxy_chains
+    assert_recipe %{
+      if tr "a" "b" < c | grep "b"
+      then
+        echo "pass"
+      fi
+      
+    } do
+      if_ _.tr('a', 'b').from('c').grep('b') do
+        echo 'pass'
+      end
+    end
+  end
+
   #
   # option? test
   #

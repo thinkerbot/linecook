@@ -60,7 +60,7 @@ module Linecook
       @_cookbook_ = cookbook
       @_target_ = target
       @target   = target
-      @_proxy_  = Proxy.new(self)
+      @_proxy_  = Proxy.new(self, target)
       @_chain_  = false
       @attributes  = {}
       @indents  = []
@@ -364,16 +364,22 @@ module Linecook
     # Captures output to the target for the duration of a block.  Returns the
     # capture target.
     def _capture_(target=StringIO.new)
-      current = @target
+      proxy = Proxy.new(self, target)
+      _with_proxy_(proxy) { yield }
+      target
+    end
+
+    def _with_proxy_(proxy)
+      current = @_proxy_
 
       begin
-        @target = target
-        yield
+        @_proxy_ = proxy
+        @target  = proxy.target
+        return yield
       ensure
-        @target = current
+        @_proxy_ = current
+        @target  = current.target
       end
-
-      target
     end
 
     # Truncates the contents of target starting at the first match of pattern
@@ -407,6 +413,11 @@ module Linecook
       match ? match[0] : ''
     end
 
+    def _
+      @_chain_ = nil
+      Proxy.new(self)
+    end
+
     # Sets _chain_? to return true and calls the method (thereby allowing the
     # method to invoke chain-specific behavior).  Calls to _chain_ are
     # typically invoked via _proxy_.
@@ -417,13 +428,17 @@ module Linecook
 
     # Returns true if the current context was invoked through chain.
     def _chain_?
-      @_chain_
+      @_chain_ ? true : false
     end
 
     # Sets _chain_? to return false and returns the proxy.
     def _chain_proxy_
       @_chain_ = false
       _proxy_
+    end
+
+    def _chain_proxy_?
+      !@_chain_.nil?
     end
   end
 end
