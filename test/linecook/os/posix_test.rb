@@ -885,7 +885,7 @@ class PosixTest < Test::Unit::TestCase
   def test_var_return_stringifies_to_variable_name
     assert_recipe %q{
       ONE="A"
-      echo $ONE
+      echo ${ONE}
     } do
       one = var 'ONE', 'A'
       writeln "echo #{one}"
@@ -905,21 +905,24 @@ class PosixTest < Test::Unit::TestCase
   def test_var_usage
     assert_recipe %{
       A="/path/to/a"
-      B=$(dirname "${A}")
-      C=
-
+      B="$(
+      dirname "${A}"
+      )"
       if ! [ "${A}" = "${B}" ]
       then
         echo "${A} and ${B} are not the same"
       fi
-
+      
       C="c"
-      echo "${C//c/C}"
+      C0="${C//c/C}"
+      echo "${C0}"
       C1="${C//c/C}"
       C2="${#C1}"
-      echo "$(( $C2 + 1 ))"
+      C3="$(( ${C2} + 1 ))"
+      echo "${C3}"
       C="${C//C/c}"
-      echo "${C}"
+      C4="${#C}"
+      echo "${C4}"
     } do
       a = var('A', '/path/to/a')
       b = var('B') { dirname a }
@@ -940,7 +943,7 @@ class PosixTest < Test::Unit::TestCase
       /path/to/a and /path/to are not the same
       C
       2
-      c
+      1
     }, *run_package
   end
 

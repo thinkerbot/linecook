@@ -23,7 +23,7 @@ module Linecook
 
       # Returns "$0", the current command name.
       def command_name
-        Variable.new(0)
+        Variable.new(self, 0)
       end
 
       # Returns the command directory (ie the directory containing $0).
@@ -159,7 +159,7 @@ module Linecook
       # Returns an array of positional variables for use as inputs to a function
       # block.  Splat blocks are supported; the splat expression behaves like $*.
       def signature(arity)
-        variables = Array.new(arity.abs) {|i| Variable.new(i+1) }
+        variables = Array.new(arity.abs) {|i| Variable.new(self, i+1) }
         
         if arity < 0
           # This works for defaults...
@@ -186,7 +186,7 @@ module Linecook
           writeln "#{name}=#{quote(value)}"
         end
 
-        return Variable.new(name)
+        return Variable.new(self, name)
       end
 
       def trailer

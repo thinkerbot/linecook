@@ -413,9 +413,11 @@ module Linecook
       match ? match[0] : ''
     end
 
-    def _
-      @_chain_ = nil
-      Proxy.new(self)
+    def _(str=nil)
+      @_chain_ = str.nil? ? nil : false
+      proxy = Proxy.new(self)
+      proxy.target.write str if str
+      proxy
     end
 
     # Sets _chain_? to return true and calls the method (thereby allowing the
