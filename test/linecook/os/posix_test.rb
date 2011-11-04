@@ -902,6 +902,48 @@ class PosixTest < Test::Unit::TestCase
     end
   end
 
+  def test_var_usage
+    assert_recipe %{
+      A="/path/to/a"
+      B=$(dirname "${A}")
+      C=
+
+      if ! [ "${A}" = "${B}" ]
+      then
+        echo "${A} and ${B} are not the same"
+      fi
+
+      C="c"
+      echo "${C//c/C}"
+      C1="${C//c/C}"
+      C2="${#C1}"
+      echo "$(( $C2 + 1 ))"
+      C="${C//C/c}"
+      echo "${C}"
+    } do
+      a = var('A', '/path/to/a')
+      b = var('B') { dirname a }
+      c = var('C')
+
+      if_ _(a != b) do
+        echo "#{a} and #{b} are not the same"
+      end
+
+      c.value = 'c'
+      echo c.gsub('c', 'C')
+      echo c.gsub('c', 'C').length + 1
+      c.gsub!('C', 'c')
+      echo c.length
+    end
+
+    assert_str_equal %{
+      /path/to/a and /path/to are not the same
+      C
+      2
+      c
+    }, *run_package
+  end
+
   #
   # while_ test
   #
