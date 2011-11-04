@@ -39,7 +39,7 @@ module Linecook
     def self.const_missing(name)
       ::Object.const_get(name)
     end
-    
+
     # The recipe package
     attr_reader :_package_
 

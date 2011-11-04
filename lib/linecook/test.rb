@@ -91,7 +91,7 @@ module Linecook
     def setup_recipe(target_path=package.next_target_path('recipe'), &block)
       target = package.add(target_path, :mode => 0744)
       recipe = Recipe.new(package, cookbook, target)
-      recipe.helpers *helpers
+      recipe.helpers(*helpers)
 
       recipe.instance_eval(&block) if block_given?
       runlist << target_path
