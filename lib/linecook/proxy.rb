@@ -1,6 +1,6 @@
 module Linecook
   # A proxy used to chain method calls back to a recipe.
-  class Proxy
+  class Proxy < BasicObject
     def initialize(recipe)
       @recipe = recipe
     end
