@@ -29,7 +29,7 @@ module Linecook
           def test(name, operation="-#{name}")
             class_eval %{
               def #{name}(another)
-                %{[ "\#{self}" #{operation} "\#{another}" ]}
+                recipe._test %{"\#{self}" #{operation} "\#{another}"}
               end
             }
           end
@@ -37,7 +37,7 @@ module Linecook
           def check(name, operation)
             class_eval %{
               def #{name}?
-                %{[ #{operation} "\#{self}" ]}
+                recipe._test %{#{operation} "\#{self}"}
               end
             }
           end
@@ -84,7 +84,7 @@ module Linecook
         test '>', '>'
         test '<', '<'
         check 'null', '-z'
-        check 'null', '-n'
+        check 'not_null', '-n'
 
         def !=(another)
           "! #{self == another}"
