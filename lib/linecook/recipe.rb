@@ -424,7 +424,7 @@ module Linecook
     # method to invoke chain-specific behavior).  Calls to _chain_ are
     # typically invoked via _proxy_.
     def _chain_(method_name, *args, &block)
-      @_chain_ = true
+      @_chain_ = (@_chain_ != nil)
       __send__(method_name, *args, &block)
     end
 
@@ -437,10 +437,6 @@ module Linecook
     def _chain_proxy_
       @_chain_ = false
       _proxy_
-    end
-
-    def _chain_proxy_?
-      !@_chain_.nil?
     end
   end
 end
