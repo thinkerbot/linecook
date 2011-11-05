@@ -520,6 +520,20 @@ module Linecook
         str
       end
 
+      def test(expression)
+        #  [ <%= expression %> ]
+        #  
+        write "[ "; write(( expression ).to_s); write " ]\n"
+
+        _chain_proxy_
+      end
+
+      def _test(*args, &block) # :nodoc:
+        str = capture { test(*args, &block) }
+        str.strip!
+        str
+      end
+
       # Adds a redirect of stdout to a file.
       def to(path=nil)
         redirect(nil, path || '/dev/null')
