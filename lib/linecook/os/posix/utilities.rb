@@ -255,19 +255,8 @@ module Linecook
         # Set the export attribute for variables.
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_22]
         def export(key, value=nil)
-        key = key.varname if key.kind_of?(Variable)
-          #  <% if value.nil? %>
-          #  export <%= key %>
-          #  <% else %>
-          #  export <%= key %>=<%= quote(value) %>
-          #  <% end %>
-          #  
-          if value.nil? 
-          write "export "; write(( key ).to_s); write "\n"
-          ;  else 
-          write "export "; write(( key ).to_s); write "="; write(( quote(value) ).to_s); write "\n"
-          ;  end 
-
+          var = key.kind_of?(Variable) ? key : Variable.new(self, key)
+          var.export value
           _chain_proxy_
         end
 

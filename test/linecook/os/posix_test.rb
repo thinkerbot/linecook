@@ -126,28 +126,6 @@ class PosixTest < Test::Unit::TestCase
   end
 
   #
-  # command_str test
-  #
-
-  def test_command_str_formats_a_command
-    cmd  = recipe.command_str('command', 'one', 'two', 'three', 'a' => true, 'b' => true, 'c' => true)
-    assert_equal 'command -a -b -c "one" "two" "three"', cmd
-  end
-
-  def test_command_str_does_not_quote_quoted_args
-    assert_equal %{command_name "one" 'two'}, recipe.command_str('command_name', '"one"', "'two'")
-  end
-
-  def test_command_str_quotes_partially_quoted_args
-    assert_equal %{command_name "'one" "two'" "th'ree"}, recipe.command_str('command_name', "'one", "two'", "th'ree")
-  end
-
-  def test_command_str_skips_nil_args
-    cmd = recipe.command_str 'which', nil, 'name'
-    assert_equal 'which "name"', cmd
-  end
-
-  #
   # comment test
   #
 
@@ -626,91 +604,6 @@ class PosixTest < Test::Unit::TestCase
         echo 'pass'
       end
     end
-  end
-
-  #
-  # option? test
-  #
-
-  def test_option_check_returns_true_if_arg_begins_with_plus_or_minus
-    assert_equal true,  recipe.option?("--option")
-    assert_equal true,  recipe.option?("-o")
-    assert_equal true,  recipe.option?("+o")
-    assert_equal false, recipe.option?("arg")
-  end
-
-  #
-  # options_str test
-  #
-
-  def test_options_str_formats_key_value_options_to_options_array
-    assert_equal ['--key "value"'], recipe.options_str('--key' => '"value"')
-  end
-
-  def test_options_str_quotes_values
-    assert_equal ['--key "value"'], recipe.options_str('--key' => 'value')
-  end
-
-  def test_options_str_stringifies_values
-    assert_equal ['--key "value"'], recipe.options_str('--key' => :value)
-  end
-
-  def test_options_str_omits_value_for_true
-    assert_equal ['--key'], recipe.options_str('--key' => true)
-  end
-
-  def test_options_str_omits_options_with_false_or_nil_values
-    assert_equal [], recipe.options_str('--key' => false)
-    assert_equal [], recipe.options_str('--key' => nil)
-  end
-
-  def test_options_str_guesses_option_prefix_for_keys_that_need_them
-    assert_equal ['--long', '-s'], recipe.options_str('long' => true, 's' => true)
-  end
-
-  def test_options_str_reformats_symbol_keys_with_dashes
-    assert_equal ['--long-opt'], recipe.options_str(:long_opt => true)
-  end
-
-  def test_options_str_sorts_options_such_that_short_options_win
-    assert_equal %w{
-      --a-long --b-long --c-long -a -b -c
-    }, recipe.options_str(
-      'a' => true, 'b' => true, 'c' => true,
-      'a-long' => true, 'b-long' => true, 'c-long' => true
-    )
-  end
-
-  #
-  # option_quote test
-  #
-
-  def test_option_quote_does_not_quote_options
-    assert_equal %{--option}, recipe.option_quote("--option")
-    assert_equal %{-o}, recipe.option_quote("-o")
-  end
-
-  #
-  # quote test
-  #
-
-  def test_quote_encloses_arg_in_quotation_marks
-    assert_equal %{"abc"}, recipe.quote("abc")
-  end
-
-  def test_quote_does_not_double_quote
-    assert_equal %{"abc"}, recipe.quote('"abc"')
-    assert_equal %{'abc'}, recipe.quote("'abc'")
-  end
-
-  #
-  # quoted? test
-  #
-
-  def test_quoted_check_returns_true_if_arg_is_quoted_by_quotation_marks_or_apostrophes
-    assert_equal false, recipe.quoted?("abc")
-    assert_equal true,  recipe.quoted?("'abc'")
-    assert_equal true,  recipe.quoted?('"abc"')
   end
 
   #

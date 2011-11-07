@@ -1,3 +1,5 @@
+require 'linecook/os/posix/utils'
+
 module Linecook
   module Os
     module Posix
@@ -59,8 +61,17 @@ module Linecook
           var
         end
 
+        def export(value=nil)
+          if value
+            recipe.writeln "export #{varname}=#{Utils.quote(value)}"
+          else
+            recipe.writeln "export #{varname}"
+          end
+          self
+        end
+
         def value=(str)
-          recipe.writeln "#{varname}=#{recipe.quote(str)}"
+          recipe.writeln "#{varname}=#{Utils.quote(str)}"
         end
 
         transform 'lstrip', '${#{varname}#{pattern}}'

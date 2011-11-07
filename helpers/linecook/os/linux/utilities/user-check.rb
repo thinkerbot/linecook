@@ -1,4 +1,4 @@
 Returns true if the user exists as determined by id.
 (name)
 --
-id <%= quote(name) %> >/dev/null 2>&1
+  execute('id', name).to(nil).redirect(2, 1)

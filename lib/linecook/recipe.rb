@@ -438,5 +438,11 @@ module Linecook
       @_chain_ = false
       _proxy_
     end
+
+    def _beget_(target=StringIO.new)
+      child = _class_.new(package, cookbook, target)
+      _klass_.included_modules.each {|mod| child._extend_ mod }
+      child
+    end
   end
 end
