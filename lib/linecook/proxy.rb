@@ -15,7 +15,8 @@ module Linecook
     # Proxies to Recipe#_chain_
     def method_missing(*args, &block)
       @recipe._with_proxy_(self) do
-        return @recipe._chain_(*args, &block)
+        result = @recipe._chain_(*args, &block)
+        result == @recipe ? self : result
       end
     end
 
