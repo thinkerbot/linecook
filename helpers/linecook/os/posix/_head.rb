@@ -1,3 +1,5 @@
+require 'linecook/os/posix/command'
+require 'linecook/os/posix/redirect'
 require 'linecook/os/posix/variable'
 require 'linecook/os/posix/utilities'
 include Utilities
@@ -47,7 +49,6 @@ def function(name, method_name=name)
       instance_eval %{
         def self.#{method_name}(*args)
           execute '#{method_name}', *args
-          _chain_proxy_
         end
       }
     end

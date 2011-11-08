@@ -51,7 +51,6 @@ module Linecook
         ensure
           @functions = current
         end
-        _chain_proxy_
       end
 
       def _login(*args, &block) # :nodoc:

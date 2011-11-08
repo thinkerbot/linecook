@@ -9,7 +9,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/basename.html]
         def basename(string, suffix=nil)
           execute 'basename', string, suffix
-          _chain_proxy_
         end
 
         def _basename(*args, &block) # :nodoc:
@@ -22,7 +21,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cat.html]
         def cat(*files)
           execute 'cat', *files
-          _chain_proxy_
         end
 
         def _cat(*args, &block) # :nodoc:
@@ -43,7 +41,6 @@ module Linecook
           else
             execute 'cd', directory, options
           end
-          _chain_proxy_
         end
 
         def _cd(*args, &block) # :nodoc:
@@ -58,7 +55,6 @@ module Linecook
           unless group.nil?
             execute 'chgrp', group, *files
           end
-          _chain_proxy_
         end
 
         def _chgrp(*args, &block) # :nodoc:
@@ -78,7 +74,6 @@ module Linecook
             end
             execute 'chmod', mode, *files
           end
-          _chain_proxy_
         end
 
         def _chmod(*args, &block) # :nodoc:
@@ -93,7 +88,6 @@ module Linecook
           unless owner.nil?
             execute 'chown', owner, *files
           end
-          _chain_proxy_
         end
 
         def _chown(*args, &block) # :nodoc:
@@ -106,7 +100,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cmp.html]
         def cmp(file1, file2, options={})
           execute 'cmp', file1, file2, options
-          _chain_proxy_
         end
 
         def _cmp(*args, &block) # :nodoc:
@@ -119,7 +112,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/comm.html]
         def comm(file1, file2, options={})
           execute 'comm', file1, file2, options
-          _chain_proxy_
         end
 
         def _comm(*args, &block) # :nodoc:
@@ -132,7 +124,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cp.html]
         def cp(source_file, target_file, options={})
           execute 'cp', source_file, target_file, options
-          _chain_proxy_
         end
 
         def _cp(*args, &block) # :nodoc:
@@ -145,7 +136,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cut.html]
         def cut(*files)
           execute 'cut', *files
-          _chain_proxy_
         end
 
         def _cut(*args, &block) # :nodoc:
@@ -158,7 +148,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/date.html]
         def date(options={})
           execute 'date', options
-          _chain_proxy_
         end
 
         def _date(*args, &block) # :nodoc:
@@ -173,7 +162,6 @@ module Linecook
           #  
           write "[ -d \""; write(( dir ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _directory?(*args, &block) # :nodoc:
@@ -186,7 +174,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/dirname.html]
         def dirname(string)
           execute 'dirname', string
-          _chain_proxy_
         end
 
         def _dirname(*args, &block) # :nodoc:
@@ -199,7 +186,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/echo.html]
         def echo(*string)
           execute 'echo', *string
-          _chain_proxy_
         end
 
         def _echo(*args, &block) # :nodoc:
@@ -215,7 +201,6 @@ module Linecook
           #  
           write "[ -x \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _executable?(*args, &block) # :nodoc:
@@ -230,7 +215,6 @@ module Linecook
           #  
           write "[ -e \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _exists?(*args, &block) # :nodoc:
@@ -243,7 +227,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/expand.html]
         def expand(*files)
           execute 'expand', *files
-          _chain_proxy_
         end
 
         def _expand(*args, &block) # :nodoc:
@@ -257,7 +240,6 @@ module Linecook
         def export(key, value=nil)
           var = key.kind_of?(Variable) ? key : Variable.new(self, key)
           var.export value
-          _chain_proxy_
         end
 
         def _export(*args, &block) # :nodoc:
@@ -272,7 +254,6 @@ module Linecook
           #  
           write "[ -f \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _file?(*args, &block) # :nodoc:
@@ -285,7 +266,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/fold.html]
         def fold(*files)
           execute 'fold', *files
-          _chain_proxy_
         end
 
         def _fold(*args, &block) # :nodoc:
@@ -298,7 +278,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/grep.html]
         def grep(pattern_list, *files)
           execute 'grep', pattern_list, *files
-          _chain_proxy_
         end
 
         def _grep(*args, &block) # :nodoc:
@@ -313,7 +292,6 @@ module Linecook
           #  
           write "[ -s \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _has_content?(*args, &block) # :nodoc:
@@ -326,7 +304,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/head.html]
         def head(*files)
           execute 'head', *files
-          _chain_proxy_
         end
 
         def _head(*args, &block) # :nodoc:
@@ -339,7 +316,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/id.html]
         def id(user, options={})
           execute 'id', user, options
-          _chain_proxy_
         end
 
         def _id(*args, &block) # :nodoc:
@@ -354,7 +330,6 @@ module Linecook
           #  
           write "[ -L \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _link?(*args, &block) # :nodoc:
@@ -367,7 +342,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/ln.html]
         def ln(source_file, target_file, options={})
           execute 'ln', source_file, target_file, options
-          _chain_proxy_
         end
 
         def _ln(*args, &block) # :nodoc:
@@ -380,7 +354,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/ls.html]
         def ls(*files)
           execute 'ls', *files
-          _chain_proxy_
         end
 
         def _ls(*args, &block) # :nodoc:
@@ -393,7 +366,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/mkdir.html]
         def mkdir(*dirs)
           execute 'mkdir', *dirs
-          _chain_proxy_
         end
 
         def _mkdir(*args, &block) # :nodoc:
@@ -406,7 +378,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/mv.html]
         def mv(source_file, target_file, options={})
           execute 'mv', source_file, target_file, options
-          _chain_proxy_
         end
 
         def _mv(*args, &block) # :nodoc:
@@ -419,7 +390,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/paste.html]
         def paste(*files)
           execute 'paste', *files
-          _chain_proxy_
         end
 
         def _paste(*args, &block) # :nodoc:
@@ -432,7 +402,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/pathchk.html]
         def pathchk(*pathnames)
           execute 'pathchk', *pathnames
-          _chain_proxy_
         end
 
         def _pathchk(*args, &block) # :nodoc:
@@ -445,7 +414,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/pwd.html]
         def pwd(options={})
           execute 'pwd', options
-          _chain_proxy_
         end
 
         def _pwd(*args, &block) # :nodoc:
@@ -458,7 +426,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/read.html]
         def read(*vars)
           execute 'read', *vars
-          _chain_proxy_
         end
 
         def _read(*args, &block) # :nodoc:
@@ -473,7 +440,6 @@ module Linecook
           #  
           write "[ -r \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _readable?(*args, &block) # :nodoc:
@@ -486,7 +452,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/rm.html]
         def rm(*files)
           execute 'rm', *files
-          _chain_proxy_
         end
 
         def _rm(*args, &block) # :nodoc:
@@ -499,7 +464,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/rmdir.html]
         def rmdir(*dirs)
           execute 'rm', *dirs
-          _chain_proxy_
         end
 
         def _rmdir(*args, &block) # :nodoc:
@@ -512,7 +476,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/sed.html]
         def sed(script, *files)
           execute 'sed', script, *files
-          _chain_proxy_
         end
 
         def _sed(*args, &block) # :nodoc:
@@ -542,7 +505,6 @@ module Linecook
             yield
             writeln %{eval "$#{var}"}
           end
-          _chain_proxy_
         end
 
         def _set(*args, &block) # :nodoc:
@@ -555,7 +517,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/sort.html]
         def sort(*files)
           execute 'sort', *files
-          _chain_proxy_
         end
 
         def _sort(*args, &block) # :nodoc:
@@ -568,7 +529,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/split.html]
         def split(file, *options)
           execute 'split', file, *options
-          _chain_proxy_
         end
 
         def _split(*args, &block) # :nodoc:
@@ -581,7 +541,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/tail.html]
         def tail(file, options={})
           execute 'tail', file, options
-          _chain_proxy_
         end
 
         def _tail(*args, &block) # :nodoc:
@@ -594,7 +553,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/touch.html]
         def touch(*files)
           execute 'touch', *files
-          _chain_proxy_
         end
 
         def _touch(*args, &block) # :nodoc:
@@ -607,7 +565,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/tr.html]
         def tr(string1, string2=nil, *options)
           execute 'tr', string1, string2, *options
-          _chain_proxy_
         end
 
         def _tr(*args, &block) # :nodoc:
@@ -620,7 +577,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/tsort.html]
         def tsort(file)
           execute 'tsort', file
-          _chain_proxy_
         end
 
         def _tsort(*args, &block) # :nodoc:
@@ -633,7 +589,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/uname.html]
         def uname(options={})
           execute 'uname', options
-          _chain_proxy_
         end
 
         def _uname(*args, &block) # :nodoc:
@@ -646,7 +601,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/unexpand.html]
         def unexpand(*files)
           execute 'unexpand', *files
-          _chain_proxy_
         end
 
         def _unexpand(*args, &block) # :nodoc:
@@ -659,7 +613,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/uniq.html]
         def uniq(*options)
           execute 'uniq', *options
-          _chain_proxy_
         end
 
         def _uniq(*args, &block) # :nodoc:
@@ -672,7 +625,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_29]
         def unset(*names)
           execute 'unset', *names
-          _chain_proxy_
         end
 
         def _unset(*args, &block) # :nodoc:
@@ -685,7 +637,6 @@ module Linecook
         # {[Spec]}[http://pubs.opengroup.org/onlinepubs/9699919799/utilities/wc.html]
         def wc(*files)
           execute 'wc', *files
-          _chain_proxy_
         end
 
         def _wc(*args, &block) # :nodoc:
@@ -700,7 +651,6 @@ module Linecook
           #  
           write "[ -w \""; write(( file ).to_s); write "\" ]\n"
 
-          _chain_proxy_
         end
 
         def _writable?(*args, &block) # :nodoc:

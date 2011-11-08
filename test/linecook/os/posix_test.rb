@@ -18,8 +18,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source >> target
     } do
-      writeln "cat source"
-      _chain_ :append, 'target'
+      write "cat source "
+      append 'target'
     end
   end
 
@@ -27,8 +27,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source >> /dev/null
     } do
-      writeln "cat source"
-      _chain_ :append
+      write "cat source "
+      append
     end
   end
 
@@ -120,8 +120,7 @@ class PosixTest < Test::Unit::TestCase
       check_status 0 $? $? $LINENO
     } do
       check_status_function
-      execute 'cat source'
-      _chain_ :redirect, 2, 1
+      execute('cat source').redirect 2, 1
     end
   end
 
@@ -290,8 +289,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat < source
     } do
-      writeln "cat"
-      _chain_ :from, 'source'
+      write "cat "
+      from 'source'
     end
   end
 
@@ -527,8 +526,7 @@ class PosixTest < Test::Unit::TestCase
       success
       HEREDOC_0
     } do
-      target.print "cat  \n   "
-      _chain_ :heredoc do
+      execute("cat  \n   ").heredoc do
         writeln 'success'
       end
     end
@@ -614,8 +612,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source 2> target
     } do
-      writeln "cat source"
-      _chain_ :redirect, 2, 'target'
+      write "cat source "
+      redirect 2, 'target'
     end
   end
 
@@ -623,8 +621,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source 2>&1
     } do
-      writeln "cat source"
-      _chain_ :redirect, 2, 1
+      write "cat source "
+      redirect 2, 1
     end
   end
 
@@ -633,10 +631,10 @@ class PosixTest < Test::Unit::TestCase
       cat a < source
       cat b >> target
     } do
-      writeln "cat a"
-      _chain_ :redirect, nil, 'source', '<'
-      writeln "cat b"
-      _chain_ :redirect, nil, 'target', '>>'
+      write "cat a "
+      redirect nil, 'source', '<'
+      write "cat b "
+      redirect nil, 'target', '>>'
     end
   end
 
@@ -675,8 +673,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source > target
     } do
-      writeln "cat source"
-      _chain_ :to, 'target'
+      write "cat source "
+      to 'target'
     end
   end
 
@@ -684,8 +682,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source > /dev/null
     } do
-      writeln "cat source"
-      _chain_ :to, nil
+      write "cat source "
+      to nil
     end
   end
 
@@ -693,8 +691,8 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source > /dev/null
     } do
-      writeln "cat source"
-      _chain_ :to
+      write "cat source "
+      to
     end
   end
 

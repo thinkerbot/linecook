@@ -17,6 +17,8 @@ module Linecook
     # provides a nice index of the relevant information.
     #
     module Posix
+      require 'linecook/os/posix/command'
+      require 'linecook/os/posix/redirect'
       require 'linecook/os/posix/variable'
       require 'linecook/os/posix/utilities'
       include Utilities
@@ -66,7 +68,6 @@ module Linecook
             instance_eval %{
               def self.#{method_name}(*args)
                 execute '#{method_name}', *args
-                _chain_proxy_
               end
             }
           end
@@ -123,7 +124,6 @@ module Linecook
       # Adds a redirect to append stdout to a file.
       def append(path=nil)
         redirect(nil, path || '/dev/null', '>>')
-        _chain_proxy_
       end
 
       def _append(*args, &block) # :nodoc:
@@ -139,7 +139,6 @@ module Linecook
         #  
         write "break\n"
 
-        _chain_proxy_
       end
 
       def _break_(*args, &block) # :nodoc:
@@ -159,7 +158,6 @@ module Linecook
         write "check_status "; write(( expect_status ).to_s); write " $? "; write(( fail_status ).to_s); write " $LINENO\n"
         ; write "\n"
         ;  end 
-        _chain_proxy_
       end
 
       def _check_status(*args, &block) # :nodoc:
@@ -182,7 +180,6 @@ module Linecook
             return_ actual
           end
         end
-        _chain_proxy_
       end
 
       def _check_status_function(*args, &block) # :nodoc:
@@ -197,7 +194,6 @@ module Linecook
         #  
         write "# "; write(( str ).to_s); write "\n"
 
-        _chain_proxy_
       end
 
       def _comment(*args, &block) # :nodoc:
@@ -213,7 +209,6 @@ module Linecook
         #  
         write "continue\n"
 
-        _chain_proxy_
       end
 
       def _continue_(*args, &block) # :nodoc:
@@ -237,7 +232,6 @@ module Linecook
         ; write "then\n"
         ;  indent { yield } 
         write(( match[2] ).to_s)
-        _chain_proxy_
       end
 
       def _elif_(*args, &block) # :nodoc:
@@ -259,7 +253,6 @@ module Linecook
         write "else\n"
         ;  indent { yield } 
         write(( match[2] ).to_s)
-        _chain_proxy_
       end
 
       def _else_(*args, &block) # :nodoc:
@@ -272,17 +265,9 @@ module Linecook
       # that aren't already quoted. Accepts a trailing hash which will be transformed
       # into command line options.
       def execute(command, *args)
-        if _chain_?
-          _rewrite_(trailer)
-          write ' | '
+        Command.new self do
+          writeln Utils.command_str(command, *args)
         end
-        #  <%= Utils.command_str(command, *args) %>
-        #  
-        #  <% check_status %>
-        write(( Utils.command_str(command, *args) ).to_s)
-        write "\n"
-        ;  check_status 
-        _chain_proxy_
       end
 
       def _execute(*args, &block) # :nodoc:
@@ -306,7 +291,6 @@ module Linecook
         write "exit "; write(( status ).to_s); write "\n"
         ;  end 
 
-        _chain_proxy_
       end
 
       def _exit_(*args, &block) # :nodoc:
@@ -318,7 +302,6 @@ module Linecook
       # Assigns stdin to the file.
       def from(path)
         redirect(nil, path, '<')
-        _chain_proxy_
       end
 
       def _from(*args, &block) # :nodoc:
@@ -333,29 +316,24 @@ module Linecook
       #   outdent     add '-' before the delimiter
       #   quote       quotes the delimiter
       def heredoc(options={})
-        tail = _chain_? ? _rewrite_(trailer) {|m| write ' '; m[1].lstrip } : nil
-        
         unless options.kind_of?(Hash)
           options = {:delimiter => options}
         end
-        
+        outdent = options[:outdent] ? '-' : ' '
         delimiter = options[:delimiter] || begin
           @heredoc_count ||= -1
           "HEREDOC_#{@heredoc_count += 1}"
         end
-        #  <<<%= options[:outdent] ? '-' : ' '%><%= options[:quote] ? "\"#{delimiter}\"" : delimiter %><% outdent(" # :#{delimiter}:") do %>
-        #  <% yield %>
-        #  <%= delimiter %><% end %>
-        #  
-        #  <%= tail %>
-        #  
-        write "<<"; write(( options[:outdent] ? '-' : ' ').to_s); write(( options[:quote] ? "\"#{delimiter}\"" : delimiter ).to_s);  outdent(" # :#{delimiter}:") do ; write "\n"
-        ;  yield 
-        write(( delimiter ).to_s);  end 
-        write "\n"
-        ; write(( tail ).to_s)
 
-        _chain_proxy_
+        Redirect.new(self) do
+          write "<<#{outdent}#{options[:quote] ? "\"#{delimiter}\"" : delimiter}"
+          outdent(" # :#{delimiter}:") do
+            writeln
+            yield
+            write delimiter
+          end
+          writeln
+        end
       end
 
       def _heredoc(*args, &block) # :nodoc:
@@ -378,7 +356,6 @@ module Linecook
         write "fi\n"
         ; write "\n"
 
-        _chain_proxy_
       end
 
       def _if_(*args, &block) # :nodoc:
@@ -391,11 +368,7 @@ module Linecook
       def redirect(source, target, redirection='>')
         source = source.nil? || source.kind_of?(Fixnum) ? source : "#{source} "
         target = target.nil? || target.kind_of?(Fixnum) ? "&#{target}" : " #{target}"
-        
-        match = _chain_? ? _rewrite_(trailer) : nil
-        write " #{source}#{redirection}#{target}"
-        write match[1] if match
-        _chain_proxy_
+        Redirect.new self, "#{source}#{redirection}#{target}\n"
       end
 
       def _redirect(*args, &block) # :nodoc:
@@ -419,7 +392,6 @@ module Linecook
         write "return "; write(( status ).to_s); write "\n"
         ;  end 
 
-        _chain_proxy_
       end
 
       def _return_(*args, &block) # :nodoc:
@@ -438,7 +410,6 @@ module Linecook
         #  
         write "#"; write(( str ).to_s); write(( name ).to_s); write(( str ).to_s); write(( "-" if name.length % 2 == 1 ).to_s); write "\n"
 
-        _chain_proxy_
       end
 
       def _section(*args, &block) # :nodoc:
@@ -452,7 +423,6 @@ module Linecook
         #  
         write "[ "; write(( expression ).to_s); write " ]\n"
 
-        _chain_proxy_
       end
 
       def _test(*args, &block) # :nodoc:
@@ -464,7 +434,6 @@ module Linecook
       # Adds a redirect of stdout to a file.
       def to(path=nil)
         redirect(nil, path || '/dev/null')
-        _chain_proxy_
       end
 
       def _to(*args, &block) # :nodoc:
@@ -476,7 +445,6 @@ module Linecook
       # Executes the block when the expression evaluates to a non-zero value.
       def unless_(expression)
         if_("! #{expression}") { yield }
-        _chain_proxy_
       end
 
       def _unless_(*args, &block) # :nodoc:
@@ -499,7 +467,6 @@ module Linecook
         write "done\n"
         ; write "\n"
 
-        _chain_proxy_
       end
 
       def _until_(*args, &block) # :nodoc:
@@ -522,7 +489,6 @@ module Linecook
         write "done\n"
         ; write "\n"
 
-        _chain_proxy_
       end
 
       def _while_(*args, &block) # :nodoc:

@@ -1,31 +1,57 @@
+require 'linecook/context'
+
 module Linecook
   # A proxy used to chain method calls back to a recipe.
-  class Proxy < BasicObject
-    def self.const_missing(name)
-      ::Object.const_get(name)
-    end
+  class Proxy < Context
+    attr_reader :_recipe_
+    attr_reader :_str_
+    attr_reader :_pos_
 
-    attr_reader :target
+    def initialize(_recipe_, _str_=nil)
+      if Kernel.block_given?
+        _str_ = _recipe_.capture(&Proc.new)
+      end
 
-    def initialize(recipe, target=nil)
-      @recipe = recipe
-      @target = target || StringIO.new
-    end
+      @_recipe_ = _recipe_
+      @_pos_ = _recipe_.target.pos
+      @_str_ = _str_
 
-    # Proxies to Recipe#_chain_
-    def method_missing(*args, &block)
-      @recipe._with_proxy_(self) do
-        result = @recipe._chain_(*args, &block)
-        result == @recipe ? self : result
+      if _str_
+        _recipe_.write _str_
       end
     end
 
-    # Returns an empty string, such that the proxy makes no text when it is
-    # accidentally put into a target by a helper.
-    def to_s
-      @target.flush
-      @target.rewind
-      @target.read.strip
+    def _chain_to_(another)
+      # s......e-----s......e-----
+      # s......e | s......e-----
+      #
+      # * check writes but does not move end pos
+      # * can be accomplished by override mm and super + write
+      # * raise error if another command attempts to chain
+      #
+
+      pos = another._pos_ + another._str_.rstrip.length
+      target = _recipe_.target
+      target.pos = pos
+      target.truncate pos
+
+      chain_str = _chain_str_
+      target.write _chain_str_
+      @_pos_ = pos + (chain_str.length - _str_.length)
+    end
+
+    def _chain_str_
+      _str_
+    end
+
+    def method_missing(*args, &block)
+      result = _recipe_.__send__(*args, &block)
+
+      if Proxy === result
+        result._chain_to_(self)
+      end
+
+      _recipe_ == result ? self : result
     end
   end
 end

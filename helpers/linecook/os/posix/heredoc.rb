@@ -5,19 +5,23 @@ Makes a heredoc statement surrounding the contents of the block.  Options:
   quote       quotes the delimiter
 
 (options={})
-  tail = _chain_? ? _rewrite_(trailer) {|m| write ' '; m[1].lstrip } : nil
-  
+--
   unless options.kind_of?(Hash)
     options = {:delimiter => options}
   end
-  
+  outdent = options[:outdent] ? '-' : ' '
   delimiter = options[:delimiter] || begin
     @heredoc_count ||= -1
     "HEREDOC_#{@heredoc_count += 1}"
   end
---
-<<<%= options[:outdent] ? '-' : ' '%><%= options[:quote] ? "\"#{delimiter}\"" : delimiter %><% outdent(" # :#{delimiter}:") do %>
-<% yield %>
-<%= delimiter %><% end %>
 
-<%= tail %>
+  Redirect.new(self) do
+    write "<<#{outdent}#{options[:quote] ? "\"#{delimiter}\"" : delimiter}"
+    outdent(" # :#{delimiter}:") do
+      writeln
+      yield
+      write delimiter
+    end
+    writeln
+  end
+

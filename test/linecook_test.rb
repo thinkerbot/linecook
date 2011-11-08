@@ -368,21 +368,9 @@ class LinecookTest < Test::Unit::TestCase
   end
 
   def test_compile_with_method_chaining
-    prepare 'helpers/example/cat.erb', %{
-      cat
-    }
-    prepare 'helpers/example/heredoc.erb', %{
-      ()
-      _rstrip_ if _chain_?
-      --
-       <<DOC
-      <% yield %>
-      DOC
-    }
-
     recipe_path = prepare 'recipe.rb', %{
-      helpers 'example'
-      cat.heredoc do
+      helpers 'linecook/os/posix'
+      cat.heredoc('DOC') do
         writeln 'a'
         writeln 'b'
         writeln 'c'
@@ -390,11 +378,11 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -L helpers '#{recipe_path}'
+      $ #{LINECOOK_EXE} compile '#{recipe_path}'
     }
 
     assert_str_equal %{
-      cat <<DOC
+      cat << DOC
       a
       b
       c
@@ -440,21 +428,9 @@ class LinecookTest < Test::Unit::TestCase
   end
 
   def test_compile_to_stdout_with_method_chains
-    prepare 'helpers/example/cat.erb', %{
-      cat
-    }
-    prepare 'helpers/example/heredoc.erb', %{
-      ()
-      _rstrip_ if _chain_?
-      --
-       <<DOC
-      <% yield %>
-      DOC
-    }
-
     recipe_path = prepare 'recipe.rb', %{
-      helpers 'example'
-      cat.heredoc do
+      helpers 'linecook/os/posix'
+      cat.heredoc('DOC') do
         writeln 'a'
         writeln 'b'
         writeln 'c'
@@ -462,8 +438,8 @@ class LinecookTest < Test::Unit::TestCase
     }
 
     assert_script %{
-      $ #{LINECOOK_EXE} compile -L helpers - < '#{recipe_path}'
-      cat <<DOC
+      $ #{LINECOOK_EXE} compile - < '#{recipe_path}'
+      cat << DOC
       a
       b
       c

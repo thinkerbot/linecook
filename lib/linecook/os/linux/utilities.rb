@@ -8,7 +8,6 @@ module Linecook
         def group?(name)
           #  grep "^<%= name %>:" /etc/group >/dev/null 2>&1
           write "grep \"^"; write(( name ).to_s); write ":\" /etc/group >/dev/null 2>&1"
-          _chain_proxy_
         end
 
         def _group?(*args, &block) # :nodoc:
@@ -21,7 +20,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/groupadd.html]
         def groupadd(group, options={})
           execute 'groupadd', group, options
-          _chain_proxy_
         end
 
         def _groupadd(*args, &block) # :nodoc:
@@ -34,7 +32,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/groupdel.html]
         def groupdel(group)
           execute 'groupdel', group
-          _chain_proxy_
         end
 
         def _groupdel(*args, &block) # :nodoc:
@@ -47,7 +44,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/groupmod.html]
         def groupmod(group, options={})
           execute 'groupmod', group, options
-          _chain_proxy_
         end
 
         def _groupmod(*args, &block) # :nodoc:
@@ -60,7 +56,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/groups.html]
         def groups(user)
           execute 'groups', user
-          _chain_proxy_
         end
 
         def _groups(*args, &block) # :nodoc:
@@ -73,7 +68,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/gzip.html]
         def gzip(*files)
           execute 'gzip', *files
-          _chain_proxy_
         end
 
         def _gzip(*args, &block) # :nodoc:
@@ -86,7 +80,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/hostname.html]
         def hostname(name=nil) 
           execute 'hostname', name
-          _chain_proxy_
         end
 
         def _hostname(*args, &block) # :nodoc:
@@ -99,7 +92,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/install.html]
         def install(source, dest, options={})
           execute 'install', source, dest, options
-          _chain_proxy_
         end
 
         def _install(*args, &block) # :nodoc:
@@ -112,7 +104,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/md5sum.html]
         def md5sum(*files) 
           execute 'md5sum', *files
-          _chain_proxy_
         end
 
         def _md5sum(*args, &block) # :nodoc:
@@ -125,7 +116,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/mktemp.html]
         def mktemp(template, options={})
           execute 'mktemp', template, options
-          _chain_proxy_
         end
 
         def _mktemp(*args, &block) # :nodoc:
@@ -145,7 +135,6 @@ module Linecook
             yield
           end
           execute 'su', user, path, :m => true
-          _chain_proxy_
         end
 
         def _su(*args, &block) # :nodoc:
@@ -157,7 +146,6 @@ module Linecook
         # File archiver. {[Spec]}[http://pubs.opengroup.org/onlinepubs/007908799/xcu/tar.html]
         def tar(key, *files)
           execute 'tar', key, *files
-          _chain_proxy_
         end
 
         def _tar(*args, &block) # :nodoc:
@@ -169,7 +157,6 @@ module Linecook
         # Returns true if the user exists as determined by id.
         def user?(name)
           execute('id', name).to(nil).redirect(2, 1)
-          _chain_proxy_
         end
 
         def _user?(*args, &block) # :nodoc:
@@ -182,7 +169,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/useradd.html]
         def useradd(login, options={}) 
           execute 'useradd', login, options
-          _chain_proxy_
         end
 
         def _useradd(*args, &block) # :nodoc:
@@ -198,7 +184,6 @@ module Linecook
           # * kill processes belonging to user
           # * remove at/cron/print jobs etc. 
           execute 'userdel', login, options
-          _chain_proxy_
         end
 
         def _userdel(*args, &block) # :nodoc:
@@ -211,7 +196,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/usermod.html]
         def usermod(login, options={})
           execute 'usermod', login, options
-          _chain_proxy_
         end
 
         def _usermod(*args, &block) # :nodoc:
@@ -224,7 +208,6 @@ module Linecook
         # {[Spec]}[http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/which.html]
         def which(*program)
           execute(*program)
-          _chain_proxy_
         end
 
         def _which(*args, &block) # :nodoc:

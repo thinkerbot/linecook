@@ -3,11 +3,7 @@ that aren't already quoted. Accepts a trailing hash which will be transformed
 into command line options.
 
 (command, *args)
-  if _chain_?
-    _rewrite_(trailer)
-    write ' | '
-  end
 --
-<%= Utils.command_str(command, *args) %>
-
-<% check_status %>
+  Command.new self do
+    writeln Utils.command_str(command, *args)
+  end

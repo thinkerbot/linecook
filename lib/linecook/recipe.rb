@@ -3,8 +3,8 @@ require 'tilt'
 require 'linecook/attributes'
 require 'linecook/cookbook'
 require 'linecook/package'
-require 'linecook/proxy'
 require 'linecook/utils'
+require 'linecook/proxy'
 
 module Linecook
   # Recipe is the context in which recipes are evaluated (literally).  Recipe
@@ -35,11 +35,7 @@ module Linecook
   #   # echo 'x y z'
   #   # }
   #
-  class Recipe < BasicObject
-    def self.const_missing(name)
-      ::Object.const_get(name)
-    end
-
+  class Recipe < Context
     # The recipe package
     attr_reader :_package_
 
@@ -52,16 +48,11 @@ module Linecook
     # The current recipe target
     attr_reader :target
 
-    # The recipe proxy
-    attr_reader :_proxy_
-
     def initialize(package=Package.new, cookbook=Cookbook.new, target=StringIO.new)
       @_package_ = package
       @_cookbook_ = cookbook
       @_target_ = target
       @target   = target
-      @_proxy_  = Proxy.new(self, target)
-      @_chain_  = false
       @attributes  = {}
       @indents  = []
       @outdents = []
@@ -209,7 +200,7 @@ module Linecook
     end
 
     # Writes input to target using 'puts'.  Returns self.
-    def writeln(input)
+    def writeln(input=nil)
       target.puts input
       self
     end
@@ -364,22 +355,14 @@ module Linecook
     # Captures output to the target for the duration of a block.  Returns the
     # capture target.
     def _capture_(target=StringIO.new)
-      proxy = Proxy.new(self, target)
-      _with_proxy_(proxy) { yield }
-      target
-    end
-
-    def _with_proxy_(proxy)
-      current = @_proxy_
-
+      current = @target
       begin
-        @_proxy_ = proxy
-        @target  = proxy.target
-        return yield
+        @target = target
+        yield
       ensure
-        @_proxy_ = current
-        @target  = current.target
+        @target = current
       end
+      target
     end
 
     # Truncates the contents of target starting at the first match of pattern
@@ -414,35 +397,14 @@ module Linecook
     end
 
     def _(str=nil)
-      @_chain_ = str.nil? ? nil : false
-      proxy = Proxy.new(self)
-      proxy.target.write str if str
-      proxy
+      clone = _class_.new(_package_, _cookbook_)
+      _singleton_class_.included_modules.each {|mod| clone._extend_ mod }
+      clone.write str if str
+      clone
     end
 
-    # Sets _chain_? to return true and calls the method (thereby allowing the
-    # method to invoke chain-specific behavior).  Calls to _chain_ are
-    # typically invoked via _proxy_.
-    def _chain_(method_name, *args, &block)
-      @_chain_ = (@_chain_ != nil)
-      __send__(method_name, *args, &block)
-    end
-
-    # Returns true if the current context was invoked through chain.
-    def _chain_?
-      @_chain_ ? true : false
-    end
-
-    # Sets _chain_? to return false and returns the proxy.
-    def _chain_proxy_
-      @_chain_ = false
-      _proxy_
-    end
-
-    def _beget_(target=StringIO.new)
-      child = _class_.new(package, cookbook, target)
-      _klass_.included_modules.each {|mod| child._extend_ mod }
-      child
+    def to_s
+      _result_.rstrip
     end
   end
 end
