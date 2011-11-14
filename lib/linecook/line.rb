@@ -1,33 +1,27 @@
 module Linecook
   class Line
-    attr_reader :lines
+    attr_reader :document
     attr_reader :content
+    attr_reader :eol
 
-    def initialize(content="", lines=nil)
+    def initialize(content="", document=nil, eol="\n")
       @content = content
-      @lines = lines || [content]
+      @document = document || Document.new([content])
     end
 
-    def write(str)
-      lines << str
-      Line.new(str, lines)
-    end
-
-    def pos(content)
-      lines.rindex do |current|
-        current.equal?(content)
-      end
+    def pos
+      document.pos(content)
     end
 
     def prepend(str)
-      lines.insert(pos(content), str)
+      document.insert(pos, str)
     end
 
     def prefix(str)
       content.replace "#{str}#{content}"
     end
 
-    def chain(str, eol="\n")
+    def chain(str)
       content.replace "#{content.chomp(eol)}#{str.chomp(eol)}#{eol}"
     end
 
@@ -36,7 +30,11 @@ module Linecook
     end
 
     def append(str)
-      lines.insert(pos(content) + 1, str)
+      document.insert(pos + 1, str)
+    end
+
+    def complete?
+      content.ends_with?(eol)
     end
 
     def _chain_to_(line)
@@ -47,7 +45,7 @@ module Linecook
     end
 
     def to_s
-      lines.join
+      content
     end
   end
 end
