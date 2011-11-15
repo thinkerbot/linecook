@@ -32,19 +32,18 @@ module Linecook
       buffer ? lines.pop : nil
     end
 
-    def write(str)
-      lines.concat format.scan("#{unbuffer}#{str}")
+    def writelit(str)
+      newlines = Array === str ? str : [str]
+      lines.concat newlines
       Line.new(lines.last, self)
+    end
+
+    def write(str)
+      writelit format.scan("#{unbuffer}#{str}")
     end
 
     def writeln(str)
-      lines.concat format.scanln("#{unbuffer}#{str}")
-      Line.new(lines.last, self)
-    end
-
-    def writelit(str)
-      lines << str
-      Line.new(str, self)
+      writelit format.scanln("#{unbuffer}#{str}")
     end
 
     def to_s
