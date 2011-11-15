@@ -4,14 +4,17 @@ require 'logger'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
+  Plaintext = Linecook::Plaintext
 
   attr_accessor :doc
+  attr_accessor :format
 
   def setup
     super
     logger = $DEBUG ? Logger.new(STDOUT) : nil
     puts if logger
-    @doc = Document.new([], logger)
+    @format = Plaintext.new(logger)
+    @doc = Document.new([], format)
   end
 
   #
@@ -50,18 +53,18 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_reformats_str_with_indent
-    doc.indent = '..'
+    format.indent = '..'
     doc.write "a\n"
-    doc.indent = '.'
+    format.indent = '.'
     doc.write "b\n"
-    doc.indent = ''
+    format.indent = ''
     doc.write "c\n"
 
     assert_equal "..a\n.b\nc\n", doc.to_s
   end
 
   def test_write_reformats_str_with_eol
-    doc.eol = "."
+    format.eol = "."
     doc.write "a\n"
     doc.write "b\n"
     doc.write "c\n"
@@ -81,8 +84,8 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_rewrites_linebreak_to_eol
-    doc.linebreak = '.'
-    doc.eol = ';'
+    format.linebreak = '.'
+    format.eol = ';'
 
     doc.write "a;"
     doc.write "b;"
@@ -95,7 +98,7 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_rstrips_at_linebreak_if_specified
-    doc.rstrip = true
+    format.rstrip = true
     doc.write "a "
     doc.write "b "
     doc.write "c \nxyz \n"
@@ -104,8 +107,8 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_applies_indent_after_rstrip
-    doc.rstrip = true
-    doc.indent = "  "
+    format.rstrip = true
+    format.indent = "  "
     doc.write "a "
     doc.write "b "
     doc.write "c \nxyz \n"
@@ -114,7 +117,7 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_lstrips_at_linebreak_if_specified
-    doc.lstrip = true
+    format.lstrip = true
     doc.write " a"
     doc.write " b"
     doc.write " c\n xyz\n"
@@ -123,8 +126,8 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_applies_indent_after_lstrip
-    doc.lstrip = true
-    doc.indent = "  "
+    format.lstrip = true
+    format.indent = "  "
     doc.write " a"
     doc.write " b"
     doc.write " c\n xyz\n"
@@ -133,9 +136,9 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_reformats_multiple_lines
-    doc.indent = "  "
-    doc.eol    = "."
-    doc.linebreak = "\n"
+    format.indent = "  "
+    format.eol    = "."
+    format.linebreak = "\n"
     doc.write "abc\nxyz\n"
 
     assert_equal "  abc.  xyz.", doc.to_s
@@ -146,7 +149,7 @@ class DocumentTest < Test::Unit::TestCase
   #
 
   def test_writeln_adds_str_and_eol_to_doc
-    doc.eol = '.'
+    format.eol = '.'
     doc.writeln "line"
     assert_equal "line.", doc.to_s
   end
@@ -172,7 +175,7 @@ class DocumentTest < Test::Unit::TestCase
   #
 
   def test_writelit_writes_string_without_processing
-    doc.indent = ""
+    format.indent = ""
     doc.writelit "abc\nxyz\n"
     assert_equal "abc\nxyz\n", doc.to_s
   end

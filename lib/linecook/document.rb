@@ -1,25 +1,15 @@
 require 'linecook/line'
-require 'strscan'
+require 'linecook/plaintext'
 
 module Linecook
   class Document
     # An array of lines in the document.
     attr_reader :lines
-    attr_accessor :eol
-    attr_accessor :indent
-    attr_accessor :rstrip
-    attr_accessor :lstrip
-    attr_reader :linebreak
-    attr_reader :logger
+    attr_reader :format
 
-    def initialize(lines=[], logger=nil)
+    def initialize(lines=[], format=nil)
       @lines = lines
-      @eol = "\n"
-      @indent = ""
-      @rstrip = false
-      @lstrip = false
-      @linebreak = /\r?\n/
-      @logger = logger
+      @format = format || Plaintext.new
     end
 
     # Returns the position of the content in lines, or nil if lines does not
@@ -33,76 +23,30 @@ module Linecook
       end
     end
 
-    def linebreak=(regex)
-      @linebreak = Regexp === regex ? regex : Regexp.new(Regexp.escape(regex))
-    end
-
     def buffer
-      buffer = lines.last
-
-      if String === buffer && !buffer.end_with?(eol)
-        lines.last
-      else
-        nil
-      end
+      str = lines.last
+      format.buffer?(str) ? str : nil
     end
 
-    def scan(str)
-      if logger
-        logger.debug "scan: #{str.inspect}"
-      end
-
-      if buffer
-        str = "#{lines.pop}#{str}"
-      end
-
-      scanner = StringScanner.new(str)
-      result  = nil
-
-      while line = scanner.scan_until(linebreak)
-        result = yield format(line)
-      end
-
-      unless scanner.eos?
-        result = yield format(scanner.rest)
-      end
-
-      result
-    end
-
-    def format(line)
-      if logger
-        logger.debug "format: #{line.inspect}"
-      end
-
-      unless line =~ linebreak
-        return line
-      end
-
-      line = $`
-      line.rstrip! if rstrip
-      line.lstrip! if lstrip
-
-      "#{indent}#{line}#{eol}"
+    def unbuffer
+      buffer ? lines.pop : nil
     end
 
     def write(str)
-      scan(str) do |line|
+      format.scan("#{unbuffer}#{str}").each do |line|
         writelit line
       end
+      Line.new(lines.last, self)
     end
 
     def writeln(str)
-      scan("#{str}#{eol}") do |line|
+      format.scanln("#{unbuffer}#{str}").each do |line|
         writelit line
       end
+      Line.new(lines.last, self)
     end
 
     def writelit(str)
-      if logger
-        logger.debug "writelit: #{str.inspect}"
-      end
-
       lines << str
       Line.new(str, self)
     end
