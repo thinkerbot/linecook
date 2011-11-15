@@ -33,16 +33,12 @@ module Linecook
     end
 
     def write(str)
-      format.scan("#{unbuffer}#{str}").each do |line|
-        writelit line
-      end
+      lines.concat format.scan("#{unbuffer}#{str}")
       Line.new(lines.last, self)
     end
 
     def writeln(str)
-      format.scanln("#{unbuffer}#{str}").each do |line|
-        writelit line
-      end
+      lines.concat format.scanln("#{unbuffer}#{str}")
       Line.new(lines.last, self)
     end
 
