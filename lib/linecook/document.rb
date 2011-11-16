@@ -1,15 +1,26 @@
 require 'linecook/line'
-require 'linecook/plaintext'
+require 'strscan'
 
 module Linecook
   class Document
     # An array of lines in the document.
     attr_reader :lines
-    attr_reader :format
+    attr_reader :logger
 
-    def initialize(lines=[], format=nil)
+    attr_accessor :eol
+    attr_accessor :indent
+    attr_accessor :rstrip
+    attr_accessor :lstrip
+    attr_reader :linebreak
+
+    def initialize(lines=[], logger=nil)
       @lines = lines
-      @format = format || Plaintext.new
+      @eol = "\n"
+      @indent = ""
+      @rstrip = false
+      @lstrip = false
+      @linebreak = /\r?\n/
+      @logger = logger
     end
 
     # Returns the position of the content in lines, or nil if lines does not
@@ -23,13 +34,43 @@ module Linecook
       end
     end
 
-    def buffer
-      str = lines.last
-      format.buffer?(str) ? str : nil
+    def linebreak=(str)
+      @linebreak = Regexp === str ? str : Regexp.new(Regexp.escape(str))
     end
 
-    def unbuffer
-      buffer ? lines.pop : nil
+    def split(str)
+      if logger
+        logger.debug "split: #{str.inspect}"
+      end
+
+      scanner = StringScanner.new(str)
+      lines = []
+
+      while line = scanner.scan_until(linebreak)
+        lines << format(line)
+      end
+
+      unless scanner.eos?
+        lines << format(scanner.rest)
+      end
+
+      lines
+    end
+
+    def format(line)
+      if logger
+        logger.debug "format: #{line.inspect}"
+      end
+
+      unless line =~ linebreak
+        return line
+      end
+
+      line = $`
+      line.rstrip! if rstrip
+      line.lstrip! if lstrip
+
+      "#{indent}#{line}#{eol}"
     end
 
     def writelit(str)
@@ -39,11 +80,16 @@ module Linecook
     end
 
     def write(str)
-      writelit format.scan("#{unbuffer}#{str}")
+      buffer = lines.last
+      if String === buffer && !buffer.end_with?(eol)
+        str = "#{lines.pop}#{str}"
+      end
+
+      writelit split(str)
     end
 
     def writeln(str)
-      writelit format.scanln("#{unbuffer}#{str}")
+      write "#{str}#{eol}"
     end
 
     def to_s
