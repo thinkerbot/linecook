@@ -10,17 +10,19 @@ module Linecook
     attr_accessor :rstrip
     attr_accessor :lstrip
     attr_accessor :linebreak
+    attr_accessor :linebreak_regexp
     attr_reader   :logger
 
     def initialize(logger=nil)
-      @eol = "\n"
+      @eol = nil
       @indent = nil
       @indent_str = "  "
       @indent_level = 0
       @rstrip = false
       @lstrip = false
       @tab = nil
-      @linebreak = /\r?\n/
+      @linebreak = "\n"
+      @linebreak_regexp = /\r?\n/
       @logger = logger
     end
 
@@ -36,7 +38,7 @@ module Linecook
       scanner = StringScanner.new(str)
       lines = []
 
-      while line = scanner.scan_until(linebreak)
+      while line = scanner.scan_until(linebreak_regexp)
         lines << render(line)
       end
 
@@ -45,7 +47,11 @@ module Linecook
     end
 
     def splitln(str)
-      split "#{str}#{eol}"
+      if logger
+        logger.debug "splitln: #{str.inspect}"
+      end
+
+      split "#{str}#{linebreak}"
     end
 
     def render(line)
@@ -57,14 +63,24 @@ module Linecook
         return nil 
       end
 
-      match = linebreak.match(line)
+      # remove linebreak before processing and determine the line end
+      # which is `eol` or the current line end if `eol` is nil
 
-      line = match ? $` : line.dup
-      line.rstrip! if rstrip
-      line.lstrip! if lstrip
-      line.tr!("\t", tab) if tab
+      match = linebreak_regexp.match(line)
+      endofline = eol
 
-      match ? "#{indent}#{line}#{eol}" : "#{indent}#{line}"
+      if match
+        line = match.pre_match
+        endofline ||= match[0]
+      end
+
+      # now process
+
+      line = line.rstrip if rstrip
+      line = line.lstrip if lstrip
+      line = line.tr("\t", tab) if tab
+
+      "#{indent}#{line}#{endofline}"
     end
   end
 end
