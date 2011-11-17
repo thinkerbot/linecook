@@ -88,6 +88,18 @@ class FormatTest < Test::Unit::TestCase
     assert_equal "a.b.c\n", format.render("a\tb\tc\n")
   end
 
+  def test_render_tab_expansion_occurs_after_indent
+    format.indent = "\t"
+    format.tab = '.'
+    assert_equal ".abc\n", format.render("abc\n")
+  end
+
+  def test_render_tab_expansion_applies_to_eol
+    format.eol = "\t"
+    format.tab = '.'
+    assert_equal "abc.", format.render("abc\n")
+  end
+
   def test_render_rstrips_to_eol_if_specified
     format.rstrip = true
     assert_equal "abc\n", format.render("abc  \n")

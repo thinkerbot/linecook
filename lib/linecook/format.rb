@@ -75,12 +75,12 @@ module Linecook
       end
 
       # now process
-
       line = line.rstrip if rstrip
       line = line.lstrip if lstrip
+      line = "#{indent}#{line}#{endofline}"
       line = line.tr("\t", tab) if tab
 
-      "#{indent}#{line}#{endofline}"
+      line
     end
   end
 end
