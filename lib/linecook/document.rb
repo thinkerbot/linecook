@@ -9,8 +9,8 @@ module Linecook
 
     def initialize(lines=[], format=nil)
       @lines  = lines
-      @buffer = ''
       @format = format || Format.new
+      @buffer = ''
     end
 
     # Returns the position of the content in lines, or nil if lines does not
@@ -29,17 +29,33 @@ module Linecook
     end
 
     def write(str)
-      lines.pop unless @buffer.empty?
-      lines.concat format.split("#{@buffer}#{str}", @buffer)
+      buffer_concat do |buffer, next_buffer|
+        format.split "#{buffer}#{str}", next_buffer
+      end
     end
 
     def writeln(str)
-      lines.pop unless @buffer.empty?
-      lines.concat format.splitln("#{@buffer}#{str}", @buffer)
+      buffer_concat do |buffer, next_buffer|
+        format.splitln "#{buffer}#{str}", next_buffer
+      end
     end
 
     def to_s
       lines.join
+    end
+
+    private
+
+    def buffer_concat
+      next_buffer = ''
+      newlines = yield(@buffer, next_buffer)
+
+      unless @buffer.empty? || lines.empty?
+        lines.last.replace newlines.shift
+      end
+
+      @buffer = next_buffer
+      lines.concat newlines
     end
   end
 end

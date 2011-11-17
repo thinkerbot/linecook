@@ -99,6 +99,18 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "..abc\n..xy", doc.to_s
   end
 
+  def test_write_preserves_line_referenence_for_incomplete_lines
+    doc.write "abc\npq"
+    line = doc.line(-1)
+
+    assert_equal "pq", line.to_s
+
+    doc.write "r\nxy"
+    assert_equal "pqr\n", line.to_s
+
+    assert_equal "abc\npqr\nxy", doc.to_s
+  end
+
   #
   # writeln test
   #
