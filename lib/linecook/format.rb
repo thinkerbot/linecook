@@ -30,6 +30,11 @@ module Linecook
       @indent || @indent_str * @indent_level
     end
 
+    def strip=(value)
+      self.lstrip = value
+      self.rstrip = value
+    end
+
     def split(str)
       if logger
         logger.debug "split: #{str.inspect}"

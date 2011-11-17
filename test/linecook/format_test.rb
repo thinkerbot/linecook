@@ -55,6 +55,20 @@ class FormatTest < Test::Unit::TestCase
   end
 
   #
+  # strip test
+  #
+
+  def test_strip_sets_lstrip_rstrip
+    format.strip = true
+    assert_equal true, format.lstrip
+    assert_equal true, format.rstrip
+
+    format.strip = false
+    assert_equal false, format.lstrip
+    assert_equal false, format.rstrip
+  end
+
+  #
   # render test
   #
 
