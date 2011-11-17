@@ -81,7 +81,7 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_rewrites_linebreak_to_eol
-    doc.linebreak = '.'
+    doc.linebreak = /\./
     doc.eol = ';'
 
     doc.write "a;"
@@ -94,7 +94,7 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "a;b;c;x;y;z;", doc.to_s
   end
 
-  def test_write_rstrips_at_linebreak_if_specified
+  def test_write_rstrips_at_if_specified
     doc.rstrip = true
     doc.write "a "
     doc.write "b "
@@ -135,7 +135,7 @@ class DocumentTest < Test::Unit::TestCase
   def test_write_reformats_multiple_lines
     doc.indent = "  "
     doc.eol    = "."
-    doc.linebreak = "\n"
+    doc.linebreak = /\n/
     doc.write "abc\nxyz\n"
 
     assert_equal "  abc.  xyz.", doc.to_s

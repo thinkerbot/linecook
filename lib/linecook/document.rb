@@ -11,7 +11,7 @@ module Linecook
     attr_accessor :indent
     attr_accessor :rstrip
     attr_accessor :lstrip
-    attr_reader :linebreak
+    attr_accessor :linebreak
 
     def initialize(lines=[], logger=nil)
       @lines = lines
@@ -32,10 +32,6 @@ module Linecook
       lines.rindex do |current|
         current.equal?(content)
       end
-    end
-
-    def linebreak=(str)
-      @linebreak = Regexp === str ? str : Regexp.new(Regexp.escape(str))
     end
 
     def split(str)
