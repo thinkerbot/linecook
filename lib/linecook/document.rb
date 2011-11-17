@@ -11,6 +11,7 @@ module Linecook
     attr_writer   :indent
     attr_accessor :indent_str
     attr_accessor :indent_level
+    attr_accessor :tab
     attr_accessor :rstrip
     attr_accessor :lstrip
     attr_accessor :linebreak
@@ -23,6 +24,7 @@ module Linecook
       @indent_level = 0
       @rstrip = false
       @lstrip = false
+      @tab = nil
       @linebreak = /\r?\n/
       @logger = logger
     end
@@ -73,6 +75,7 @@ module Linecook
       line = $`
       line.rstrip! if rstrip
       line.lstrip! if lstrip
+      line.tr!("\t", tab) if tab
 
       "#{indent}#{line}#{eol}"
     end

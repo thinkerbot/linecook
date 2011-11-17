@@ -81,6 +81,13 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "a.b.c.", doc.to_s
   end
 
+  def test_write_replaces_tabs_with_tab
+    doc.tab = "."
+    doc.write "a\tb\tc\n"
+
+    assert_equal "a.b.c\n", doc.to_s
+  end
+
   def test_write_continues_last_line_until_linebreak
     doc.write "a"
     doc.write "b"
