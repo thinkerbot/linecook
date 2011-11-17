@@ -19,21 +19,23 @@ class FormatTest < Test::Unit::TestCase
   #
 
   def test_split_splits_str_along_nl
-    assert_equal ["abc\n", "xyz\n", ""], format.split("abc\nxyz\n")
+    assert_equal ["abc\n", "xyz\n"], format.split("abc\nxyz\n")
   end
 
   def test_split_splits_str_along_crnl
-    assert_equal ["abc\r\n", "xyz\r\n", ""], format.split("abc\r\nxyz\r\n")
+    assert_equal ["abc\r\n", "xyz\r\n"], format.split("abc\r\nxyz\r\n")
   end
 
   def test_split_renders_split_strings
     format.indent = '  '
-    assert_equal ["  abc\n", "  xyz\n", ""], format.split("abc\nxyz\n")
+    assert_equal ["  abc\n", "  xyz\n"], format.split("abc\nxyz\n")
   end
 
-  def test_split_does_not_render_incomplete_lines
+  def test_split_replaces_buffer_with_incomplete_line
+    buffer = ''
     format.indent = '  '
-    assert_equal ["  abc\n", "xyz"], format.split("abc\nxyz")
+    assert_equal ["  abc\n", "  xyz"], format.split("abc\nxyz", buffer)
+    assert_equal "xyz", buffer
   end
 
   #
@@ -41,17 +43,17 @@ class FormatTest < Test::Unit::TestCase
   #
 
   def test_splitln_adds_nl_to_str_and_splits
-    assert_equal ["abc\n", "xyz\n", ""], format.splitln("abc\nxyz")
+    assert_equal ["abc\n", "xyz\n"], format.splitln("abc\nxyz")
   end
 
   def test_splitln_adds_linebreak_to_str_if_specified
     format.linebreak = "\r\n"
-    assert_equal ["abc\n", "xyz\r\n", ""], format.splitln("abc\nxyz")
+    assert_equal ["abc\n", "xyz\r\n"], format.splitln("abc\nxyz")
   end
 
   def test_splitln_renders_split_strings
     format.indent = '  '
-    assert_equal ["  abc\n", "  xyz\n", ""], format.splitln("abc\nxyz")
+    assert_equal ["  abc\n", "  xyz\n"], format.splitln("abc\nxyz")
   end
 
   #

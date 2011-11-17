@@ -38,7 +38,7 @@ module Linecook
       self.rstrip = value
     end
 
-    def split(str)
+    def split(str, buffer='')
       if logger
         logger.debug "split: #{str.inspect}"
       end
@@ -50,16 +50,21 @@ module Linecook
         lines << render(line)
       end
 
-      lines << scanner.rest
+      buffer.replace scanner.rest
+
+      unless scanner.eos?
+        lines << render(buffer)
+      end
+
       lines
     end
 
-    def splitln(str)
+    def splitln(str, buffer='')
       if logger
         logger.debug "splitln: #{str.inspect}"
       end
 
-      split "#{str}#{linebreak}"
+      split "#{str}#{linebreak}", buffer
     end
 
     def render(line)
