@@ -55,6 +55,25 @@ class FormatTest < Test::Unit::TestCase
   end
 
   #
+  # indent= test
+  #
+
+  def test_set_indent_sets_indent_str_and_indent_level
+    format.indent = "  "
+    assert_equal "  ", format.indent_str
+    assert_equal 1, format.indent_level
+    assert_equal "  ", format.indent
+
+    format.indent_level = 2
+    assert_equal "    ", format.indent
+
+    format.indent = ".."
+    assert_equal "..", format.indent_str
+    assert_equal 1, format.indent_level
+    assert_equal "..", format.indent
+  end
+
+  #
   # strip test
   #
 

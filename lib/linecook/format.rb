@@ -3,7 +3,6 @@ require 'strscan'
 module Linecook
   class Format
     attr_accessor :eol
-    attr_writer   :indent
     attr_accessor :indent_str
     attr_accessor :indent_level
     attr_accessor :tab
@@ -15,7 +14,6 @@ module Linecook
 
     def initialize(logger=nil)
       @eol = nil
-      @indent = nil
       @indent_str = "  "
       @indent_level = 0
       @rstrip = false
@@ -27,7 +25,12 @@ module Linecook
     end
 
     def indent
-      @indent || @indent_str * @indent_level
+      @indent_str * @indent_level
+    end
+
+    def indent=(str)
+      @indent_str = str
+      @indent_level = 1
     end
 
     def strip=(value)
