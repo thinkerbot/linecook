@@ -4,14 +4,17 @@ require 'logger'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
+  Format = Linecook::Format
 
   attr_accessor :doc
+  attr_accessor :format
 
   def setup
     super
     logger = $DEBUG ? Logger.new(STDOUT) : nil
     puts if logger
-    @doc = Document.new([], logger)
+    @format = Format.new(logger)
+    @doc = Document.new([], format)
   end
 
   #
@@ -41,54 +44,26 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # line test
+  #
+
+  def test_line_returns_line_at_index
+    doc.write "abc\npqr\nxy"
+    assert_equal "abc\n", doc.line(0).to_s
+    assert_equal "pqr\n", doc.line(1).to_s
+    assert_equal "xy", doc.line(2).to_s
+  end
+
+  def test_line_returns_last_line_by_default
+    doc.write "abc\npqr\nxy"
+    assert_equal "xy", doc.line.to_s
+  end
+
+  #
   # write test
   #
 
-  def test_write_adds_str_to_doc
-    doc.write "line\n"
-    assert_equal "line\n", doc.to_s
-  end
-
-  def test_write_reformats_str_with_indent
-    doc.indent = '..'
-    doc.write "a\n"
-    doc.indent = '.'
-    doc.write "b\n"
-    doc.indent = ''
-    doc.write "c\n"
-
-    assert_equal "..a\n.b\nc\n", doc.to_s
-  end
-
-  def test_indent_is_determined_by_indent_str_and_indent_level_unless_set
-    doc.indent_str = '.'
-    doc.indent_level = 2
-    doc.write "a\n"
-    doc.indent_level = 1
-    doc.write "b\n"
-    doc.indent_level = 0
-    doc.write "c\n"
-
-    assert_equal "..a\n.b\nc\n", doc.to_s
-  end
-
-  def test_write_reformats_str_with_eol
-    doc.eol = "."
-    doc.write "a\n"
-    doc.write "b\n"
-    doc.write "c\n"
-
-    assert_equal "a.b.c.", doc.to_s
-  end
-
-  def test_write_replaces_tabs_with_tab
-    doc.tab = "."
-    doc.write "a\tb\tc\n"
-
-    assert_equal "a.b.c\n", doc.to_s
-  end
-
-  def test_write_continues_last_line_until_linebreak
+  def test_write_writes_to_doc
     doc.write "a"
     doc.write "b"
     doc.write "c\n"
@@ -99,112 +74,38 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "abc\nxyz\n", doc.to_s
   end
 
-  def test_write_rewrites_linebreak_to_eol
-    doc.linebreak = /\./
-    doc.eol = ';'
+  def test_write_formats_lines_according_to_format
+    format.indent = '..'
+    doc.write "a\n"
+    format.indent = '.'
+    doc.write "b\n"
+    format.indent = ''
+    doc.write "c\n"
 
-    doc.write "a;"
-    doc.write "b;"
-    doc.write "c."
-    doc.write "x;"
-    doc.write "y;"
-    doc.write "z."
-
-    assert_equal "a;b;c;x;y;z;", doc.to_s
+    assert_equal "..a\n.b\nc\n", doc.to_s
   end
 
-  def test_write_rstrips_at_if_specified
-    doc.rstrip = true
-    doc.write "a "
-    doc.write "b "
-    doc.write "c \nxyz \n"
-
-    assert_equal "a b c\nxyz\n", doc.to_s
-  end
-
-  def test_write_applies_indent_after_rstrip
-    doc.rstrip = true
-    doc.indent = "  "
-    doc.write "a "
-    doc.write "b "
-    doc.write "c \nxyz \n"
-
-    assert_equal "  a b c\n  xyz\n", doc.to_s
-  end
-
-  def test_write_lstrips_at_linebreak_if_specified
-    doc.lstrip = true
-    doc.write " a"
-    doc.write " b"
-    doc.write " c\n xyz\n"
-
-    assert_equal "a b c\nxyz\n", doc.to_s
-  end
-
-  def test_write_applies_indent_after_lstrip
-    doc.lstrip = true
-    doc.indent = "  "
-    doc.write " a"
-    doc.write " b"
-    doc.write " c\n xyz\n"
-
-    assert_equal "  a b c\n  xyz\n", doc.to_s
-  end
-
-  def test_write_reformats_multiple_lines
-    doc.indent = "  "
-    doc.eol    = "."
-    doc.linebreak = /\n/
+  def test_write_formats_multiple_lines
+    format.indent = '..'
     doc.write "abc\nxyz\n"
 
-    assert_equal "  abc.  xyz.", doc.to_s
+    assert_equal "..abc\n..xyz\n", doc.to_s
   end
 
-  def test_write_reformats_buffer_line
-    doc.indent = "  "
-    doc.write "abc\nxyz"
+  def test_write_formats_incomplete_lines
+    format.indent = '..'
+    doc.write "abc\nxy"
 
-    assert_equal "  abc\n  xyz", doc.to_s
+    assert_equal "..abc\n..xy", doc.to_s
   end
 
   #
   # writeln test
   #
 
-  def test_writeln_adds_str_and_eol_to_doc
-    doc.eol = '.'
-    doc.writeln "line"
-    assert_equal "line.", doc.to_s
-  end
-
-  def test_writeln_accepts_multiple_input_lines
-    doc.writeln "abc\nxyz\n"
-    assert_equal "abc\nxyz\n\n", doc.to_s
-  end
-
-  def test_writeln_continues_last_line
-    doc.write "a"
-    doc.write "b"
-    doc.writeln "c"
-    doc.write "x"
-    doc.write "y"
-    doc.writeln "z"
-
-    assert_equal "abc\nxyz\n", doc.to_s
-  end
-
-  #
-  # writelit test
-  #
-
-  def test_writelit_writes_string_without_processing
-    doc.indent = ""
-    doc.writelit "abc\nxyz\n"
-    assert_equal "abc\nxyz\n", doc.to_s
-  end
-
-  def test_writelit_returns_line_for_full_literal
-    line = doc.writelit "abc\nxyz\n"
-    assert_equal "abc\nxyz\n", line.to_s
+  def test_writeln_adds_linebreak_and_writes_to_doc
+    format.indent = '..'
+    doc.writeln "abc"
+    assert_equal "..abc\n", doc.to_s
   end
 end
