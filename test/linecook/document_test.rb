@@ -160,6 +160,13 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "  abc.  xyz.", doc.to_s
   end
 
+  def test_write_reformats_buffer_line
+    doc.indent = "  "
+    doc.write "abc\nxyz"
+
+    assert_equal "  abc\n  xyz", doc.to_s
+  end
+
   #
   # writeln test
   #

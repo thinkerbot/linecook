@@ -15,6 +15,7 @@ module Linecook
     attr_accessor :rstrip
     attr_accessor :lstrip
     attr_accessor :linebreak
+    attr_reader :buffer
 
     def initialize(lines=[], logger=nil)
       @lines = lines
@@ -27,6 +28,7 @@ module Linecook
       @tab = nil
       @linebreak = /\r?\n/
       @logger = logger
+      @buffer = nil
     end
 
     def indent
@@ -45,6 +47,9 @@ module Linecook
     end
 
     def split(str)
+      str = "#{@buffer}#{str}"
+      @buffer = nil
+
       if logger
         logger.debug "split: #{str.inspect}"
       end
@@ -57,27 +62,29 @@ module Linecook
       end
 
       unless scanner.eos?
-        lines << format(scanner.rest)
+        @buffer = scanner.rest
       end
 
       lines
     end
 
     def format(line)
+      if line.nil?
+        return nil 
+      end
+
       if logger
         logger.debug "format: #{line.inspect}"
       end
 
-      unless line =~ linebreak
-        return line
-      end
+      match = linebreak.match(line)
 
-      line = $`
+      line = match ? $` : line.dup
       line.rstrip! if rstrip
       line.lstrip! if lstrip
       line.tr!("\t", tab) if tab
 
-      "#{indent}#{line}#{eol}"
+      match ? "#{indent}#{line}#{eol}" : "#{indent}#{line}"
     end
 
     def writelit(str)
@@ -87,11 +94,6 @@ module Linecook
     end
 
     def write(str)
-      buffer = lines.last
-      if String === buffer && !buffer.end_with?(eol)
-        str = "#{lines.pop}#{str}"
-      end
-
       writelit split(str)
     end
 
@@ -100,7 +102,7 @@ module Linecook
     end
 
     def to_s
-      lines.join
+      "#{lines.join}#{format(buffer)}"
     end
   end
 end
