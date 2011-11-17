@@ -74,10 +74,10 @@ class FormatTest < Test::Unit::TestCase
   end
 
   #
-  # strip test
+  # strip= test
   #
 
-  def test_strip_sets_lstrip_rstrip
+  def test_set_strip_sets_lstrip_rstrip
     format.strip = true
     assert_equal true, format.lstrip
     assert_equal true, format.rstrip
