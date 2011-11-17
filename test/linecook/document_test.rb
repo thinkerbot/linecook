@@ -60,6 +60,18 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "..a\n.b\nc\n", doc.to_s
   end
 
+  def test_indent_is_determined_by_indent_str_and_indent_level_unless_set
+    doc.indent_str = '.'
+    doc.indent_level = 2
+    doc.write "a\n"
+    doc.indent_level = 1
+    doc.write "b\n"
+    doc.indent_level = 0
+    doc.write "c\n"
+
+    assert_equal "..a\n.b\nc\n", doc.to_s
+  end
+
   def test_write_reformats_str_with_eol
     doc.eol = "."
     doc.write "a\n"

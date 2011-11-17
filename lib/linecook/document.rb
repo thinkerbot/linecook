@@ -8,7 +8,9 @@ module Linecook
     attr_reader :logger
 
     attr_accessor :eol
-    attr_accessor :indent
+    attr_writer   :indent
+    attr_accessor :indent_str
+    attr_accessor :indent_level
     attr_accessor :rstrip
     attr_accessor :lstrip
     attr_accessor :linebreak
@@ -16,11 +18,17 @@ module Linecook
     def initialize(lines=[], logger=nil)
       @lines = lines
       @eol = "\n"
-      @indent = ""
+      @indent = nil
+      @indent_str = "  "
+      @indent_level = 0
       @rstrip = false
       @lstrip = false
       @linebreak = /\r?\n/
       @logger = logger
+    end
+
+    def indent
+      @indent || @indent_str * @indent_level
     end
 
     # Returns the position of the content in lines, or nil if lines does not
