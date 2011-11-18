@@ -38,33 +38,30 @@ module Linecook
       self.rstrip = value
     end
 
-    def split(str, buffer='')
+    def split(str, lines=[])
       if logger
         logger.debug "split: #{str.inspect}"
       end
 
       scanner = StringScanner.new(str)
-      lines = []
 
       while line = scanner.scan_until(linebreak_regexp)
-        lines << render(line)
+        lines << line
       end
 
-      buffer.replace scanner.rest
-
       unless scanner.eos?
-        lines << render(buffer)
+        lines << scanner.rest
       end
 
       lines
     end
 
-    def splitln(str, buffer='')
+    def splitln(str, lines=[])
       if logger
         logger.debug "splitln: #{str.inspect}"
       end
 
-      split "#{str}#{linebreak}", buffer
+      split "#{str}#{linebreak}", lines
     end
 
     def render(line)
@@ -94,6 +91,10 @@ module Linecook
       line = line.tr("\t", tab) if tab
 
       line
+    end
+
+    def complete?(line)
+      eol ? line.end_with?(eol) : !linebreak_regexp.match(line).nil?
     end
   end
 end

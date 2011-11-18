@@ -29,15 +29,13 @@ module Linecook
     end
 
     def write(str)
-      buffer_concat do |buffer, next_buffer|
-        format.split "#{buffer}#{str}", next_buffer
-      end
+      new_lines = format.split buffer_str(str)
+      buffer_write new_lines
     end
 
     def writeln(str)
-      buffer_concat do |buffer, next_buffer|
-        format.splitln "#{buffer}#{str}", next_buffer
-      end
+      new_lines = format.splitln buffer_str(str)
+      buffer_write new_lines
     end
 
     def to_s
@@ -46,16 +44,20 @@ module Linecook
 
     private
 
-    def buffer_concat
-      next_buffer = ''
-      newlines = yield(@buffer, next_buffer)
+    def buffer_str(str)
+      "#{@buffer}#{str}"
+    end
 
-      unless @buffer.empty? || lines.empty?
-        lines.last.replace newlines.shift
+    def buffer_write(new_lines)
+      last_new_line = new_lines.last
+
+      new_lines.map! {|line| format.render(line) }
+      unless @buffer.nil? || lines.empty?
+        lines.last.replace new_lines.shift
       end
+      lines.concat new_lines
 
-      @buffer = next_buffer
-      lines.concat newlines
+      @buffer = format.complete?(lines.last) ? nil : last_new_line
     end
   end
 end
