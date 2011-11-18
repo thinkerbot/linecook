@@ -29,13 +29,18 @@ module Linecook
     end
 
     def write(str)
-      new_lines = format.split buffer_str(str)
-      buffer_write new_lines
+      lines = format.split buffer_str(str)
+      buffer_write lines
     end
 
     def writeln(str)
-      new_lines = format.splitln buffer_str(str)
-      buffer_write new_lines
+      lines = format.splitln buffer_str(str)
+      buffer_write lines
+    end
+
+    def insertln(pos, str)
+      lines = format.splitln buffer_str(str, pos)
+      buffer_write lines, pos
     end
 
     def to_s
@@ -44,23 +49,30 @@ module Linecook
 
     private
 
-    def buffer_str(str)
-      "#{@buffer}#{str}"
+    def buffer_pos
+      lines.length
     end
 
-    def buffer_write(new_lines)
-      last_new_line = new_lines.last
+    def buffer_pos?(pos=buffer_pos)
+      pos == buffer_pos && @buffer != nil
+    end
 
-      new_lines.map! {|line| format.render(line) }
-      unless @buffer.nil?
+    def buffer_str(str, pos=buffer_pos)
+      buffer_pos?(pos) ? "#{@buffer}#{str}" : str
+    end
+
+    def buffer_write(raw_lines, pos=buffer_pos)
+      new_lines = raw_lines.map {|line| format.render(line) }
+
+      if buffer_pos?(pos)
         lines.last.replace new_lines.shift
       end
-      lines.concat new_lines
+      lines.insert pos, *new_lines
 
-      last_line = lines.last
-      @buffer = format.complete?(last_line) ? nil : new_lines.last
+      last_line = Line.new(lines.last, self)
+      @buffer = last_line.complete? ? nil : raw_lines.last
 
-      Line.new(last_line, self)
+      last_line
     end
   end
 end

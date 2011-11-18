@@ -35,7 +35,7 @@ module Linecook
     end
 
     def complete?
-      content.ends_with?(eol)
+      format.complete?(content)
     end
 
     def _chain_to_(line)

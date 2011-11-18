@@ -127,4 +127,15 @@ class DocumentTest < Test::Unit::TestCase
     doc.writeln "abc"
     assert_equal "..abc\n", doc.to_s
   end
+
+  #
+  # insertln test
+  #
+
+  def test_insertln_writes_lines_at_pos
+    doc.write "abc\nxy"
+    doc.insertln 1, "pqr"
+
+    assert_equal "abc\npqr\nxy", doc.to_s
+  end
 end
