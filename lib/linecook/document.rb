@@ -52,7 +52,7 @@ module Linecook
       last_new_line = new_lines.last
 
       new_lines.map! {|line| format.render(line) }
-      unless @buffer.nil? || lines.empty?
+      unless @buffer.nil?
         lines.last.replace new_lines.shift
       end
       lines.concat new_lines
