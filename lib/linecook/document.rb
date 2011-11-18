@@ -10,7 +10,6 @@ module Linecook
     def initialize(lines=[], format=nil)
       @lines  = lines
       @format = format || Format.new
-      @buffer = nil
     end
 
     # Returns the position of the content in lines, or nil if lines does not
@@ -25,22 +24,23 @@ module Linecook
     end
 
     def line(n=-1)
-      Line.new lines[n], self
+      lines[n]
     end
 
     def write(str)
-      lines = format.split buffer_str(str)
-      buffer_write lines
+      insert_lines format.split(str), lines.length
     end
 
     def writeln(str)
-      lines = format.splitln buffer_str(str)
-      buffer_write lines
+      insert_lines format.splitln(str), lines.length
+    end
+
+    def insert(pos, str)
+      insert_lines format.split(str), pos
     end
 
     def insertln(pos, str)
-      lines = format.splitln buffer_str(str, pos)
-      buffer_write lines, pos
+      insert_lines format.splitln(str), pos
     end
 
     def to_s
@@ -49,30 +49,24 @@ module Linecook
 
     private
 
-    def buffer_pos
-      lines.length
-    end
+    def insert_lines(new_lines, pos) # :nodoc:
+      previous = pos > 0 ? lines[pos - 1] : nil
+      current = lines[pos]
 
-    def buffer_pos?(pos=buffer_pos)
-      pos == buffer_pos && @buffer != nil
-    end
-
-    def buffer_str(str, pos=buffer_pos)
-      buffer_pos?(pos) ? "#{@buffer}#{str}" : str
-    end
-
-    def buffer_write(raw_lines, pos=buffer_pos)
-      new_lines = raw_lines.map {|line| format.render(line) }
-
-      if buffer_pos?(pos)
-        lines.last.replace new_lines.shift
+      if previous && !previous.complete?
+        previous.suffix new_lines.shift
       end
-      lines.insert pos, *new_lines
 
-      last_line = Line.new(lines.last, self)
-      @buffer = last_line.complete? ? nil : raw_lines.last
+      last_new_line = new_lines.last
+      if current && last_new_line && !format.complete?(last_new_line)
+        current.prefix new_lines.pop
+      end
 
-      last_line
+      new_lines.reverse_each do |content|
+        lines.insert pos, Line.new(content, self)
+      end
+
+      lines.last
     end
   end
 end

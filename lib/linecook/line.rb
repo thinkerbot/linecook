@@ -46,7 +46,7 @@ module Linecook
     end
 
     def to_s
-      content
+      format.render(content)
     end
   end
 end

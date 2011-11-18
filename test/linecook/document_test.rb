@@ -129,10 +129,29 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # insert test
+  #
+
+  def test_insert_writes_str_at_line
+    doc.write "abc\nyz"
+    doc.insert 1, "pqr\nx"
+
+    assert_equal "abc\npqr\nxyz", doc.to_s
+  end
+
+  def test_insert_formats_inserted_content
+    format.indent = '..'
+    doc.write "abc\nyz"
+    doc.insert 1, "pqr\nx"
+
+    assert_equal "..abc\n..pqr\n..xyz", doc.to_s
+  end
+
+  #
   # insertln test
   #
 
-  def test_insertln_writes_lines_at_pos
+  def test_insertln_adds_linebreak_and_writes_to_doc_at_line
     doc.write "abc\nxy"
     doc.insertln 1, "pqr"
 

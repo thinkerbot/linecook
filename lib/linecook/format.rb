@@ -90,7 +90,7 @@ module Linecook
     end
 
     def complete?(line)
-      eol ? line.end_with?(eol) : !linebreak_regexp.match(line).nil?
+      linebreak_regexp.match(line) != nil
     end
   end
 end
