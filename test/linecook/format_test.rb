@@ -101,6 +101,19 @@ class FormatTest < Test::Unit::TestCase
     assert_equal "abc.", format.render("abc\r\n")
   end
 
+  def test_render_preserves_nl_if_eol_is_nil
+    assert_equal "abc\n", format.render("abc\n")
+  end
+
+  def test_render_preserves_crnl_if_eol_is_nil
+    assert_equal "abc\r\n", format.render("abc\r\n")
+  end
+
+  def test_render_does_not_add_eol_if_str_does_not_end_with_linebreak
+    format.eol = '.'
+    assert_equal "abc", format.render("abc")
+  end
+
   def test_render_replaces_tabs_with_tab
     format.tab = '.'
     assert_equal "a.b.c\n", format.render("a\tb\tc\n")

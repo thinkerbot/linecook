@@ -74,14 +74,10 @@ module Linecook
       end
 
       # remove linebreak before processing and determine the line end
-      # which is `eol` or the current line end if `eol` is nil
-
-      match = linebreak_regexp.match(line)
-      endofline = eol
-
-      if match
+      endofline = nil
+      if match = linebreak_regexp.match(line)
         line = match.pre_match
-        endofline ||= match[0]
+        endofline = eol || match[0]
       end
 
       # now process
