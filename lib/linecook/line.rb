@@ -1,12 +1,13 @@
 module Linecook
   class Line
-    attr_reader :document
     attr_reader :content
-    attr_reader :eol
+    attr_reader :document
+    attr_reader :format
 
-    def initialize(content="", document=nil, eol="\n")
+    def initialize(content="", document=nil)
       @content = content
       @document = document || Document.new([content])
+      @format = document.format
     end
 
     def pos

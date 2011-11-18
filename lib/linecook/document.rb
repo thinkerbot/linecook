@@ -57,7 +57,10 @@ module Linecook
       end
       lines.concat new_lines
 
-      @buffer = format.complete?(lines.last) ? nil : last_new_line
+      last_line = lines.last
+      @buffer = format.complete?(last_line) ? nil : new_lines.last
+
+      Line.new(last_line, self)
     end
   end
 end

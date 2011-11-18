@@ -5,6 +5,7 @@ require 'logger'
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
   Format = Linecook::Format
+  Line = Linecook::Line
 
   attr_accessor :doc
   attr_accessor :format
@@ -109,6 +110,12 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "pqr\n", line.to_s
 
     assert_equal "abc\npqr\nxy", doc.to_s
+  end
+
+  def test_write_returns_line
+    a = doc.write "abc\n"
+    assert_equal true, Line === a
+    assert_equal "abc\n", a.content
   end
 
   #
