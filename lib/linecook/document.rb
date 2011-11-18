@@ -10,7 +10,7 @@ module Linecook
     def initialize(lines=[], format=nil)
       @lines  = lines
       @format = format || Format.new
-      @buffer = ''
+      @buffer = nil
     end
 
     # Returns the position of the content in lines, or nil if lines does not
