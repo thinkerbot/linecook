@@ -28,19 +28,19 @@ module Linecook
     end
 
     def write(str)
-      insert_lines format.split(str), lines.length
+      insert lines.length, str
     end
 
     def writeln(str)
-      insert_lines format.splitln(str), lines.length
+      insertln lines.length, str
     end
 
     def insert(pos, str)
-      insert_lines format.split(str), pos
+      insert_lines pos, format.split(str)
     end
 
     def insertln(pos, str)
-      insert_lines format.splitln(str), pos
+      insert_lines pos, format.splitln(str)
     end
 
     def to_s
@@ -49,7 +49,7 @@ module Linecook
 
     private
 
-    def insert_lines(new_lines, pos) # :nodoc:
+    def insert_lines(pos, new_lines) # :nodoc:
       previous = pos > 0 ? lines[pos - 1] : nil
       current = lines[pos]
 
