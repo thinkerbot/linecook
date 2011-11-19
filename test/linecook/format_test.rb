@@ -12,6 +12,44 @@ class FormatTest < Test::Unit::TestCase
   end
 
   #
+  # initialize test
+  #
+
+  def test_initialize_sets_attrs
+    format = Format.new :indent => "..", :eol => "\r\n"
+    assert_equal "..",   format.indent
+    assert_equal "\r\n", format.eol
+  end
+
+  #
+  # merge test
+  #
+
+  def test_merge_returns_dup_with_new_attrs
+    a = format.merge :indent => "..", :eol => "\r\n"
+    assert_equal "..",   a.indent
+    assert_equal "\r\n", a.eol
+
+    b = a.merge :indent => ""
+    assert_equal "",     b.indent
+    assert_equal "\r\n", b.eol
+  end
+
+  #
+  # merge! test
+  #
+
+  def test_merge_bang_sets_attrs_on_self
+    assert_equal "",  format.indent
+    assert_equal nil, format.eol
+
+    format.merge! :indent => "..", :eol => "\r\n"
+
+    assert_equal "..",   format.indent
+    assert_equal "\r\n", format.eol
+  end
+
+  #
   # indent= test
   #
 

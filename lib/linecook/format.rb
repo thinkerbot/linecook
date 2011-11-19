@@ -7,13 +7,26 @@ module Linecook
     attr_accessor :rstrip
     attr_accessor :lstrip
 
-    def initialize()
+    def initialize(attrs={})
       @eol = nil
       @indent_str = "  "
       @indent_level = 0
       @rstrip = false
       @lstrip = false
       @tab = nil
+      merge!(attrs)
+    end
+
+    def merge(attrs)
+      format = dup
+      format.merge!(attrs)
+      format
+    end
+
+    def merge!(attrs)
+      attrs.each_pair do |key, value|
+        send "#{key}=", value
+      end
     end
 
     def indent
