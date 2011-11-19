@@ -40,25 +40,22 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
-  # set test
+  # insert test
   #
 
-  def test_set_sets_format_attrs
-    assert_equal "", doc.format.indent
-    doc.set :indent => ".."
-    assert_equal "..", doc.format.indent
+  def test_insert_writes_str_at_line
+    doc.write "abc\nyz"
+    doc.insert 1, "pqr\nx"
+
+    assert_equal "abc\npqr\nxyz", doc.to_s
   end
 
-  #
-  # with test
-  #
+  def test_insert_formats_inserted_content
+    doc.set :indent => '..'
+    doc.write "abc\nyz"
+    doc.insert 1, "pqr\nx"
 
-  def test_with_sets_format_attrs_for_block
-    assert_equal "", doc.format.indent
-    doc.with :indent => ".." do
-      assert_equal "..", doc.format.indent
-    end
-    assert_equal "", doc.format.indent
+    assert_equal "..abc\n..pqr\n..xyz", doc.to_s
   end
 
   #
@@ -128,21 +125,24 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
-  # insert test
+  # set test
   #
 
-  def test_insert_writes_str_at_line
-    doc.write "abc\nyz"
-    doc.insert 1, "pqr\nx"
-
-    assert_equal "abc\npqr\nxyz", doc.to_s
+  def test_set_sets_format_attrs
+    assert_equal "", doc.format.indent
+    doc.set :indent => ".."
+    assert_equal "..", doc.format.indent
   end
 
-  def test_insert_formats_inserted_content
-    doc.set :indent => '..'
-    doc.write "abc\nyz"
-    doc.insert 1, "pqr\nx"
+  #
+  # with test
+  #
 
-    assert_equal "..abc\n..pqr\n..xyz", doc.to_s
+  def test_with_sets_format_attrs_for_block
+    assert_equal "", doc.format.indent
+    doc.with :indent => ".." do
+      assert_equal "..", doc.format.indent
+    end
+    assert_equal "", doc.format.indent
   end
 end

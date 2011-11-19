@@ -17,12 +17,6 @@ module Linecook
       set(attrs)
     end
 
-    def with(attrs)
-      format = dup
-      format.set(attrs)
-      format
-    end
-
     def set(attrs)
       attrs.each_pair do |key, value|
         case key
@@ -48,6 +42,12 @@ module Linecook
           raise "unknown attribute: #{key.inspect}"
         end
       end
+    end
+
+    def with(attrs)
+      format = dup
+      format.set(attrs)
+      format
     end
 
     def indent
