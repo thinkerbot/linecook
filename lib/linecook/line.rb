@@ -1,21 +1,21 @@
 module Linecook
   class Line
     attr_reader :content
-    attr_reader :document
+    attr_reader :doc
     attr_reader :format
 
-    def initialize(content="", document=nil)
+    def initialize(content="", doc=nil)
       @content = content
-      @document = document || Document.new([content])
-      @format = document.format
+      @doc = doc || Document.new([content])
+      @format = doc.format
     end
 
     def pos
-      document.pos(content)
+      doc.pos(self)
     end
 
     def prepend(str)
-      document.insert(pos, str)
+      doc.insert(pos, str)
     end
 
     def prefix(str)
@@ -23,7 +23,9 @@ module Linecook
     end
 
     def chain(str)
-      content.replace "#{content.chomp(eol)}#{str.chomp(eol)}#{eol}"
+      head = content =~ /\r?\n/ ? $` : content
+      tail = str =~ /\r?\n/ ? $` : str
+      content.replace "#{head}#{tail}\n"
     end
 
     def suffix(str)
@@ -31,11 +33,11 @@ module Linecook
     end
 
     def append(str)
-      document.insert(pos + 1, str)
+      doc.insert(pos + 1, str)
     end
 
     def complete?
-      format.complete?(content)
+      content.end_with?("\n")
     end
 
     def _chain_to_(line)

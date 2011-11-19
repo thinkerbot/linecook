@@ -14,8 +14,8 @@ class DocumentTest < Test::Unit::TestCase
     super
     logger = $DEBUG ? Logger.new(STDOUT) : nil
     puts if logger
-    @format = Format.new(logger)
-    @doc = Document.new([], format)
+    @doc = Document.new(logger)
+    @format = doc.format
   end
 
   #
@@ -145,16 +145,5 @@ class DocumentTest < Test::Unit::TestCase
     doc.insert 1, "pqr\nx"
 
     assert_equal "..abc\n..pqr\n..xyz", doc.to_s
-  end
-
-  #
-  # insertln test
-  #
-
-  def test_insertln_adds_linebreak_and_writes_to_doc_at_line
-    doc.write "abc\nxy"
-    doc.insertln 1, "pqr"
-
-    assert_equal "abc\npqr\nxy", doc.to_s
   end
 end
