@@ -22,10 +22,6 @@ module Linecook
       end
     end
 
-    def line(n=-1)
-      lines[n]
-    end
-
     # Sets format attributes (note this resets format to a new object).
     def set(attrs)
       @format = format.with(attrs)

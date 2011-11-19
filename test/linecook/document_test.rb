@@ -40,22 +40,6 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
-  # line test
-  #
-
-  def test_line_returns_line_at_index
-    doc.write "abc\npqr\nxy"
-    assert_equal "abc\n", doc.line(0).to_s
-    assert_equal "pqr\n", doc.line(1).to_s
-    assert_equal "xy", doc.line(2).to_s
-  end
-
-  def test_line_returns_last_line_by_default
-    doc.write "abc\npqr\nxy"
-    assert_equal "xy", doc.line.to_s
-  end
-
-  #
   # set test
   #
 
@@ -118,9 +102,7 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_preserves_line_referenence_for_incomplete_lines
-    doc.write "abc\npq"
-    line = doc.line(-1)
-
+    line = doc.write "abc\npq"
     assert_equal "pq", line.to_s
 
     doc.write "r\nxy"
