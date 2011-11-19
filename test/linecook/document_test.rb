@@ -4,6 +4,7 @@ require 'logger'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
+  Format = Linecook::Format
   Line = Linecook::Line
 
   attr_accessor :doc
@@ -17,21 +18,15 @@ class DocumentTest < Test::Unit::TestCase
   # initialize test
   #
 
-  def test_initialize_sets_format_attrs
-    doc = Document.new :indent => ".."
+  def test_initialize_sets_format
+    doc = Document.new Format.new(:indent => "..")
     assert_equal "..", doc.format.indent
   end
 
-  #
-  # format test
-  #
-
-  def test_format_is_immutable
-    err = assert_raises(RuntimeError) { doc.format.eol = "\r\n" }
-    assert_equal "can't modify frozen object", err.message
-
-    err = assert_raises(RuntimeError) { doc.format.set :indent => ".." }
-    assert_equal "can't modify frozen object", err.message
+  def test_initialize_freezes_format
+    format = Format.new(:indent => "..")
+    Document.new format
+    assert_equal true, format.frozen?
   end
 
   #
@@ -155,10 +150,9 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "..", doc.format.indent
   end
 
-  def test_format_is_immutable_after_set
+  def test_format_is_frozen_after_set
     doc.set :indent => ".."
-    err = assert_raises(RuntimeError) { doc.format.eol = "\r\n" }
-    assert_equal "can't modify frozen object", err.message
+    assert_equal true, doc.format.frozen?
   end
 
   #
@@ -201,6 +195,16 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "a\n    b\na\n", doc.to_s
   end
 
+  def test_indent_sets_indent_if_string_is_specified
+    doc.writeln "a"
+    doc.indent('..') do
+      doc.writeln "b"
+    end
+    doc.writeln "a"
+
+    assert_equal "a\n..b\na\n", doc.to_s
+  end
+
   #
   # outdent test
   #
@@ -219,11 +223,11 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "a\n  b\nc\n  b\na\n", doc.to_s
   end
 
-  def test_outdent_decreases_indent_by_n_if_specified
+  def test_outdent_changes_indent_by_n_if_specified
     doc.writeln "a"
     doc.indent(2) do
       doc.writeln "b"
-      doc.outdent(1) do
+      doc.outdent(-1) do
         doc.writeln "c"
       end
       doc.writeln "b"

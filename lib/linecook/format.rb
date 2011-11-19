@@ -30,8 +30,17 @@ module Linecook
     end
 
     def indent=(value)
-      @indent_str = value
-      @indent_level = 1
+      case value
+      when Fixnum
+        @indent_level += value
+      when String
+        @indent_str = value
+        @indent_level = 1
+      when nil
+        @indent_level = 0
+      else
+        raise "invalid indent: #{value.inspect}"
+      end
     end
 
     def indent

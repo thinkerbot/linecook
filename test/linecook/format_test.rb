@@ -35,18 +35,29 @@ class FormatTest < Test::Unit::TestCase
   #
 
   def test_set_indent_sets_indent_str_and_indent_level
-    format.indent = "  "
     assert_equal "  ", format.indent_str
-    assert_equal 1, format.indent_level
-    assert_equal "  ", format.indent
-
-    format.indent_level = 2
-    assert_equal "    ", format.indent
+    assert_equal 0, format.indent_level
 
     format.indent = ".."
+
     assert_equal "..", format.indent_str
     assert_equal 1, format.indent_level
-    assert_equal "..", format.indent
+  end
+
+  def test_set_indent_offsets_indent_level_by_n
+    assert_equal 0, format.indent_level
+
+    format.indent = 2
+    assert_equal 2, format.indent_level
+
+    format.indent = 2
+    assert_equal 4, format.indent_level
+  end
+
+  def test_set_indent_sets_indent_level_to_zero_for_nil
+    format.indent_level = 2
+    format.indent = nil
+    assert_equal 0, format.indent_level
   end
 
   #

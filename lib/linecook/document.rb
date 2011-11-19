@@ -6,9 +6,9 @@ module Linecook
     attr_reader :lines
     attr_reader :format
 
-    def initialize(attrs={})
+    def initialize(format=nil)
       @lines = []
-      @format = Format.new(attrs).freeze
+      @format = (format || Format.new).freeze
     end
 
     # Returns the position of the content in lines, or nil if lines does not
@@ -78,15 +78,15 @@ module Linecook
 
     # Indents n levels for the duration of the block.
     def indent(n=1)
-      with(:indent_level => format.indent_level + n) do
+      with(:indent => n) do
         yield
       end
     end
 
-    # Outdents n levels for the duration of the block.
+    # Outdents for the duration of the block.  A negative number can be
+    # provided to outdent n levels.
     def outdent(n=nil)
-      n = format.indent_level if n.nil?
-      with(:indent_level => format.indent_level - n) do
+      with(:indent => n) do
         yield
       end
     end
