@@ -14,6 +14,15 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # initialize test
+  #
+
+  def test_initialize_sets_format_attrs
+    doc = Document.new :indent => ".."
+    assert_equal "..", doc.format.indent
+  end
+
+  #
   # format test
   #
 

@@ -6,9 +6,9 @@ module Linecook
     attr_reader :lines
     attr_reader :format
 
-    def initialize
+    def initialize(attrs={})
       @lines = []
-      @format = Format.new.freeze
+      @format = Format.new(attrs).freeze
     end
 
     # Returns the position of the content in lines, or nil if lines does not
