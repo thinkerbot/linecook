@@ -59,6 +59,28 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # set test
+  #
+
+  def test_set_sets_format_attrs
+    assert_equal "", doc.format.indent
+    doc.set :indent => ".."
+    assert_equal "..", doc.format.indent
+  end
+
+  #
+  # with test
+  #
+
+  def test_with_sets_format_attrs_for_block
+    assert_equal "", doc.format.indent
+    doc.with :indent => ".." do
+      assert_equal "..", doc.format.indent
+    end
+    assert_equal "", doc.format.indent
+  end
+
+  #
   # write test
   #
 

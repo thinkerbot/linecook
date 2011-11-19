@@ -26,6 +26,22 @@ module Linecook
       lines[n]
     end
 
+    # Sets format attributes (note this resets format to a new object).
+    def set(attrs)
+      @format = format.merge(attrs)
+    end
+
+    # Sets format attributes for the duration of a block.
+    def with(attrs)
+      current = format
+      begin
+        @format = current.merge(attrs)
+        yield
+      ensure
+        @format = current
+      end
+    end
+
     def split(str)
       lines = []
       str.each_line("\n") do |line|
