@@ -45,7 +45,7 @@ module Linecook
         when :tab
           @tab = value
         else
-          raise "unknown format attribute: #{key.inspect}"
+          raise "unknown attribute: #{key.inspect}"
         end
       end
     end

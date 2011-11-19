@@ -74,6 +74,11 @@ class FormatTest < Test::Unit::TestCase
     assert_equal false, format.rstrip
   end
 
+  def test_merge_raises_error_for_unknown_attribute
+    err = assert_raises(RuntimeError) { format.merge! :unknown => :off }
+    assert_equal "unknown attribute: :unknown", err.message
+  end
+
   #
   # render test
   #
