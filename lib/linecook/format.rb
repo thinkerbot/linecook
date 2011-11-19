@@ -2,7 +2,7 @@ module Linecook
   class Format
     attr_accessor :eol
     attr_accessor :indent_str
-    attr_accessor :indent_level
+    attr_reader   :indent_level
     attr_accessor :tab
     attr_accessor :rstrip
     attr_accessor :lstrip
@@ -41,7 +41,7 @@ module Linecook
       when Fixnum
         self.indent_level += value
       when String
-        @indent_str = value
+        self.indent_str = value
         self.indent_level = 1
       when nil
         self.indent_level = 0
@@ -51,12 +51,12 @@ module Linecook
     end
 
     def indent
-      @indent_str * @indent_level
+      indent_str * indent_level
     end
 
     def strip=(value)
-      @lstrip = value
-      @rstrip = value
+      self.lstrip = value
+      self.rstrip = value
     end
 
     def render(line)
