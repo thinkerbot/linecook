@@ -29,15 +29,22 @@ module Linecook
       format
     end
 
+    def indent_level=(value)
+      if value < 0
+        raise "indent level cannot be set to negative value: #{value}"
+      end
+      @indent_level = value
+    end
+
     def indent=(value)
       case value
       when Fixnum
-        @indent_level += value
+        self.indent_level += value
       when String
         @indent_str = value
-        @indent_level = 1
+        self.indent_level = 1
       when nil
-        @indent_level = 0
+        self.indent_level = 0
       else
         raise "invalid indent: #{value.inspect}"
       end

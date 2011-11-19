@@ -31,6 +31,15 @@ class FormatTest < Test::Unit::TestCase
   end
 
   #
+  # indent_level= test
+  #
+
+  def test_set_indent_level_raises_error_for_negative_level
+    err = assert_raises(RuntimeError) { format.indent_level = -1 }
+    assert_equal "indent level cannot be set to negative value: -1", err.message
+  end
+
+  #
   # indent= test
   #
 
