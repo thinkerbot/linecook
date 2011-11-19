@@ -28,14 +28,14 @@ module Linecook
 
     # Sets format attributes (note this resets format to a new object).
     def set(attrs)
-      @format = format.merge(attrs)
+      @format = format.with(attrs)
     end
 
     # Sets format attributes for the duration of a block.
     def with(attrs)
       current = format
       begin
-        @format = current.merge(attrs)
+        @format = current.with(attrs)
         yield
       ensure
         @format = current

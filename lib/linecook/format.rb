@@ -14,16 +14,16 @@ module Linecook
       @rstrip = false
       @lstrip = false
       @tab = nil
-      merge!(attrs)
+      set(attrs)
     end
 
-    def merge(attrs)
+    def with(attrs)
       format = dup
-      format.merge!(attrs)
+      format.set(attrs)
       format
     end
 
-    def merge!(attrs)
+    def set(attrs)
       attrs.each_pair do |key, value|
         case key
         when :indent
