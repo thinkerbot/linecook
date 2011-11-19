@@ -49,35 +49,27 @@ class FormatTest < Test::Unit::TestCase
     assert_equal "\r\n", format.eol
   end
 
-  #
-  # indent= test
-  #
-
-  def test_set_indent_sets_indent_str_and_indent_level
-    format.indent = "  "
+  def test_merge_indent_sets_indent_str_and_indent_level
+    format.merge! :indent => "  "
     assert_equal "  ", format.indent_str
     assert_equal 1, format.indent_level
     assert_equal "  ", format.indent
 
-    format.indent_level = 2
+    format.merge! :indent_level => 2
     assert_equal "    ", format.indent
 
-    format.indent = ".."
+    format.merge! :indent => ".."
     assert_equal "..", format.indent_str
     assert_equal 1, format.indent_level
     assert_equal "..", format.indent
   end
 
-  #
-  # strip= test
-  #
-
-  def test_set_strip_sets_lstrip_rstrip
-    format.strip = true
+  def test_merge_strip_sets_lstrip_rstrip
+    format.merge! :strip => true
     assert_equal true, format.lstrip
     assert_equal true, format.rstrip
 
-    format.strip = false
+    format.merge! :strip => false
     assert_equal false, format.lstrip
     assert_equal false, format.rstrip
   end
@@ -87,27 +79,27 @@ class FormatTest < Test::Unit::TestCase
   #
 
   def test_render_prefixes_line_with_indent
-    format.indent = '..'
+    format.merge! :indent => '..'
     assert_equal "..abc\n", format.render("abc\n")
   end
 
   def test_render_indents_using_indent_str_and_indent_level
-    format.indent_str = '.'
+    format.merge! :indent_str => '.'
 
-    format.indent_level = 1
+    format.merge! :indent_level => 1
     assert_equal ".abc\n", format.render("abc\n")
 
-    format.indent_level = 2
+    format.merge! :indent_level => 2
     assert_equal "..abc\n", format.render("abc\n")
   end
 
   def test_render_replaces_nl_with_eol
-    format.eol = '.'
+    format.merge! :eol => '.'
     assert_equal "abc.", format.render("abc\n")
   end
 
   def test_render_replaces_crnl_with_eol
-    format.eol = '.'
+    format.merge! :eol => '.'
     assert_equal "abc.", format.render("abc\r\n")
   end
 
@@ -120,40 +112,40 @@ class FormatTest < Test::Unit::TestCase
   end
 
   def test_render_does_not_add_eol_if_str_does_not_end_with_linebreak
-    format.eol = '.'
+    format.merge! :eol => '.'
     assert_equal "abc", format.render("abc")
   end
 
   def test_render_replaces_tabs_with_tab
-    format.tab = '.'
+    format.merge! :tab => '.'
     assert_equal "a.b.c\n", format.render("a\tb\tc\n")
   end
 
   def test_render_tab_expansion_occurs_after_indent
-    format.indent = "\t"
-    format.tab = '.'
+    format.merge! :indent => "\t"
+    format.merge! :tab => '.'
     assert_equal ".abc\n", format.render("abc\n")
   end
 
   def test_render_tab_expansion_applies_to_eol
-    format.eol = "\t"
-    format.tab = '.'
+    format.merge! :eol => "\t"
+    format.merge! :tab => '.'
     assert_equal "abc.", format.render("abc\n")
   end
 
   def test_render_rstrips_to_eol_if_specified
-    format.rstrip = true
+    format.merge! :rstrip => true
     assert_equal "abc\n", format.render("abc  \n")
   end
 
   def test_render_lstrips_if_specified
-    format.lstrip = true
+    format.merge! :lstrip => true
     assert_equal "abc\n", format.render("  abc\n")
   end
 
   def test_render_lstrips_before_indent
-    format.lstrip = true
-    format.indent = "\t"
+    format.merge! :lstrip => true
+    format.merge! :indent => "\t"
     assert_equal "\tabc\n", format.render("  abc\n")
   end
 end
