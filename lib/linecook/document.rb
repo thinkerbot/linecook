@@ -8,7 +8,7 @@ module Linecook
 
     def initialize
       @lines = []
-      @format = Format.new
+      @format = Format.new.freeze
     end
 
     # Returns the position of the content in lines, or nil if lines does not
@@ -62,14 +62,14 @@ module Linecook
 
     # Sets format attributes (note this resets format to a new object).
     def set(attrs)
-      @format = format.with(attrs)
+      @format = format.with(attrs).freeze
     end
 
     # Sets format attributes for the duration of a block.
     def with(attrs)
       current = format
       begin
-        @format = current.with(attrs)
+        set attrs
         yield
       ensure
         @format = current

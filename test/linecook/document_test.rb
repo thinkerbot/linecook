@@ -14,6 +14,18 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # format test
+  #
+
+  def test_format_is_immutable
+    err = assert_raises(RuntimeError) { doc.format.eol = "\r\n" }
+    assert_equal "can't modify frozen object", err.message
+
+    err = assert_raises(RuntimeError) { doc.format.set :indent => ".." }
+    assert_equal "can't modify frozen object", err.message
+  end
+
+  #
   # pos test
   #
 
@@ -132,6 +144,12 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "", doc.format.indent
     doc.set :indent => ".."
     assert_equal "..", doc.format.indent
+  end
+
+  def test_format_is_immutable_after_set
+    doc.set :indent => ".."
+    err = assert_raises(RuntimeError) { doc.format.eol = "\r\n" }
+    assert_equal "can't modify frozen object", err.message
   end
 
   #
