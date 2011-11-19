@@ -145,4 +145,64 @@ class DocumentTest < Test::Unit::TestCase
     end
     assert_equal "", doc.format.indent
   end
+
+  #
+  # indent test
+  #
+
+  def test_indent_increases_current_indent_by_one_for_block
+    doc.writeln "a"
+    doc.indent do
+      doc.writeln "b"
+      doc.indent do
+        doc.writeln "c"
+      end
+      doc.writeln "b"
+    end
+    doc.writeln "a"
+
+    assert_equal "a\n  b\n    c\n  b\na\n", doc.to_s
+  end
+
+  def test_indent_increases_current_indent_by_n_if_specified
+    doc.writeln "a"
+    doc.indent(2) do
+      doc.writeln "b"
+    end
+    doc.writeln "a"
+
+    assert_equal "a\n    b\na\n", doc.to_s
+  end
+
+  #
+  # outdent test
+  #
+
+  def test_outdent_decreases_indent_to_zero
+    doc.writeln "a"
+    doc.indent do
+      doc.writeln "b"
+      doc.outdent do
+        doc.writeln "c"
+      end
+      doc.writeln "b"
+    end
+    doc.writeln "a"
+
+    assert_equal "a\n  b\nc\n  b\na\n", doc.to_s
+  end
+
+  def test_outdent_decreases_indent_by_n_if_specified
+    doc.writeln "a"
+    doc.indent(2) do
+      doc.writeln "b"
+      doc.outdent(1) do
+        doc.writeln "c"
+      end
+      doc.writeln "b"
+    end
+    doc.writeln "a"
+
+    assert_equal "a\n    b\n  c\n    b\na\n", doc.to_s
+  end
 end

@@ -76,6 +76,21 @@ module Linecook
       end
     end
 
+    # Indents n levels for the duration of the block.
+    def indent(n=1)
+      with(:indent_level => format.indent_level + n) do
+        yield
+      end
+    end
+
+    # Outdents n levels for the duration of the block.
+    def outdent(n=nil)
+      n = format.indent_level if n.nil?
+      with(:indent_level => format.indent_level - n) do
+        yield
+      end
+    end
+
     def to_s
       lines.join
     end
