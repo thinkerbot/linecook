@@ -11,17 +11,22 @@ module Linecook
       @format = (format || Format.new).freeze
     end
 
-    # Returns the position of the content in lines, or nil if lines does not
-    # contain the content.
+    # Returns the position of the line in lines, or nil if lines does not
+    # contain the line.
+    #
+    # Note the result is not a position in the document, nor a line number.
+    # Don't try to assign it meaning; it's truly just the index in lines where
+    # the line object exists. Used primarily in conjuction with insert.
     def pos(line)
-      # in practice it's more likely the content will exist near the end of
-      # lines (since that's where rewrites most often occur).  premature
+      # in practice it's more likely the line will exist near the end of lines
+      # (since that's where rewrites most often occur).  premature
       # optimization sans benchmark.
       lines.rindex do |current|
         current.equal?(line)
       end
     end
 
+    # Splits str into an array of lines, preserving newlines.
     def split(str)
       lines = []
       str.each_line("\n") do |line|
@@ -30,6 +35,8 @@ module Linecook
       lines
     end
 
+    # Inserts str at the indiciated position in lines (note pos is not a
+    # position in the document or a line number; see the pos method).
     def insert(pos, str)
       new_lines = split(str)
       previous = pos > 0 ? lines[pos - 1] : nil
@@ -52,10 +59,12 @@ module Linecook
       lines.last
     end
 
+    # Writes the str to self.
     def write(str)
       insert lines.length, str
     end
 
+    # Writes a line to self.
     def writeln(str)
       write "#{str}\n"
     end
@@ -91,6 +100,7 @@ module Linecook
       end
     end
 
+    # Returns the formatted contents of self as a string.
     def to_s
       lines.join
     end
