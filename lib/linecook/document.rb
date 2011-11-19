@@ -5,11 +5,9 @@ module Linecook
   class Document
     attr_reader :lines
     attr_reader :format
-    attr_reader :logger
 
-    def initialize(logger=nil)
+    def initialize
       @lines = []
-      @logger = logger
       @format = Format.new
     end
 
@@ -38,13 +36,6 @@ module Linecook
 
     def insert(pos, str)
       new_lines = split(str)
-
-      if logger
-        new_lines.each.with_index do |new_line, index|
-          logger.debug(:insert) { "[#{pos + index}] #{new_line.inspect}" }
-        end
-      end
-
       previous = pos > 0 ? lines[pos - 1] : nil
       current = lines[pos]
 

@@ -12,9 +12,7 @@ class DocumentTest < Test::Unit::TestCase
 
   def setup
     super
-    logger = $DEBUG ? Logger.new(STDOUT) : nil
-    puts if logger
-    @doc = Document.new(logger)
+    @doc = Document.new()
     @format = doc.format
   end
 

@@ -1,6 +1,5 @@
 require 'test/unit'
 require 'linecook/format'
-require 'logger'
 
 class FormatTest < Test::Unit::TestCase
   Format = Linecook::Format
