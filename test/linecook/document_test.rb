@@ -4,16 +4,13 @@ require 'logger'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
-  Format = Linecook::Format
   Line = Linecook::Line
 
   attr_accessor :doc
-  attr_accessor :format
 
   def setup
     super
     @doc = Document.new()
-    @format = doc.format
   end
 
   #
@@ -96,25 +93,25 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_write_formats_lines_according_to_format
-    format.indent = '..'
+    doc.set :indent => '..'
     doc.write "a\n"
-    format.indent = '.'
+    doc.set :indent => '.'
     doc.write "b\n"
-    format.indent = ''
+    doc.set :indent => ''
     doc.write "c\n"
 
     assert_equal "..a\n.b\nc\n", doc.to_s
   end
 
   def test_write_formats_multiple_lines
-    format.indent = '..'
+    doc.set :indent => '..'
     doc.write "abc\nxyz\n"
 
     assert_equal "..abc\n..xyz\n", doc.to_s
   end
 
   def test_write_formats_incomplete_lines
-    format.indent = '..'
+    doc.set :indent => '..'
     doc.write "abc\nxy"
 
     assert_equal "..abc\n..xy", doc.to_s
@@ -143,7 +140,7 @@ class DocumentTest < Test::Unit::TestCase
   #
 
   def test_writeln_adds_linebreak_and_writes_to_doc
-    format.indent = '..'
+    doc.set :indent => '..'
     doc.writeln "abc"
     assert_equal "..abc\n", doc.to_s
   end
@@ -160,7 +157,7 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   def test_insert_formats_inserted_content
-    format.indent = '..'
+    doc.set :indent => '..'
     doc.write "abc\nyz"
     doc.insert 1, "pqr\nx"
 
