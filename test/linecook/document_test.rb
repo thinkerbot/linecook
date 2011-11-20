@@ -19,13 +19,13 @@ class DocumentTest < Test::Unit::TestCase
   #
 
   def test_initialize_sets_format
-    doc = Document.new Format.new(:indent => "..")
+    doc = Document.new [], Format.new(:indent => "..")
     assert_equal "..", doc.format.indent
   end
 
   def test_initialize_freezes_format
     format = Format.new(:indent => "..")
-    Document.new format
+    Document.new [], format
     assert_equal true, format.frozen?
   end
 
@@ -33,35 +33,36 @@ class DocumentTest < Test::Unit::TestCase
   # pos test
   #
 
-  def test_pos_returns_index_for_content_in_lines
-    a, b, c = %w{a b c}
-    doc.lines.concat [a, b, c]
+  def test_pos_returns_pos_for_content_in_doc
+    a, b, c = %w{abc bbc ccc}.map {|str| Line.new(str) }
+    doc.append a, b, c
 
     assert_equal 0, doc.pos(a)
-    assert_equal 1, doc.pos(b)
-    assert_equal 2, doc.pos(c)
+    assert_equal 3, doc.pos(b)
+    assert_equal 6, doc.pos(c)
   end
 
   def test_pos_requires_equal_equality
-    a1, a2, a3 = %w{a a, a}
-    doc.lines.concat [a1, a2, a3]
+    a1, a2, a3 = %w{aaa aaa aaa}.map {|str| Line.new(str) }
+    doc.append a1, a2, a3
 
     assert_equal 0, doc.pos(a1)
-    assert_equal 1, doc.pos(a2)
-    assert_equal 2, doc.pos(a3)
+    assert_equal 3, doc.pos(a2)
+    assert_equal 6, doc.pos(a3)
   end
 
   def test_pos_returns_nil_if_lines_does_not_contain_content
-    assert_equal nil, doc.pos("unknown")
+    unknown = Line.new("unknown") 
+    assert_equal nil, doc.pos(unknown)
   end
 
   #
   # insert test
   #
 
-  def test_insert_writes_str_at_line
+  def test_insert_writes_str_at_pos
     doc.write "abc\nyz"
-    doc.insert 1, "pqr\nx"
+    doc.insert 4, "pqr\nx"
 
     assert_equal "abc\npqr\nxyz", doc.to_s
   end
@@ -69,7 +70,7 @@ class DocumentTest < Test::Unit::TestCase
   def test_insert_formats_inserted_content
     doc.set :indent => '..'
     doc.write "abc\nyz"
-    doc.insert 1, "pqr\nx"
+    doc.insert 4, "pqr\nx"
 
     assert_equal "..abc\n..pqr\n..xyz", doc.to_s
   end
@@ -112,16 +113,6 @@ class DocumentTest < Test::Unit::TestCase
     doc.write "abc\nxy"
 
     assert_equal "..abc\n..xy", doc.to_s
-  end
-
-  def test_write_preserves_line_referenence_for_incomplete_lines
-    line = doc.write "abc\npq"
-    assert_equal "pq", line.to_s
-
-    doc.write "r\nxy"
-    assert_equal "pqr\n", line.to_s
-
-    assert_equal "abc\npqr\nxy", doc.to_s
   end
 
   def test_write_returns_line

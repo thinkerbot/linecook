@@ -15,9 +15,10 @@ module Linecook
 
     def pos
       lines.inject(0) do |pos, current|
-        break if current.equal? self
+        return pos if current.equal? self
         pos + current.length
       end
+      nil
     end
 
     def length
@@ -36,17 +37,17 @@ module Linecook
       end
     end
 
-    def prepend(*lines)
+    def prepend(*new_lines)
       pos = index || 0
-      lines.reverse_each do |line|
+      new_lines.reverse_each do |line|
         line = Line.new(line, format) unless Line === line
         line.insert_into lines, pos
       end
     end
 
-    def append(*lines)
+    def append(*new_lines)
       pos = (rindex || -1) + 1
-      lines.reverse_each do |line|
+      new_lines.reverse_each do |line|
         line = Line.new(line, format) unless Line === line
         line.insert_into lines, pos
       end
@@ -69,8 +70,8 @@ module Linecook
       a.rewrite a.as_prefix_to(b)
       b.rewrite b.as_suffix_to(a)
 
-      a.prepend *@lines.shift(index)
-      a.append  *@lines
+      a.prepend(*@lines.shift(index))
+      a.append(*@lines)
       @lines = a.lines
 
       self
@@ -84,8 +85,16 @@ module Linecook
       content
     end
 
+    def first?
+      lines.first.equal? self
+    end
+
+    def last?
+      lines.last.equal? self
+    end
+
     def to_s
-      format ? format.render(content) : content.to_s
+      format ? format.render(content, first?, last?) : content
     end
   end
 end

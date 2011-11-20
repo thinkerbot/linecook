@@ -59,11 +59,7 @@ module Linecook
       self.rstrip = value
     end
 
-    def render(line)
-      if line.nil?
-        return nil 
-      end
-
+    def render(line, first=false, last=false)
       endofline = line =~ /\r?\n/ ? (eol || $&) : nil 
       line = $` || line.dup
 

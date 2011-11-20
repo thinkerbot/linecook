@@ -27,22 +27,36 @@ module Linecook
       end
     end
 
+    def pos(line)
+      include?(line) ? line.pos : nil
+    end
+
     def length
       lines.inject(0) do |pos, line|
         pos + line.length
       end
     end
 
-    def prepend(line)
-      line.insert_into lines, 0
+    def include?(line)
+      lines.any? {|current| current.equal? line }
     end
 
-    def append(line)
-      line.insert_into lines, -1
+    def prepend(*new_lines)
+      new_lines.reverse_each do |line|
+        line.insert_into lines, 0
+      end
+    end
+
+    def append(*new_lines)
+      new_lines.each do |line|
+        line.insert_into lines, -1
+      end
     end
 
     def write(str)
-      append Line.new(str)
+      line = Line.new(str, format)
+      append line
+      line
     end
 
     def insert(pos, str)
@@ -50,7 +64,8 @@ module Linecook
         current_pos += line.length
 
         if current_pos > pos
-          line.content.insert(current_pos - pos, str)
+          offset = pos - (current_pos - line.length)
+          line.content.insert(offset, str)
           return line
         end
 

@@ -55,6 +55,14 @@ module Linecook
       head.as_suffix_to(a)
     end
 
+    def first?
+      lines.first.equal? head
+    end
+
+    def last?
+      lines.last.equal? tail
+    end
+
     def to_s
       content.join
     end
