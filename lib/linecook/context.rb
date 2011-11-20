@@ -137,11 +137,13 @@ module Linecook
         Line === line ? line : Line.new(line)
       end
 
-      super(content)
-
       @head = content.first
       @tail = content.last
       @lines = content
+    end
+
+    def content
+      context[index..rindex]
     end
 
     def pos
