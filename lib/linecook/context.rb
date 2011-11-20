@@ -1,21 +1,13 @@
 module Linecook
   class Document
-    include Enumerable
-
     attr_reader :lines
 
     def initialize(lines=[])
       @lines = lines
     end
 
-    def each
-      lines.each do |line|
-        yield line
-      end
-    end
-
     def length
-      inject(0) do |pos, line|
+      lines.inject(0) do |pos, line|
         pos + line.length
       end
     end
@@ -33,12 +25,12 @@ module Linecook
     end
 
     def insert(pos, str)
-      inject(0) do |current_pos, content|
-        current_pos += content.length
+      lines.inject(0) do |current_pos, line|
+        current_pos += line.length
 
         if current_pos > pos
-          content.insert(current_pos - pos, str)
-          return Line.new(content)
+          line.content.insert(current_pos - pos, str)
+          return line
         end
 
         current_pos
@@ -58,18 +50,12 @@ module Linecook
     end
 
     def lines
-      @lines ||= [content]
-    end
-
-    def insert_into(lines, pos)
-      lines.insert pos, *(@lines || content)
-      @lines = lines
-      self
+      @lines ||= [self]
     end
 
     def pos
       lines.inject(0) do |pos, current|
-        break if current.equal? content
+        break if current.equal? self
         pos + current.length
       end
     end
@@ -79,32 +65,68 @@ module Linecook
     end
 
     def index(line=self)
-      content = line.content
       lines.index do |current|
-        current.equal? content
+        current.equal? line
       end
     end
 
     def rindex(line=self)
-      content = line.content
       lines.rindex do |current|
-        current.equal? content
+        current.equal? line
       end
     end
 
-    def prepend(line)
+    def prepend(*lines)
       pos = index || 0
-      line.insert_into lines, pos
+      lines.reverse_each do |line|
+        line.insert_into lines, pos
+      end
     end
 
-    def append(line)
+    def append(*lines)
       pos = (rindex || -1) + 1
-      line.insert_into lines, pos
+      lines.reverse_each do |line|
+        line.insert_into lines, pos
+      end
     end
 
-    def chain
-      content.replace yield(content)
+    def rewrite(str)
+      content.replace str
+    end
+
+    def insert_into(lines, pos)
+      lines.insert pos, *(@lines || self)
+      @lines = lines
       self
+    end
+
+    # b.chain_to(a) a.chain(b)
+    def chain_to(a)
+      i = index
+      j = i + 1
+      k = lines.length - j
+
+      head = lines.slice(0, i)
+      tail = lines.slice(j, k)
+
+      a.prepend *head
+      @content = a.chain(chain_tail)
+      a.append *tail
+      @lines = a.lines
+
+      self
+    end
+
+    def chain(str)
+      rewrite "#{chain_head}#{str}"
+    end
+
+    def chain_head
+      content
+    end
+
+    def chain_tail
+      content
     end
   end
 
@@ -118,10 +140,14 @@ module Linecook
         raise ArgumentError, "no content specified"
       end
 
+      content.map! do |line|
+        Line === line ? line : Line.new(line)
+      end
+
       super(content)
 
-      @head = Line.new(content.first)
-      @tail = Line.new(content.last)
+      @head = content.first
+      @tail = content.last
       @lines = content
     end
 
@@ -143,9 +169,106 @@ module Linecook
       super
     end
 
-    def chain
-      tail.chain {|content| yield(content) }
-      self
+    def chain(str)
+      tail.chain(str)
+    end
+
+    def chain_head
+      tail.content
+    end
+
+    def chain_tail
+      head.content
+    end
+  end
+
+  class Proxy
+    attr_reader :_recipe_
+    attr_reader :_line_
+
+    def initialize(_recipe_, _line_)
+      @_recipe_ = _recipe_
+      @_line_ = _line_
+    end
+
+    def _chain_to_(another)
+      _line_.chain_to(another._line_)
+    end
+  end
+
+  class Command < Line
+    def chain_head
+      content.chomp "\n"
+    end
+
+    def chain_tail
+      " | #{content}"
+    end
+  end
+
+  class Redirect < Line
+    def chain_head
+      content.chomp "\n"
+    end
+
+    def chain_tail
+      " #{content}"
+    end
+  end
+
+  class Heredoc < Redirect
+    def initialize(word, body)
+      super(word)
+      append body # should be a line
+    end
+  end
+
+  class CompoundCommand < Section
+    def chain_head
+      content.chomp "\n"
+    end
+
+    def chain_tail
+      " | #{content}"
+    end
+  end
+
+  class If < CompoundCommand
+    attr_reader :condition
+    attr_reader :body
+
+    def initialize(condition, body)
+      super "if", condition, "then", body, "fi"
+      @condition = condition
+      @body = body
+    end
+
+    def elif_(condition, body)
+      body.append Elif.new(condition, body)
+    end
+
+    def else_(body)
+      body.append Else.new(body)
+    end
+  end
+
+  class Elif < Section
+    attr_reader :condition
+    attr_reader :body
+
+    def initialize(condition, body)
+      super "elif", condition, "then", body
+      @condition = condition
+      @body = body
+    end
+  end
+
+  class Else < Section
+    attr_reader :body
+
+    def initialize(body)
+      super "else", body
+      @body = body
     end
   end
 end
