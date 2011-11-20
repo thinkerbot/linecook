@@ -1,54 +1,91 @@
 module Linecook
   class Line
     attr_reader :content
-    attr_reader :doc
     attr_reader :format
 
-    def initialize(content="", doc=nil)
+    def initialize(content, format=nil)
       @content = content
-      @doc = doc || Document.new([content])
-      @format = doc.format
+      @format = format
+      @lines = nil
+    end
+
+    def lines
+      @lines ||= [self]
     end
 
     def pos
-      doc.pos(self)
+      lines.inject(0) do |pos, current|
+        break if current.equal? self
+        pos + current.length
+      end
     end
 
-    def prepend(str)
-      doc.insert(pos, str)
+    def length
+      content.length
     end
 
-    def prefix(str)
-      content.replace "#{str}#{content}"
+    def index(line=self)
+      lines.index do |current|
+        current.equal? line
+      end
     end
 
-    def chain(str)
-      head = content =~ /\r?\n/ ? $` : content
-      tail = str =~ /\r?\n/ ? $` : str
-      content.replace "#{head}#{tail}\n"
+    def rindex(line=self)
+      lines.rindex do |current|
+        current.equal? line
+      end
     end
 
-    def suffix(str)
-      content.replace "#{content}#{str}"
+    def prepend(*lines)
+      pos = index || 0
+      lines.reverse_each do |line|
+        line = Line.new(line, format) unless Line === line
+        line.insert_into lines, pos
+      end
     end
 
-    def append(str)
-      doc.insert(pos + 1, str)
+    def append(*lines)
+      pos = (rindex || -1) + 1
+      lines.reverse_each do |line|
+        line = Line.new(line, format) unless Line === line
+        line.insert_into lines, pos
+      end
     end
 
-    def complete?
-      content.end_with?("\n")
+    def rewrite(str)
+      content.replace str
     end
 
-    def _chain_to_(line)
-      line.chain _chain_str_
+    def insert_into(lines, pos)
+      lines.insert pos, *(@lines || self)
+      @lines = lines
+      self
     end
 
-    def _chain_str_
+    # b.chain_to(a)
+    def chain_to(a)
+      b = self
+
+      a.rewrite a.as_prefix_to(b)
+      b.rewrite b.as_suffix_to(a)
+
+      a.prepend *@lines.shift(index)
+      a.append  *@lines
+      @lines = a.lines
+
+      self
+    end
+
+    def as_prefix_to(b)
+      content
+    end
+
+    def as_suffix_to(a)
+      content
     end
 
     def to_s
-      format.render(content)
+      format ? format.render(content) : content.to_s
     end
   end
 end
