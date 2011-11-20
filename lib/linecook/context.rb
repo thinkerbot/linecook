@@ -100,32 +100,25 @@ module Linecook
       self
     end
 
-    # b.chain_to(a) a.chain(b)
+    # b.chain_to(a)
     def chain_to(a)
-      i = index
-      j = i + 1
-      k = lines.length - j
+      b = self
 
-      head = lines.slice(0, i)
-      tail = lines.slice(j, k)
+      a.rewrite a.as_prefix_to(b)
+      b.rewrite b.as_suffix_to(a)
 
-      a.prepend *head
-      @content = a.chain(chain_tail)
-      a.append *tail
+      a.prepend *@lines.shift(index)
+      a.append  *@lines
       @lines = a.lines
 
       self
     end
 
-    def chain(str)
-      rewrite "#{chain_head}#{str}"
-    end
-
-    def chain_head
+    def as_prefix_to(b)
       content
     end
 
-    def chain_tail
+    def as_suffix_to(a)
       content
     end
   end
@@ -169,16 +162,12 @@ module Linecook
       super
     end
 
-    def chain(str)
-      tail.chain(str)
+    def as_prefix_to(b)
+      tail.as_prefix_to(b)
     end
 
-    def chain_head
-      tail.content
-    end
-
-    def chain_tail
-      head.content
+    def as_suffix_to(a)
+      head.as_suffix_to(a)
     end
   end
 
@@ -197,21 +186,21 @@ module Linecook
   end
 
   class Command < Line
-    def chain_head
-      content.chomp "\n"
+    def as_prefix_to(b)
+      content.rstrip
     end
 
-    def chain_tail
+    def as_suffix_to(a)
       " | #{content}"
     end
   end
 
   class Redirect < Line
-    def chain_head
-      content.chomp "\n"
+    def as_prefix_to(b)
+      content.rstrip
     end
 
-    def chain_tail
+    def as_suffix_to(a)
       " #{content}"
     end
   end
@@ -224,11 +213,11 @@ module Linecook
   end
 
   class CompoundCommand < Section
-    def chain_head
-      content.chomp "\n"
+    def as_prefix_to(b)
+      content.rstrip
     end
 
-    def chain_tail
+    def as_suffix_to(a)
       " | #{content}"
     end
   end
