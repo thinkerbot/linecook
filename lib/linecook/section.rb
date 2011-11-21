@@ -1,32 +1,19 @@
-require 'linecook/line'
-
 module Linecook
-  class Section < Line
+  class Section
+    attr_reader :lines
     attr_reader :head
     attr_reader :tail
-    attr_reader :lines
     attr_reader :format
 
-    def initialize(content, format=nil)
-      unless content.respond_to?(:each)
-        content = [content]
+    def initialize(lines, format=nil)
+      unless lines.respond_to?(:each)
+        lines = [lines]
       end
 
-      @lines = []
-      content.each do |line|
-        unless Line === line
-          line = Line.new(line, format)
-        end
-        line.insert_into lines, -1
-      end
-
-      @head = lines.first
-      @tail = lines.last
+      @lines = lines
+      @head = @lines.first
+      @tail = @lines.last
       @format = format
-    end
-
-    def content
-      context[index..rindex]
     end
 
     def pos
@@ -39,12 +26,34 @@ module Linecook
       end
     end
 
-    def index(line=head)
-      super
+    def index
+      line.index
     end
 
-    def rindex(line=tail)
-      super
+    def rindex
+      tail.rindex
+    end
+
+    def content
+      lines[index..rindex]
+    end
+
+    def prepend(*new_lines)
+      head.prepend(*new_lines)
+    end
+
+    def append(*new_lines)
+      tail.append(*new_lines)
+    end
+
+    def insert_into(lines, index)
+      lines.insert index, *content
+      @lines = lines
+      self
+    end
+
+    def chain_to(a)
+      head.chain_to(a)
     end
 
     def as_prefix_to(b)
@@ -55,16 +64,15 @@ module Linecook
       head.as_suffix_to(a)
     end
 
-    def first?
-      lines.first.equal? head
+    def render_to(target)
+      content.each do |line|
+        line.render_to target
+      end
     end
 
-    def last?
-      lines.last.equal? tail
-    end
-
+    # Returns the formatted contents of self as a string.
     def to_s
-      content.join
+      render_to ""
     end
   end
 end

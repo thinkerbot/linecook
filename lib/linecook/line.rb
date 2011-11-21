@@ -2,15 +2,12 @@ module Linecook
   class Line
     attr_reader :content
     attr_reader :format
+    attr_reader :lines
 
     def initialize(content, format=nil)
       @content = content
       @format = format
       @lines = nil
-    end
-
-    def lines
-      @lines ||= [self]
     end
 
     def pos
@@ -25,40 +22,40 @@ module Linecook
       content.length
     end
 
-    def index(line=self)
+    def index
       lines.index do |current|
-        current.equal? line
+        current.equal? self
       end
     end
 
-    def rindex(line=self)
+    def rindex
       lines.rindex do |current|
-        current.equal? line
+        current.equal? self
       end
     end
 
     def prepend(*new_lines)
       pos = index || 0
       new_lines.reverse_each do |line|
-        line = Line.new(line, format) unless Line === line
         line.insert_into lines, pos
       end
+      new_lines.first
     end
 
     def append(*new_lines)
       pos = (rindex || -1) + 1
       new_lines.reverse_each do |line|
-        line = Line.new(line, format) unless Line === line
         line.insert_into lines, pos
       end
+      new_lines.last
     end
 
     def rewrite(str)
       content.replace str
     end
 
-    def insert_into(lines, pos)
-      lines.insert pos, *(@lines || self)
+    def insert_into(lines, index)
+      lines.insert index, self
       @lines = lines
       self
     end
@@ -85,16 +82,12 @@ module Linecook
       content
     end
 
-    def first?
-      lines.first.equal? self
-    end
-
-    def last?
-      lines.last.equal? self
-    end
-
-    def to_s
-      format ? format.render(content, first?, last?) : content
+    def render_to(target)
+      if format
+        format.render(content, target)
+      else
+        target << content
+      end
     end
   end
 end

@@ -59,7 +59,7 @@ module Linecook
       self.rstrip = value
     end
 
-    def render(line, first=false, last=false)
+    def render(line, target="")
       endofline = line =~ /\r?\n/ ? (eol || $&) : nil 
       line = $` || line.dup
 
@@ -68,7 +68,8 @@ module Linecook
       line = "#{indent}#{line}#{endofline}"
       line.tr!("\t", tab) if tab
 
-      line
+      target << line
+      target
     end
   end
 end

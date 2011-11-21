@@ -1,3 +1,4 @@
+require 'linecook/line'
 require 'linecook/section'
 require 'linecook/format'
 
@@ -97,7 +98,11 @@ module Linecook
 
     # Returns the formatted contents of self as a string.
     def to_s
-      lines.join
+      target = ""
+      lines.each do |line|
+        line.render_to target
+      end
+      target
     end
   end
 end
