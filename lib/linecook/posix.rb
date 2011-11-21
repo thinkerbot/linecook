@@ -8,12 +8,33 @@ module Linecook
       @_line_ = _line_
     end
 
+    # b.chain_to(a)
+    # def chain_to(a)
+    #   b = self
+    # 
+    #   a.rewrite a.as_prefix_to(b)
+    #   b.rewrite b.as_suffix_to(a)
+    # 
+    #   a.prepend(*lines.slice(index))
+    #   a.append(*lines)
+    # 
+    #   self
+    # end
+    # 
+    # def as_prefix_to(b)
+    #   content
+    # end
+    # 
+    # def as_suffix_to(a)
+    #   content
+    # end
+
     def _chain_to_(another)
       _line_.chain_to(another._line_)
     end
   end
 
-  class Command < Line
+  class Command < Proxy
     def as_prefix_to(b)
       content.rstrip
     end
