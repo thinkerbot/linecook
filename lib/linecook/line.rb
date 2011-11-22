@@ -4,12 +4,12 @@ module Linecook
     attr_accessor :pre
     attr_accessor :nex
 
-    def initialize(str, pre=nil, nex=nil, head=self, tail=self)
+    def initialize(str, pre=nil, nex=nil, is_head=true, is_tail=true)
       @str = str
       @pre = pre
       @nex = nex
-      @head = head
-      @tail = tail
+      @head = is_head
+      @tail = is_tail
 
       pre.nex = self if pre
       nex.pre = self if nex
@@ -44,26 +44,35 @@ module Linecook
     end
 
     def head
-      @head || (first? ? self : pre.head)
+      head? ? self : pre.head
+    end
+
+    def head?
+      @head || first? || pre.last?
     end
 
     def tail
-      @tail || (last? ? self : nex.tail)
+      tail? ? self : nex.tail
     end
 
-    def next_line(str="")
-      current = tail # discover tail only once
-      Line.new(str, current, current.nex)
+    def tail?
+      @tail || last? || nex.head?
     end
 
     def prepend(str)
-      Line.new(str, pre, head)
+      line = Line.new(str, pre, self, head?, false)
+      @head = false
+      line
     end
 
     def append(str)
-      line  = Line.new(str, tail, nex, nil)
-      @tail = nil
+      line = Line.new(str, self, nex, false, tail?)
+      @tail = false
       line
+    end
+
+    def next_line(str="")
+      tail.append str
     end
 
     def rel(pos=0)
@@ -85,6 +94,12 @@ module Linecook
     def up_to(line=nil, lines=[])
       lines.unshift self
       line == self || first? ? lines : pre.up_to(line, lines)
+    end
+
+    def section(start=head, finish=tail)
+      lines = up_to(start)
+      lines.pop # remove self to prevent duplication
+      down_to(finish, lines)
     end
   end
 end
