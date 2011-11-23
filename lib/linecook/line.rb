@@ -1,30 +1,21 @@
+require 'strscan'
+
 module Linecook
   class Line
-    attr_reader :str
     attr_accessor :pre
     attr_accessor :nex
+    attr_reader :format
+    attr_reader :content
 
-    def initialize(str, pre=nil, nex=nil, is_head=true, is_tail=true)
-      @str = str
+    def initialize(pre=nil, nex=nil, format=nil, content="")
       @pre = pre
       @nex = nex
-      @head = is_head
-      @tail = is_tail
 
       pre.nex = self if pre
       nex.pre = self if nex
-    end
 
-    def write(str)
-      @str << str
-    end
-
-    def rewrite(str)
-      @str = str
-    end
-
-    def length
-      str.to_s.length
+      @format  = format || (block_given? ? Proc.new : nil)
+      @content = content
     end
 
     def first
@@ -43,36 +34,75 @@ module Linecook
       nex.nil?
     end
 
-    def head
-      head? ? self : pre.head
+    def lines
+      current = first
+      lines = [current]
+
+      while !current.last?
+        current = current.nex
+        lines << current
+      end
+
+      lines
     end
 
-    def head?
-      @head || first? || pre.last?
+    def lineno
+      pre ? pre.lineno + 1 : 0
     end
 
-    def tail
-      tail? ? self : nex.tail
+    def complete?
+      content[-1] == ?\n
     end
 
-    def tail?
-      @tail || last? || nex.head?
+    def scan(str)
+      lines = []
+      scanner = StringScanner.new(str)
+      while line = scanner.scan_until(/\n/)
+        lines << line
+      end
+      unless scanner.eos?
+        lines << scanner.rest
+      end
+      lines
     end
 
-    def prepend(str)
-      line = Line.new(str, pre, self, head?, false)
-      @head = false
+    def write(str)
+      lines = scan(str)
+
+      unless complete? || lines.empty?
+        content << lines.shift
+      end
+
+      lines.inject(self) do |tail, content|
+        Line.new(tail, tail.nex, format, content) 
+      end
+
+      self
+    end
+
+    def rewrite(str)
+      content.clear
+      write(str)
+    end
+
+    def insert(col, str)
+      rewrite content.insert(col, str)
+    end
+
+    def length
+      content.length
+    end
+
+    def prepend(str=nil)
+      line = Line.new(pre, self, format)
+      line.write(str) if str
       line
     end
 
-    def append(str)
-      line = Line.new(str, self, nex, false, tail?)
-      @tail = false
+    def append(str=nil)
+      line = Line.new(self, nex, format)
+      line.write(str) if str
       line
-    end
-
-    def next_line(str="")
-      tail.append str
     end
 
     def rel(pos=0)
@@ -86,20 +116,13 @@ module Linecook
       end
     end
 
-    def down_to(line=nil, lines=[])
-      lines << self
-      line == self || last? ? lines : nex.down_to(line, lines)
+    def render
+      str = complete? || last? ? content : "#{content}\n"
+      format ? format.call(str) : str
     end
 
-    def up_to(line=nil, lines=[])
-      lines.unshift self
-      line == self || first? ? lines : pre.up_to(line, lines)
-    end
-
-    def section(start=head, finish=tail)
-      lines = up_to(start)
-      lines.pop # remove self to prevent duplication
-      down_to(finish, lines)
+    def to_s
+      content
     end
   end
 end
