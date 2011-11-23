@@ -70,6 +70,19 @@ class FormatTest < Test::Unit::TestCase
   end
 
   #
+  # indent
+  #
+
+  def test_indent_equals_indent_str_times_indent_level
+    format.indent_str = '.'
+    format.indent_level = 1
+    assert_equal ".", format.indent
+
+    format.indent_level = 2
+    assert_equal "..", format.indent
+  end
+
+  #
   # strip= test
   #
 
@@ -102,28 +115,29 @@ class FormatTest < Test::Unit::TestCase
   # render test
   #
 
-  def test_render_prefixes_line_with_indent
+  def test_render_appends_indent_to_nl
     format.indent = '..'
-    assert_equal "..abc\n", format.render("abc\n")
+    assert_equal "\n..abc\n..xyz\n..", format.render("\nabc\nxyz\n")
   end
 
-  def test_render_indents_using_indent_str_and_indent_level
-    format.indent_str = '.'
-    format.indent_level = 1
-    assert_equal ".abc\n", format.render("abc\n")
+  def test_render_prefixes_with_indent_if_first
+    format.indent = '..'
+    assert_equal "..abc", format.render("abc", true)
+  end
 
-    format.indent_level = 2
-    assert_equal "..abc\n", format.render("abc\n")
+  def test_render_does_not_append_indent_if_last
+    format.indent = '..'
+    assert_equal "abc\n", format.render("abc\n", false, true)
   end
 
   def test_render_replaces_nl_with_eol
     format.eol = '.'
-    assert_equal "abc.", format.render("abc\n")
+    assert_equal ".abc.xyz.", format.render("\nabc\nxyz\n")
   end
 
   def test_render_replaces_crnl_with_eol
     format.eol = '.'
-    assert_equal "abc.", format.render("abc\r\n")
+    assert_equal ".abc.xyz.", format.render("\r\nabc\r\nxyz\r\n")
   end
 
   def test_render_preserves_nl_if_eol_is_nil
@@ -134,41 +148,72 @@ class FormatTest < Test::Unit::TestCase
     assert_equal "abc\r\n", format.render("abc\r\n")
   end
 
-  def test_render_does_not_add_eol_if_str_does_not_end_with_linebreak
+  def test_render_does_not_append_eol
     format.eol = '.'
     assert_equal "abc", format.render("abc")
   end
 
+  def test_render_applies_indent_before_eol_tr
+    format.eol = ":\n:"
+    format.indent = '..'
+    assert_equal "abc:\n:..xyz", format.render("abc\nxyz")
+  end
+
   def test_render_replaces_tabs_with_tab
     format.tab = '.'
-    assert_equal "a.b.c\n", format.render("a\tb\tc\n")
+    assert_equal ".abc.xyz.", format.render("\tabc\txyz\t")
   end
 
-  def test_render_tab_expansion_occurs_after_indent
+  def test_render_does_not_replace_tabs_for_nil_tab
+    format.tab = nil
+    assert_equal "\tabc\txyz\t", format.render("\tabc\txyz\t")
+  end
+
+  def test_render_replaces_tabs_after_indent
     format.indent = "\t"
     format.tab = '.'
-    assert_equal ".abc\n", format.render("abc\n")
+    assert_equal "abc\n.xyz", format.render("abc\nxyz")
   end
 
-  def test_render_tab_expansion_applies_to_eol
+  def test_render_replaces_tabs_after_eol_tr
     format.eol = "\t"
     format.tab = '.'
-    assert_equal "abc.", format.render("abc\n")
+    assert_equal "abc.xyz", format.render("abc\nxyz")
   end
 
-  def test_render_rstrips_to_eol_if_specified
-    format.rstrip = true
-    assert_equal "abc\n", format.render("abc  \n")
-  end
-
-  def test_render_lstrips_if_specified
+  def test_render_lstrips_after_eol_if_specified
     format.lstrip = true
-    assert_equal "abc\n", format.render("  abc\n")
+    assert_equal "  \nabc  \nxyz  \n", format.render("  \n  abc  \n  xyz  \n  ")
+  end
+
+  def test_render_lstrips_without_eol_if_first
+    format.lstrip = true
+    assert_equal "abc", format.render("  abc", true)
+  end
+
+  def test_render_lstrip_preserves_leading_eol_if_first
+    format.lstrip = true
+    assert_equal "\n\nabc", format.render("  \n  \n  abc", true)
   end
 
   def test_render_lstrips_before_indent
     format.lstrip = true
     format.indent = "\t"
-    assert_equal "\tabc\n", format.render("  abc\n")
+    assert_equal "abc\n\txyz\n\t", format.render("abc\n  xyz\n  ")
+  end
+
+  def test_render_rstrips_to_eol_if_specified
+    format.rstrip = true
+    assert_equal "\n  abc\n  xyz\n  ", format.render("  \n  abc  \n  xyz  \n  ")
+  end
+
+  def test_render_rstrips_without_eol_if_last
+    format.rstrip = true
+    assert_equal "abc", format.render("abc  ", false, true)
+  end
+
+  def test_render_rstrip_preserves_trailing_eol_if_last
+    format.rstrip = true
+    assert_equal "abc\n\n", format.render("abc  \n  \n  ", false, true)
   end
 end
