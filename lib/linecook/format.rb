@@ -59,33 +59,18 @@ module Linecook
       self.rstrip = value
     end
 
-    def render(str, first=false, last=false)
-      # strip
-      if lstrip
-        pattern = first ? /(\A|\n)([^\n]+)/ : /(\n)([^\n]+)/
-        str.gsub!(pattern) { "#{$1}#{$2.lstrip}" }
-      end
+    def render(line)
+      endofline = line =~ /\r?\n\z/ ? (eol || $&) : nil 
+      line = $` || line.dup
 
-      if rstrip
-        pattern = last ? /\s+?(\r?\n|\z)/ : /\s+?(\r?\n)/
-        str.gsub!(pattern) { $1 }
-      end
+      line.rstrip! if rstrip
+      line.lstrip! if lstrip
+      line = "#{indent}#{line}#{endofline}"
+      line.tr!("\t", tab) if tab
 
-      # indent
-      unless indent.empty?
-        pattern = first ? 
-          (last ? /(\A|\n)./ : /(\A|\n)/) :
-          (last ? /(\n)./ : /(\n)/)
-        str.gsub!(pattern) { "#{$1}#{indent}" }
-      end
-
-      # tr eol
-      str.gsub!(/\r?\n/, eol) if eol
-
-      # expand tab
-      str.tr!("\t", tab) if tab
-
-      str
+      line
     end
+
+    alias call render
   end
 end
