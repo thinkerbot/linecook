@@ -19,41 +19,8 @@ class DocumentTest < Test::Unit::TestCase
   #
 
   def test_initialize_sets_format
-    doc = Document.new [], Format.new(:indent => "..")
+    doc = Document.new Format.new(:indent => "..")
     assert_equal "..", doc.format.indent
-  end
-
-  def test_initialize_freezes_format
-    format = Format.new(:indent => "..")
-    Document.new [], format
-    assert_equal true, format.frozen?
-  end
-
-  #
-  # pos test
-  #
-
-  def test_pos_returns_pos_for_content_in_doc
-    a, b, c = %w{abc bbc ccc}.map {|str| Line.new(str) }
-    doc.append a, b, c
-
-    assert_equal 0, doc.pos(a)
-    assert_equal 3, doc.pos(b)
-    assert_equal 6, doc.pos(c)
-  end
-
-  def test_pos_requires_equal_equality
-    a1, a2, a3 = %w{aaa aaa aaa}.map {|str| Line.new(str) }
-    doc.append a1, a2, a3
-
-    assert_equal 0, doc.pos(a1)
-    assert_equal 3, doc.pos(a2)
-    assert_equal 6, doc.pos(a3)
-  end
-
-  def test_pos_returns_nil_if_lines_does_not_contain_content
-    unknown = Line.new("unknown") 
-    assert_equal nil, doc.pos(unknown)
   end
 
   #
@@ -139,11 +106,6 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "", doc.format.indent
     doc.set :indent => ".."
     assert_equal "..", doc.format.indent
-  end
-
-  def test_format_is_frozen_after_set
-    doc.set :indent => ".."
-    assert_equal true, doc.format.frozen?
   end
 
   #

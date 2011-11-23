@@ -5,19 +5,22 @@ module Linecook
   class Document
     include Enumerable
 
-    def initialize(first=nil, last=nil)
-      @first = first
-      @last  = last
+    def initialize(format = Format.new)
+      @first = @last = Line.new(nil, nil, format)
     end
 
     def first
       # automatically correct if first has been prepended
-      @first ? @first = @first.first : nil
+      @first = @first.first
     end
 
     def last
       # automatically correct if last has been appended
-      @last ? @last = @last.last : nil
+      @last = @last.last
+    end
+
+    def lines
+      map
     end
 
     def each
@@ -64,27 +67,46 @@ module Linecook
       nil
     end
 
-    def next_line(str="")
-      if last.nil?
-        @first = @last = Line.new(str)
-      else
-        @last = last.next_line(str)
+    def format
+      last.format
+    end
+
+    # Sets format attributes (note this resets format to a new object).
+    def set(attrs)
+      last.append if last.complete?
+
+      new_format  = attrs.respond_to?(:call) ? attrs : format.with(attrs)
+      last.format = new_format
+    end
+
+    # Sets format attributes for the duration of a block.
+    def with(attrs)
+      current = format
+      begin
+        set attrs
+        yield
+      ensure
+        set current
       end
     end
 
-    def next_section(str, *strs)
-      head, tail = next_line(str)
-
-      while str = strs.shift
-        tail = tail.append(str)
+    # Indents n levels for the duration of the block.
+    def indent(n=1)
+      with(:indent => n) do
+        yield
       end
+    end
 
-      @last = tail
-      head.down_to(tail)
+    # Outdents for the duration of the block.  A negative number can be
+    # provided to outdent n levels.
+    def outdent(n=nil)
+      with(:indent => n) do
+        yield
+      end
     end
 
     def write(str)
-      (last || next_line).write(str)
+      last.write(str)
     end
 
     # Writes a line to self.
@@ -97,8 +119,8 @@ module Linecook
         current_pos += line.length
 
         if current_pos > pos
-          offset = pos - (current_pos - line.length)
-          line.content.insert(offset, str)
+          col = pos - (current_pos - line.length)
+          line.insert(col, str)
           return line
         end
 
@@ -108,11 +130,16 @@ module Linecook
       write(' ' * (pos - current_pos) + str)
     end
 
-    # Returns the formatted contents of self as a string.
-    def to_s(target="")
+    def render_to(target)
       each do |line|
-        target << line.to_s
+        target << line.render
       end
+      target
+    end
+
+    # Returns the formatted contents of self as a string.
+    def to_s
+      render_to ""
     end
   end
 end

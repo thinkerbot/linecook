@@ -4,8 +4,8 @@ module Linecook
   class Line
     attr_accessor :pre
     attr_accessor :nex
-    attr_reader :format
-    attr_reader :content
+    attr_accessor :format
+    attr_reader   :content
 
     def initialize(pre=nil, nex=nil, format=nil, content="")
       @pre = pre
@@ -81,7 +81,7 @@ module Linecook
     end
 
     def rewrite(str)
-      content.clear
+      @content = ""
       write(str)
     end
 
@@ -117,8 +117,8 @@ module Linecook
     end
 
     def render
-      str = complete? || last? ? content : "#{content}\n"
-      format ? format.call(str) : str
+      line = complete? || last? ? content : "#{content}\n"
+      format ? format.call(line) : line
     end
 
     def to_s
