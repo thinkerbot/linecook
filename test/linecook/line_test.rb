@@ -79,6 +79,30 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
+  # pos test
+  #
+
+  def test_pos_returns_the_position_of_content_in_lines
+    a, b, c = abc_lines
+    a.write "abc"
+    b.write "abc"
+    c.write "abc"
+
+    assert_equal 0, a.pos
+    assert_equal 3, b.pos
+    assert_equal 6, c.pos
+  end
+
+  #
+  # length test
+  #
+
+  def test_length_returns_the_length_of_content
+    line.write "abc"
+    assert_equal 3, line.length
+  end
+
+  #
   # lineno test
   #
 
@@ -92,6 +116,36 @@ class LineTest < Test::Unit::TestCase
     assert_equal 0, a.lineno
     assert_equal 1, b.lineno
     assert_equal 2, c.lineno
+  end
+
+  #
+  # each test
+  #
+
+  def test_each_calls_block_with_each_line
+    a, b, c = abc_lines
+
+    lines = []
+    b.each do |line|
+      lines << line
+    end
+
+    assert_equal [a, b, c], lines
+  end
+
+  #
+  # reverse_each test
+  #
+
+  def test_reverse_each_calls_block_with_each_line_in_reverse
+    a, b, c = abc_lines
+
+    lines = []
+    b.reverse_each do |line|
+      lines << line
+    end
+
+    assert_equal [c, b, a], lines
   end
 
   #
@@ -194,15 +248,6 @@ class LineTest < Test::Unit::TestCase
     line.insert 3, "\npqr\nxyz"
 
     assert_equal ["abc\n", "pqr\n", "xyz\n"], line.lines.map(&:content)
-  end
-
-  #
-  # length test
-  #
-
-  def test_length_returns_the_length_of_content
-    line.write "abc"
-    assert_equal 3, line.length
   end
 
   #

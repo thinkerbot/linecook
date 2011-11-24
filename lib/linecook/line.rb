@@ -22,6 +22,7 @@ module Linecook
         lines
       end
     end
+    include Enumerable
 
     # The format for self
     attr_accessor :format
@@ -68,20 +69,46 @@ module Linecook
 
     # Returns an array of lines that self is a part of.
     def lines
-      current = first
-      lines = [current]
+      map {|line| line }
+    end
 
-      while !current.last?
-        current = current.nex
-        lines << current
+    # Returns the position of content in lines (ie assuming the content of all
+    # the lines were joined together).
+    def pos
+      inject(0) do |pos, line|
+        return pos if line == self
+        pos + line.length
       end
+    end
 
-      lines
+    # Returns the length of content
+    def length
+      content.length
     end
 
     # Returns the index of self in lines.
     def lineno
       pre ? pre.lineno + 1 : 0
+    end
+
+    # Yields each line in lines to the block.
+    def each
+      line = first
+      while line
+        yield line
+        line = line.nex
+      end
+      self
+    end
+
+    # Same as each but traverses lines in reverse order. 
+    def reverse_each
+      line = last
+      while line
+        yield line
+        line = line.pre
+      end
+      self
     end
 
     # Returns true if content ends with a newline character.
@@ -125,11 +152,6 @@ module Linecook
       end
 
       rewrite content.insert(col, str)
-    end
-
-    # Returns the length of content
-    def length
-      content.length
     end
 
     # Prepends a line and writes str, if specified.  The prepended line will
