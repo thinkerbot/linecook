@@ -5,8 +5,9 @@ module Linecook
   class Document
     include Enumerable
 
-    def initialize(format = Format.new)
-      @first = @last = Line.new(nil, nil, format)
+    def initialize(format=Format.new)
+      @first = Line.new(format)
+      @last  = @first.last
     end
 
     def first

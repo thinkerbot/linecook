@@ -11,10 +11,14 @@ class LineTest < Test::Unit::TestCase
     @line = Line.new
   end
 
+  def formatter(&block)
+    block
+  end
+
   def abc_lines(&format)
-    a = Line.new nil, nil, format
-    b = Line.new a,   nil, format
-    c = Line.new b,   nil, format
+    a = Line.new format, nil, nil
+    b = Line.new format, a,   nil
+    c = Line.new format, b,   nil
 
     [a,b,c]
   end
@@ -91,6 +95,20 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
+  # complete? test
+  #
+
+  def test_complete_check_returns_true_if_content_ends_with_nl
+    line.write "abc"
+    assert_equal "abc", line.content
+    assert_equal false, line.complete?
+
+    line.write "\n"
+    assert_equal "abc\n", line.content
+    assert_equal true,    line.complete?
+  end
+
+  #
   # write test
   #
 
@@ -117,7 +135,9 @@ class LineTest < Test::Unit::TestCase
   end
 
   def test_write_propagates_format_to_new_lines
-    line = Line.new {|str| "..#{str}" }
+    format = formatter {|str| "..#{str}" }
+    line = Line.new format
+
     line.write "abc\nxyz\n"
     assert_equal ["..abc\n", "..xyz\n"], line.lines.map(&:render)
   end
@@ -127,11 +147,130 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
+  # rewrite test
+  #
+
+  def test_rewrite_replaces_content_for_self
+    line.write "abc"
+    line.rewrite "xyz"
+
+    assert_equal "xyz", line.content
+  end
+
+  def test_rewrite_appends_lines_as_needed
+    line.write "abc"
+    line.rewrite "pqr\nxyz"
+
+    assert_equal ["pqr\n", "xyz"], line.lines.map(&:content)
+  end
+
+  #
+  # insert test
+  #
+
+  def test_insert_inserts_content_at_col
+    line.write "ac"
+    line.insert 1, "b"
+
+    assert_equal "abc", line.content
+  end
+
+  def test_insert_pads_to_col_if_needed
+    line.write "abc"
+    line.insert 6, "xyz"
+
+    assert_equal "abc   xyz", line.content
+  end
+
+  def test_insert_preserves_nl_when_padding
+    line.write "abc\n"
+    line.insert 6, "xyz"
+
+    assert_equal "abc   xyz\n", line.content
+  end
+
+  def test_insert_writes_new_lines_as_needed
+    line.write "abc\n"
+    line.insert 3, "\npqr\nxyz"
+
+    assert_equal ["abc\n", "pqr\n", "xyz\n"], line.lines.map(&:content)
+  end
+
+  #
+  # length test
+  #
+
+  def test_length_returns_the_length_of_content
+    line.write "abc"
+    assert_equal 3, line.length
+  end
+
+  #
+  # prepend test
+  #
+
+  def test_prepend_prepend_a_line_to_self
+    line.write "xyz"
+    line.prepend "abc"
+    line.prepend "pqr"
+
+    assert_equal ["abc", "pqr", "xyz"], line.lines.map(&:content)
+  end
+
+  def test_prepend_prepend_multiple_lines_if_needed
+    line.write "xyz\n"
+    line.prepend "abc\npqr\n"
+
+    assert_equal ["abc\n", "pqr\n", "xyz\n"], line.lines.map(&:render)
+  end
+
+  def test_prepend_propagates_format
+    format = formatter {|str| "..#{str}" }
+    line = Line.new format
+
+    line.write "xyz\n"
+    line.prepend "abc\n"
+
+    assert_equal ["..abc\n", "..xyz\n"], line.lines.map(&:render)
+  end
+
+  #
+  # append test
+  #
+
+  def test_append_appends_a_line_to_self
+    line.write "abc"
+    line.append "xyz"
+    line.append "pqr"
+
+    assert_equal ["abc", "pqr", "xyz"], line.lines.map(&:content)
+  end
+
+  def test_append_appends_multiple_lines_if_needed
+    line.write "abc\n"
+    line.append "pqr\nxyz\n"
+
+    assert_equal ["abc\n", "pqr\n", "xyz\n"], line.lines.map(&:render)
+  end
+
+  def test_append_propagates_format
+    format = formatter {|str| "..#{str}" }
+    line = Line.new format
+
+    line.write "abc\n"
+    line.append "xyz\n"
+
+    assert_equal ["..abc\n", "..xyz\n"], line.lines.map(&:render)
+  end
+
+  #
   # render test
   #
 
   def test_render_renders_content_by_format
-    line = Line.new {|str| "..#{str}" }
+    format = formatter {|str| "..#{str}" }
+    line = Line.new format
+
     line.write "abc\n"
     assert_equal "..abc\n", line.render
   end

@@ -11,7 +11,7 @@ class DocumentTest < Test::Unit::TestCase
 
   def setup
     super
-    @doc = Document.new()
+    @doc = Document.new
   end
 
   #
