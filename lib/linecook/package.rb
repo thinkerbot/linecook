@@ -18,19 +18,15 @@ module Linecook
     # target path.  See on_export.
     attr_reader :export_option_overrides
 
-    # A hash of callbacks registered with self
-    attr_reader :callbacks
-
-    # A hash of counters used by variable.
-    attr_reader :counters
+    # A hash of global to self
+    attr_reader :globals
 
     def initialize(env={})
       @env = env
       @registry = {}
       @default_export_options  = {}
       @export_option_overrides = {}
-      @callbacks = {}
-      @counters  = Hash.new(0)
+      @globals = {}
     end
 
     # Resolves a source (ex a String, StringIO, or Tempfile) to a source path.
@@ -136,10 +132,6 @@ module Linecook
       File.read(source_path, length, offset)
     end
 
-    def callback(name)
-      callbacks[name] ||= StringIO.new
-    end
-
     # Increments target_path until an unregistered path is found and returns
     # the result.
     def next_target_path(target_path='file')
@@ -155,16 +147,6 @@ module Linecook
       end
 
       target_path
-    end
-
-    # Returns a package-unique variable with base 'name'.
-    def next_variable_name(context)
-      context = context.to_s
-
-      count = counters[context]
-      counters[context] += 1
-
-      "#{context}#{count}"
     end
 
     # Closes all open sources in the registry and returns self.

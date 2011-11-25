@@ -206,17 +206,6 @@ class PackageTest < Test::Unit::TestCase
   end
 
   #
-  # callback test
-  #
-
-  def test_callback_registers_and_returns_a_stringio
-    stringio = package.callback('name')
-    assert_equal StringIO, stringio.class
-    assert_equal false, stringio.closed?
-    assert_equal stringio, package.callbacks['name']
-  end
-
-  #
   # next_target_path test
   #
 
@@ -228,22 +217,6 @@ class PackageTest < Test::Unit::TestCase
 
     package.register('target/path.1', 'source')
     assert_equal 'target/path.2', package.next_target_path('target/path')
-  end
-
-  #
-  # next_variable_name test
-  #
-
-  def test_next_variable_name_increments_and_returns_context
-    assert_equal 'a0', package.next_variable_name('a')
-    assert_equal 'a1', package.next_variable_name('a')
-    assert_equal 'b0', package.next_variable_name('b')
-  end
-
-  def test_next_variable_name_converts_context_to_a_string
-    assert_equal 'a0', package.next_variable_name('a')
-    assert_equal 'a1', package.next_variable_name(:a)
-    assert_equal 'a2', package.next_variable_name('a')
   end
 
   #
