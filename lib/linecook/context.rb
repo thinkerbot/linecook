@@ -43,5 +43,16 @@ module Linecook
       _singleton_class_.included_modules.each {|mod| clone._extend_ mod }
       clone
     end
+
+    # Callback to initialize a child of self created by _beget_.
+    def _initialize_child_(orig)
+    end
+
+    # Returns a clone of self created by _clone_, but also calls
+    # _initialize_child_ on the clone.
+    def _beget_
+      clone._initialize_child_(self)
+      clone
+    end
   end
 end
