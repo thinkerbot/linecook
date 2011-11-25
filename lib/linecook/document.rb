@@ -151,6 +151,12 @@ module Linecook
       end
     end
 
+    # Clears all lines.
+    def clear
+      @first = Line.new(format)
+      @last  = @first
+    end
+
     # Renders each line to the target.  The render output is appended to
     # target using '<<'.
     def render_to(target)

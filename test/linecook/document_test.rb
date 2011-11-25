@@ -373,4 +373,18 @@ class DocumentTest < Test::Unit::TestCase
 
     assert_equal "a\n    b\n  c\n    b\na\n", doc.to_s
   end
+
+  #
+  # clear test
+  #
+
+  def test_clear_clears_all_content_preserving_format
+    doc.set :indent => '..'
+    doc.write "abc\n"
+    doc.write "pqr\n"
+    doc.clear
+    doc.write "xyz\n"
+
+    assert_equal "..xyz\n", doc.to_s
+  end
 end
