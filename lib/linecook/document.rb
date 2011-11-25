@@ -155,6 +155,7 @@ module Linecook
     def clear
       @first = Line.new(format)
       @last  = @first
+      self
     end
 
     # Renders each line to the target.  The render output is appended to

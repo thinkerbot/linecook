@@ -387,4 +387,8 @@ class DocumentTest < Test::Unit::TestCase
 
     assert_equal "..xyz\n", doc.to_s
   end
+
+  def test_clear_returns_self
+    assert_equal doc, doc.clear
+  end
 end
