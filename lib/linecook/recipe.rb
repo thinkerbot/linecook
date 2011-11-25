@@ -2,6 +2,7 @@ require 'erb'
 require 'tilt'
 require 'linecook/attributes'
 require 'linecook/cookbook'
+require 'linecook/document'
 require 'linecook/package'
 require 'linecook/utils'
 require 'linecook/proxy'
@@ -24,7 +25,7 @@ module Linecook
   #   end
   #
   #   recipe  = Recipe.new do
-  #     Helper.__send__(:extend_object, self)
+  #     _extend_ Helper
   #     echo 'a', 'b c'
   #     echo 'X Y'.downcase, :z
   #   end
@@ -36,51 +37,103 @@ module Linecook
   #   # }
   #
   class Recipe < Context
-    # The recipe package
+    # The recipe Package
     attr_reader :_package_
 
-    # The recipe cookbook
+    # The recipe Cookbook
     attr_reader :_cookbook_
 
-    # The recipe target
-    attr_reader :_target_
+    # A hash just for self
+    attr_reader :_locals_
 
-    # The current recipe target
-    attr_reader :target
+    # The recipe Document
+    attr_reader :_doc_
 
-    def initialize(package=Package.new, cookbook=Cookbook.new, target=StringIO.new)
+    def initialize(package = Package.new, cookbook = Cookbook.new, doc = Document.new)
       @_package_ = package
       @_cookbook_ = cookbook
-      @_target_ = target
-      @target   = target
-      @attributes  = {}
-      @indents  = []
-      @outdents = []
+      @_locals_ = {}
+      @_doc_ = doc
+
+      @attributes = {}
+      @attrs = nil
 
       if Kernel.block_given?
         instance_eval(&Proc.new)
       end
     end
 
+    # Returns the package globals.
+    def _globals_
+      _package_.globals
+    end
+
+    # Initializes clones created by _clone_ by passing forward all state,
+    # including local data and attributes.
+    def _initialize_clone_(orig)
+      super
+      @_package_ = orig.package
+      @_cookbook_ = orig.cookbook
+      @_locals_ = orig._locals_
+      @_doc_ = orig._doc_
+
+      @attributes = orig.attributes
+      @attrs = nil
+    end
+
+    # Initializes children created by _beget_ by setting _doc_ to a new
+    # Document.
+    def _initialize_child_(orig)
+      super
+      @_doc_ = Document.new
+    end
+
+    def _(str=nil, &block)
+      child = _beget_
+      child.write str if str
+      child.instance_eva(&block) if block
+      child
+    end
+
+    # Captures output to the doc for the duration of a block. Returns the doc.
+    def _capture_(doc = Document.new)
+      current = @_doc_
+      begin
+        @_doc_ = doc
+        yield
+      ensure
+        @_doc_ = current
+      end
+      doc
+    end
+
+    # Returns the formatted contents of _doc_.
+    def _result_
+      _doc_.to_s
+    end
+
     # Loads the specified attributes file and merges the results into attrs. A
     # block may be given to specify attrs as well; it will be evaluated in the
     # context of an Attributes instance.
     def attributes(source_name=nil, &block)
-      attributes = Attributes.new
+      if source_name || block
+        attributes = Attributes.new
 
-      unless source_name.nil?
-        if source_path = _attributes_source_path_(source_name)
-          attributes.load_attrs(source_path)
+        if source_name
+          if source_path = _cookbook_.find(:attributes, source_name, attributes.load_attrs_extnames)
+            attributes.load_attrs(source_path)
+          end
         end
+
+        if block
+          attributes.instance_eval(&block)
+        end
+
+        @attributes = Utils.deep_merge(@attributes, attributes.to_hash)
+        @attrs = nil
       end
 
-      if block
-        attributes.instance_eval(&block)
-      end
-
-      @attributes = Utils.deep_merge(@attributes, attributes.to_hash)
-      @attrs = nil
-      self
+      @attributes
     end
 
     # Returns the package env merged over any attrs specified by attributes.
@@ -108,303 +161,36 @@ module Linecook
       self
     end
 
-    # Returns the path to the target as used at runtime (vs compile time). 
-    # Mainly target_path is a hook for helpers to override - by default it
-    # simply returns target_name.
-    def target_path(target_name)
-      target_name
-    end
-
-    # Finds a source path, adds it to the package, and returns a target path.
-    # Options specify export options, and the following:
-    #
-    #   key            value
-    #   :target_name   The name of the file in the package (default guessed
-    #                  by _guess_target_name_)
-    #
-    # See _file_source_path_ for how source_name is resolved to a source path.
-    def file_path(source_name, options={})
-      source_path = _file_source_path_(source_name)
-      target_name = options.delete(:target_name) || _guess_target_name_(source_path)
-
-      _package_.register target_name, source_path, options
-      target_path target_name
-    end
-
-    # Finds a recipe, compiles it, adds it to the package, and returns a
-    # target path. Options specify export options, and the following:
-    #
-    #   key            value
-    #   :target_name   The name of the recipe result in the package (default
-    #                  guessed by _guess_recipe_name_)
-    #
-    # See _recipe_source_path_ for how source_name is resolved to a recipe.
-    def recipe_path(source_name, options={})
-      source_path = _recipe_source_path_(source_name)
-      target_name = options.delete(:target_name) || _guess_recipe_name_(source_path)
-      target = _package_.add(target_name, options)
-
-      recipe = Recipe.new(_package_, _cookbook_, target)
-      recipe.instance_eval File.read(source_path), source_path
-
-      target.close unless target.closed?
-      target_path target_name
-    end
-
-    # Finds a template, compiles it, adds it to the package, and returns a
-    # target path. Options specify export options, and the following:
-    #
-    #   key            value
-    #   :target_name   The name of the template result in the package (default
-    #                  guessed by _guess_template_name_)
-    #   :locals        The locals for the template (default attrs)
-    #
-    # See _template_source_path_ for how source_name is resolved to a
-    # template.
-    def template_path(source_name, options={})
-      source_path = _template_source_path_(source_name)
-      target_name = options.delete(:target_name) || _guess_template_name_(source_path)
-      locals = options.delete(:locals) || attrs
-
-      capture_path(target_name, options) { write render(source_path, locals) }
-    end
-
-    # Captures output to target for a block and adds the result to _package_
-    # at target_name.  Options specify export options.
-    def capture_path(target_name, options={})
-      target = _package_.add(target_name, options)
-
-      if Kernel.block_given?
-        _capture_(target) { yield }
-      end
-
-      target.close unless target.closed?
-      target_path target_name
-    end
-
-    def render(source_name, locals=attrs)
-      source_path = _template_source_path_(source_name)
-      Tilt.new(source_path).render(Object.new, locals)
-    end
-
-    # Captures and returns output for the duration of a block by redirecting
-    # target to a temporary buffer.
+    # Captures and returns the formatted output of the block as a string.
     def capture
-      _capture_ { yield }.string
+      _capture_ { yield }.to_s
     end
 
-    # Writes input to target using 'write'.  Returns self.
+    # Writes input to _doc_ using 'write'.  Returns self.
     def write(input)
-      target.write input
+      _doc_.write input
       self
     end
 
-    # Writes input to target using 'puts'.  Returns self.
+    # Writes input to _doc_ using 'writeln'.  Returns self.
     def writeln(input=nil)
-      target.puts input
+      _doc_.writeln input
       self
     end
 
-    # Indents the output of the block.  Indents may be nested. To prevent a
-    # section from being indented, enclose it within outdent which resets
-    # indentation to nothing for the duration of a block.
-    #
-    # Example:
-    #
-    #   recipe = Recipe.new do
-    #     writeln 'a'
-    #     indent do
-    #       writeln 'b'
-    #       outdent do
-    #         writeln 'c'
-    #         indent do
-    #           writeln 'd'
-    #         end
-    #         writeln 'c'
-    #       end
-    #       writeln 'b'
-    #     end
-    #     writeln 'a'
-    #   end
-    #
-    #   "\n" + recipe._result_
-    #   # => %q{
-    #   # a
-    #   #   b
-    #   # c
-    #   #   d
-    #   # c
-    #   #   b
-    #   # a
-    #   # }
-    #
-    def indent(indent='  ')
-      @indents << @indents.last.to_s + indent
-      str = capture { yield }
-      @indents.pop
-
-      unless str.empty?
-        str.gsub!(/^/, indent)
-
-        if @indents.empty?
-          @outdents.each do |flag|
-            str.gsub!(/#{flag}(\d+):(.*?)#{flag}/m) do
-              $2.gsub!(/^.{#{$1.to_i}}/, '')
-            end
-          end
-          @outdents.clear
-        end
-
-        writeln str
-      end
-
-      self
-    end
-
-    # Resets indentation to nothing for a section of text indented by indent.
-    #
-    # === Notes
-    #
-    # Outdent works by setting a text flag around the outdented section; the
-    # flag and indentation is later stripped out using regexps.  For that
-    # reason, be sure flag is not something that will appear anywhere else in
-    # the section.
-    #
-    # The default flag is like ':outdent_N:' where N is a big random number.
-    def outdent(flag=nil)
-      current_indent = @indents.last
-
-      if current_indent.nil?
+    # Indents n levels for the duration of the block.
+    def indent(n=1)
+      _doc_.with(:indent => n) do
         yield
-      else
-        flag ||= ":outdent_#{Kernel.rand(10000000)}:"
-        @outdents << flag
+      end
+    end
 
-        write "#{flag}#{current_indent.length}:#{_rstrip_}"
-        @indents << ''
-
+    # Outdents for the duration of the block.  A negative number can be
+    # provided to outdent n levels.
+    def outdent(n=nil)
+      _doc_.with(:indent => n) do
         yield
-
-        @indents.pop
-
-        write "#{flag}#{_rstrip_}"
       end
-
-      self
-    end
-
-    # Captures a block of output and concats to the named callback.
-    def callback(name)
-      target = _package_.callback(name)
-      _capture_(target) { yield }
-    end
-
-    # Writes the specified callback to the current target.
-    def write_callback(name, close=true)
-      target = _package_.callback(name)
-      target.rewind
-
-      write target.read
-
-      if close
-        target.close
-      end
-    end
-
-    def _guess_target_name_(source_path)
-      File.basename(source_path)
-    end
-
-    def _guess_template_name_(source_path)
-      _guess_target_name_(source_path).chomp(File.extname(source_path))
-    end
-
-    def _guess_recipe_name_(source_path)
-      _guess_target_name_(source_path).chomp('.rb')
-    end
-
-    def _attributes_source_path_(source_name)
-      _cookbook_.find(:attributes, source_name, Attributes::EXTNAMES)
-    end
-
-    def _file_source_path_(source_name)
-      _cookbook_.find(:files, source_name)
-    end
-
-    def _template_source_path_(source_name)
-      _cookbook_.find(:templates, source_name, ['.erb'])
-    end
-
-    def _recipe_source_path_(source_name)
-      _cookbook_.find(:recipes, source_name, ['.rb'])
-    end
-
-    def _compile_(recipe_name)
-      source_path = _recipe_source_path_(recipe_name)
-      instance_eval File.read(source_path), source_path
-      self
-    end
-
-    # Returns the contents of target.
-    def _result_
-      target.flush
-      target.rewind
-      target.read
-    end
-
-    # Captures output to the target for the duration of a block.  Returns the
-    # capture target.
-    def _capture_(target=StringIO.new)
-      current = @target
-      begin
-        @target = target
-        yield
-      ensure
-        @target = current
-      end
-      target
-    end
-
-    # Truncates the contents of target starting at the first match of pattern
-    # and returns the resulting match data. If a block is given then rewrite
-    # yields the match data to the block and returns the block result.
-    # 
-    # ==== Notes
-    #
-    # Rewrites can be computationally expensive because they require the
-    # current target to be flushed, rewound, and read in it's entirety.  In
-    # practice the performance of rewrite is almost never an issue because
-    # recipe output is usually small in size.
-    #
-    # If performance becomes an issue, then wrap the rewritten bits in a
-    # capture block to reassign the current target to a StringIO (which is
-    # much faster to rewrite), and to limit the scope of the rewritten text.
-    def _rewrite_(pattern)
-      if match = pattern.match(_result_)
-        start = match.begin(0)
-        target.pos = start
-        target.truncate start
-      end
-
-      Kernel.block_given? ? yield(match) : match
-    end
-
-    # Strips whitespace from the end of target and returns the stripped
-    # whitespace, or an empty string if no whitespace is available.
-    def _rstrip_
-      match = _rewrite_(/\s+\z/)
-      match ? match[0] : ''
-    end
-
-    def _(str=nil)
-      clone = _class_.new(_package_, _cookbook_)
-      _singleton_class_.included_modules.each {|mod| clone._extend_ mod }
-      clone.write str if str
-      clone
-    end
-
-    def to_s
-      _result_.rstrip
     end
   end
 end

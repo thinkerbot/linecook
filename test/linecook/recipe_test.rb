@@ -5,9 +5,10 @@ class RecipeTest < Test::Unit::TestCase
   include ShellTest
   include FileMethodsShim
 
-  Recipe = Linecook::Recipe
-  Package = Linecook::Recipe
+  Recipe   = Linecook::Recipe
+  Package  = Linecook::Recipe
   Cookbook = Linecook::Recipe
+  Document = Linecook::Document
 
   # Note these methods are similar to those in Linecook::Test but I prefer to
   # repeat them to keep Recipe tests separate from the Test module tests,
@@ -55,7 +56,7 @@ class RecipeTest < Test::Unit::TestCase
 
   def test_recipe_documentation
     recipe  = Recipe.new do
-      Helper.__send__(:extend_object, self)
+      _extend_ Helper
       echo 'a', 'b c'
       echo 'X Y'.downcase, :z
     end
@@ -68,19 +69,40 @@ echo 'x y z'
   end
 
   #
-  # initialize test
+  # _capture_ test
   #
 
-  def test_initialize_sets_default__target__
-    assert recipe._target_.respond_to?(:write)
+  def test__capture__reassigns_doc_for_block
+    setup_recipe do
+      write 'a'
+      _capture_ do
+        write 'b'
+      end
+      write 'c'
+    end
+
+    assert_equal "ac", recipe._result_
   end
 
   #
-  # target test
+  # _result_ test
   #
 
-  def test_target_is_an_alias_for__target__
-    assert_equal recipe._target_, recipe.target
+  def test__result__returns_formatted_doc_content
+    recipe._doc_.set :indent => '..'
+    recipe._doc_.writeln 'content'
+    assert_equal "..content\n", recipe._result_
+  end
+
+  def test__result__allows_further_modification
+    recipe.write 'abc'
+
+    assert_equal 'abc', recipe._result_
+    assert_equal 'abc', recipe._result_
+
+    recipe.write 'xyz'
+
+    assert_equal 'abcxyz', recipe._result_
   end
 
   #
@@ -214,155 +236,6 @@ echo 'x y z'
   end
 
   #
-  # target_path test
-  #
-
-  def test_target_path_returns_target_name
-    assert_equal 'target_name', recipe.target_path('target_name')
-  end
-
-  #
-  # file_path test
-  #
-
-  def test_file_path_adds_source_path_to_package_at_target_path
-    path = prepare 'file.txt', 'content'
-    assert_equal 'file.txt', recipe.file_path(path)
-    assert_equal 'content', package.content('file.txt')
-  end
-
-  def test_file_path_allows_specification_of_export_options
-    path = prepare 'file.txt', 'content'
-    assert_equal 'file.txt', recipe.file_path(path, :mode => 0600)
-    assert_equal 0600, package.export_options('file.txt')[:mode]
-  end
-
-  def test_file_path_allows_specification_of_target_name
-    path = prepare 'file.txt', 'content'
-    assert_equal 'target/name', recipe.file_path(path, :target_name => 'target/name')
-    assert_equal 'content', package.content('target/name')
-  end
-
-  def test_file_path_finds_files_via_cookbook
-    prepare 'files/dir/file.txt', 'content'
-    cookbook.add method_dir
-
-    assert_equal 'file.txt', recipe.file_path('dir/file.txt')
-    assert_equal 'content', package.content('file.txt')
-  end
-
-  def test_file_path_raises_error_for_unknown_source
-    err = assert_raises(RuntimeError) { recipe.file_path('unknown') }
-    assert_equal 'could not find file: "unknown"', err.message
-  end
-
-  #
-  # recipe_path test
-  #
-
-  def test_recipe_path_builds_and_adds_the_recipe_target_to_package_at_target_path
-    path = prepare 'recipe.rb', 'write "content"'
-    assert_equal 'recipe',  recipe.recipe_path(path)
-    assert_equal 'content', package.content('recipe')
-  end
-
-  def test_recipe_path_allows_specification_of_export_options
-    path = prepare 'recipe.rb', 'write "content"'
-    assert_equal 'recipe', recipe.recipe_path(path, :mode => 0600)
-    assert_equal 0600, package.export_options('recipe')[:mode]
-  end
-
-  def test_recipe_path_allows_specification_of_target_name
-    path = prepare 'recipe.rb', 'write "content"'
-    assert_equal 'target/name', recipe.recipe_path(path, :target_name => 'target/name')
-    assert_equal 'content', package.content('target/name')
-  end
-
-  def test_recipe_path_finds_recipes_via_cookbook
-    prepare 'recipes/recipe.rb', 'write "content"'
-    cookbook.add method_dir
-
-    assert_equal 'recipe', recipe.recipe_path('recipe')
-    assert_equal 'content', package.content('recipe')
-  end
-
-  def test_recipe_path_raises_error_for_unknown_source
-    err = assert_raises(RuntimeError) { recipe.recipe_path('unknown') }
-    assert_equal 'could not find file: "unknown" (tried .rb)', err.message
-  end
-
-  #
-  # template_path test
-  #
-
-  def test_template_path_renders_source_template_to_package
-    path = prepare 'file.txt.erb', 'got <%= obj %>'
-    recipe.attrs[:obj] = 'milk'
-    assert_equal 'file.txt', recipe.template_path(path)
-    assert_equal 'got milk', package.content('file.txt')
-  end
-
-  def test_template_path_allows_specification_of_export_options
-    path = prepare 'file.txt.erb', 'got <%= "milk" %>'
-    assert_equal 'file.txt', recipe.template_path(path, :mode => 0600)
-    assert_equal 0600, package.export_options('file.txt')[:mode]
-  end
-
-  def test_template_path_allows_specification_of_target_name
-    path = prepare 'file.txt.erb', 'got <%= "milk" %>'
-    assert_equal 'target/name', recipe.template_path(path, :target_name => 'target/name')
-    assert_equal 'got milk', package.content('target/name')
-  end
-
-  def test_template_path_allows_specification_of_locals
-    path = prepare 'file.txt.erb', 'got <%= obj %>'
-    assert_equal 'file.txt', recipe.template_path(path, :locals => {'obj' => 'milk'})
-    assert_equal 'got milk', package.content('file.txt')
-  end
-
-  #
-  # render test
-  #
-
-  def test_render_renders_template_with_locals
-    path = prepare 'template.erb', 'got <%= obj %>'
-    assert_equal 'got milk',  recipe.render(path, :obj => 'milk')
-  end
-
-  def test_render_renders_template_with_attrs_by_default
-    path = prepare 'template.erb', 'got <%= obj %>'
-    recipe.attrs[:obj] = 'milk'
-    assert_equal 'got milk',  recipe.render(path)
-  end
-
-  def test_render_finds_recipes_via_cookbook
-    prepare 'templates/template.erb', 'got <%= obj %>'
-    cookbook.add method_dir
-
-    assert_equal 'got milk', recipe.render('template', :obj => 'milk')
-  end
-
-  def test_render_raises_error_for_unknown_source
-    err = assert_raises(RuntimeError) { recipe.render('unknown') }
-    assert_equal 'could not find file: "unknown" (tried .erb)', err.message
-  end
-
-  #
-  # capture_path test
-  #
-
-  def test_capture_path_captures_block_content_at_target_name
-    target_path = recipe.capture_path('target/name') { recipe.target << 'content' }
-    assert_equal 'target/name', target_path
-    assert_equal 'content', package.content('target/name')
-  end
-
-  def test_capture_path_allows_specification_of_export_options
-    assert_equal 'target/name', recipe.capture_path('target/name', :mode => 0600)
-    assert_equal 0600, package.export_options('target/name')[:mode]
-  end
-
-  #
   # capture test
   #
 
@@ -397,35 +270,7 @@ echo 'x y z'
   # indent test
   #
 
-  def test_indent_documentation
-    recipe = Recipe.new do
-      writeln 'a'
-      indent do
-        writeln 'b'
-        outdent do
-          writeln 'c'
-          indent do
-            writeln 'd'
-          end
-          writeln 'c'
-        end
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-
-    assert_equal %q{
-a
-  b
-c
-  d
-c
-  b
-a
-}, "\n" + recipe._result_
-  end
-
-  def test_indent_indents_target_output_during_block
+  def test_indent_increases_indent_by_one_level_during_block
     assert_recipe %q{
       a
         b
@@ -434,22 +279,6 @@ a
     } do
       writeln 'a'
       indent do
-        writeln 'b'
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-  end
-
-  def test_indent_allows_specification_of_indent
-    assert_recipe %q{
-      a
-      .b
-      .b
-      a
-    } do
-      writeln 'a'
-      indent('.') do
         writeln 'b'
         writeln 'b'
       end
@@ -479,47 +308,71 @@ a
     end
   end
 
+  def test_indent_allows_indent_by_more_than_one_level
+    assert_recipe %q{
+      a
+          b
+          b
+      a
+    } do
+      writeln 'a'
+      indent(2) do
+        writeln 'b'
+        writeln 'b'
+      end
+      writeln 'a'
+    end
+  end
+
+  def test_indent_allows_specification_of_a_specific_indent_str
+    assert_recipe %q{
+      a
+      ..b
+      .c
+      .c
+      ..b
+      a
+    } do
+      writeln 'a'
+      indent('..') do
+        writeln 'b'
+        indent('.') do
+          writeln 'c'
+          writeln 'c'
+        end
+        writeln 'b'
+      end
+      writeln 'a'
+    end
+  end
+
   #
   # outdent test
   #
 
-  def test_outdent_does_nothing_outside_of_indent
+  def test_outdent_sets_indent_level_to_zero_for_duration_of_block
     assert_recipe %q{
       a
-       b
-        c
-    } do
-      outdent do
-        writeln 'a'
-        writeln ' b'
-        writeln '  c'
-      end
-    end
-  end
-
-  def test_outdent_strips_the_current_indentation_off_of_a_section
-    assert_recipe %q{
-      a
-      +b
+      .b
       c
-      -x
-      --y
+      .x
+      ..y
       z
       z
-      --y
-      -x
+      ..y
+      .x
       c
-      +b
+      .b
       a
     } do
       writeln 'a'
-      indent('+') do
+      indent('.') do
         writeln 'b'
         outdent do
           writeln 'c'
-          indent('-') do
+          indent do
             writeln 'x'
-            indent('-') do
+            indent do
               writeln 'y'
               outdent do
                 writeln 'z'
@@ -537,141 +390,24 @@ a
     end
   end
 
-  #
-  # callback test
-  #
-
-  def test_callback_captures_block_to_be_later_written_by_write_callback
+  def test_outdent_changes_indent_by_n_if_specified
     assert_recipe %{
-      acebd
+      a
+      ..b
+      .c
+      ..b
+      a
     } do
-      write 'a'
-      callback 'cb' do
-        write 'b'
+      _doc_.set(:indent_str => '.')
+      writeln "a"
+      indent(2) do
+        writeln "b"
+        outdent(-1) do
+          writeln "c"
+        end
+        writeln "b"
       end
-      write 'c'
-      callback 'cb' do
-        writeln 'd'
-      end
-      write 'e'
-      write_callback 'cb'
+      writeln "a"
     end
-  end
-
-  #
-  # _compile_ test
-  #
-
-  def test__compile__evals_recipe_in_the_context_of_self
-    prepare 'recipes/recipe.rb', 'write "content"'
-    cookbook.add method_dir
-
-    assert_equal recipe, recipe._compile_('recipe')
-    assert_equal 'content', recipe._result_
-  end
-
-  #
-  # _result_ test
-  #
-
-  def test__result__returns__target__content
-    recipe._target_.puts 'content'
-    assert_equal "content\n", recipe._result_
-  end
-
-  def test__result__allows_further_modification
-    recipe.write 'abc'
-
-    assert_equal 'abc', recipe._result_
-    assert_equal 'abc', recipe._result_
-
-    recipe.write 'xyz'
-
-    assert_equal 'abcxyz', recipe._result_
-  end
-
-  #
-  # _capture_ test
-  #
-
-  def test__capture__updates_target_for_block_but_not__target_
-    setup_recipe do
-      target <<  'a'
-      _target_ << 'A'
-      _capture_ do
-        target << 'b'
-        _target_ << 'B'
-      end
-      target << 'c'
-      _target_ << 'C'
-    end
-
-    assert_equal "aABcC", recipe._result_
-  end
-
-  #
-  # _rewrite_ test
-  #
-
-  def test__rewrite__truncates_results_at_first_match_of_pattern_and_returns_match
-    setup_recipe do
-      write 'abcabcabc'
-      match = _rewrite_(/ca/)
-      write '.'
-      write match[0].upcase
-    end
-
-    assert_equal "ab.CA", recipe._result_
-  end
-
-  def test__rewrite__returns_nil_for_non_matching_pattern
-    setup_recipe do
-      write 'abc'
-      match = _rewrite_(/xyz/)
-      write '.'
-      write match.inspect
-    end
-
-    assert_equal "abc.nil", recipe._result_
-  end
-
-  def test__rewrite__yield_match_to_block_and_returns_block_result
-    setup_recipe do
-      write 'abcabcabc'
-      write _rewrite_(/ca/) {|match| match[0].upcase }
-    end
-
-    assert_equal "abCA", recipe._result_
-  end
-
-  #
-  # _rstrip_ test
-  #
-
-  def test__rstrip___rstrip_s_target_and_returns_stripped_whitespace
-    recipe.write " a b \n \t\r\n "
-    assert_equal " \n \t\r\n ", recipe._rstrip_
-    assert_equal " a b", recipe._result_
-  end
-
-  def test__rstrip__returns_empty_string_if_no_whitespace_is_available_to_be_stripped
-    recipe.write "a b"
-    assert_equal "", recipe._rstrip_
-    assert_equal "a b", recipe._result_
-  end
-
-  def test__rstrip__removes_all_whitespace_up_to_start
-    recipe.write "  \n "
-    assert_equal "  \n ", recipe._rstrip_
-    assert_equal "", recipe._result_
-  end
-
-  def test__rstrip__removes_lots_of_whitespace
-    whitespace = (" " * 10) + ("\t" * 10) + ("\n" * 10) + (" " * 10)
-    recipe.write "a b"
-    recipe.write whitespace
-
-    assert_equal whitespace, recipe._rstrip_
-    assert_equal "a b", recipe._result_
   end
 end
