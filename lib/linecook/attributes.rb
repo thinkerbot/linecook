@@ -44,14 +44,16 @@ module Linecook
       end
     end
 
-    # A list of file extnames that may be loaded by load_attrs
-    EXTNAMES = %w{.rb .yml .yaml .json}
-
     # An auto-filling nested hash
     attr_reader :attrs
 
     def initialize
       @attrs = Attributes.nest_hash
+    end
+
+    # A list of file extnames that may be loaded by load_attrs
+    def load_attrs_extnames
+      %w{.rb .yml .yaml .json}
     end
 
     # Loads the attributes file into attrs. The loading mechanism depends on
