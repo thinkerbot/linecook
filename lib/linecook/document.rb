@@ -136,21 +136,6 @@ module Linecook
       end
     end
 
-    # Indents n levels for the duration of the block.
-    def indent(n=1)
-      with(:indent => n) do
-        yield
-      end
-    end
-
-    # Outdents for the duration of the block.  A negative number can be
-    # provided to outdent n levels.
-    def outdent(n=nil)
-      with(:indent => n) do
-        yield
-      end
-    end
-
     # Clears all lines.
     def clear
       @first = Line.new(format)
