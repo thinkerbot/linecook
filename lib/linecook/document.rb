@@ -9,64 +9,110 @@ module Linecook
       @last  = @first.last
     end
 
+    # Returns the first line in lines.
     def first
-      # automatically correct if first has been prepended
-      @first = @first.first
+      @first = @first.first  # auto update for prepend
     end
 
+    # Returns the last line in lines.
     def last
-      # automatically correct if last has been appended
-      @last = @last.last
+      @last = @last.last     # auto update for append
     end
 
+    # Returns an array of lines in self.
     def lines
-      map
+      map {|line| line }
     end
 
+    # Yields each line in lines to the block.
     def each
-      current = first
-      while current
-        yield current
-        current = current.nex
+      line = first
+      while line
+        yield line
+        line = line.nex
       end
       self
     end
 
+    # Same as each but traverses lines in reverse order.
     def reverse_each
-      current = last
-      while current
-        yield current
-        current = current.pre
+      line = last
+      while line
+        yield line
+        line = line.pre
       end
       self
     end
 
-    def pos(line)
-      inject(0) do |pos, current|
-        return pos if current == line
-        pos + 1
-      end
-    end
-
+    # Returns the length of all content in self
     def length
-      count
+      inject(0) {|length, line| length + line.length }
     end
 
-    def at(index)
-      if index < 0
-        index = length + index
+    # Returns the line and column at the given position (as an array).
+    # Negative positions count back from length.  Returns nil for out-of-range
+    # positions.
+    def at(pos)
+      if pos < 0
+        pos = length + pos
       end
 
-      inject(0) do |pos, line|
-        if pos == index
-          return line
+      if pos >= 0
+        inject(0) do |line_end_pos, line|
+          line_end_pos += line.length
+          if line_end_pos > pos
+            col = pos - line_end_pos + line.length
+            return [line, col]
+          end
+          line_end_pos
         end
-        pos + 1
       end
 
       nil
     end
 
+    # Returns the line at the specified index (lineno). A negative index
+    # counts back from last.  Returns nil for an out-of-range index.
+    def line(index)
+      if index < 0
+        index = count + index
+        return nil if index < 0
+      end
+
+      if index >= 0
+        inject(0) do |current, line|
+          if current == index
+            return line
+          end
+          current + 1
+        end
+      end
+
+      nil
+    end
+
+    # Writes str to last.  Returns last.
+    def write(str)
+      last.write(str)
+      last
+    end
+
+    # Writes a line to self and returns the new line.
+    def writeln(str)
+      write "#{str}\n"
+    end
+
+    # Inserts str at the specified pos. Negative positions count back from
+    # length.  Raises a RangeError for out-of-range positions.
+    def insert(pos, str)
+      line, col = at(pos)
+      if line.nil?
+        raise RangeError, "pos out of range: #{pos}"
+      end
+      line.insert(col, str)
+    end
+
+    # Returns the current format for self (ie the format of last).
     def format
       last.format
     end
@@ -105,31 +151,8 @@ module Linecook
       end
     end
 
-    def write(str)
-      last.write(str)
-    end
-
-    # Writes a line to self.
-    def writeln(str)
-      write "#{str}\n"
-    end
-
-    def insert(pos, str)
-      inject(0) do |current_pos, line|
-        current_pos += line.length
-
-        if current_pos > pos
-          col = pos - (current_pos - line.length)
-          line.insert(col, str)
-          return line
-        end
-
-        current_pos
-      end
-
-      write(' ' * (pos - current_pos) + str)
-    end
-
+    # Renders each line to the target.  The render output is appended to
+    # target using '<<'.
     def render_to(target)
       each do |line|
         target << line.render
