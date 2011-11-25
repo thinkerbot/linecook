@@ -36,7 +36,7 @@ module Linecook
     # The unformatted content for self
     attr_reader   :content
 
-    def initialize(format=nil, pre=nil, nex=nil, content="")
+    def initialize(format = Format.new, pre = nil, nex = nil, content = "")
       @format = format
       @pre = pre
       @nex = nex

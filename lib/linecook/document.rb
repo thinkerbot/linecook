@@ -1,12 +1,11 @@
 require 'linecook/line'
-require 'linecook/format'
 
 module Linecook
   class Document
     include Enumerable
 
-    def initialize(format=Format.new)
-      @first = Line.new(format)
+    def initialize(first = Line.new)
+      @first = first
       @last  = @first.last
     end
 

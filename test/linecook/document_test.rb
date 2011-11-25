@@ -18,9 +18,10 @@ class DocumentTest < Test::Unit::TestCase
   # initialize test
   #
 
-  def test_initialize_sets_format
-    doc = Document.new Format.new(:indent => "..")
-    assert_equal "..", doc.format.indent
+  def test_initialize_sets_first
+    line = Line.new
+    doc = Document.new line
+    assert_equal line, doc.first
   end
 
   #
