@@ -148,7 +148,7 @@ module Linecook
 
       if col > ncols
         eol = complete? ? "\n" : ""
-        @content = content.chomp(eol).ljust(col) + eol
+        content.replace content.chomp(eol).ljust(col) + eol
       end
 
       rewrite content.insert(col, str)
