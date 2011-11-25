@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.expand_path('../../test_helper', __FILE__)
 require 'linecook/format'
 
 class FormatTest < Test::Unit::TestCase

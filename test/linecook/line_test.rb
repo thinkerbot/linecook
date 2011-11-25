@@ -1,4 +1,4 @@
-require 'test/unit'
+require File.expand_path('../../test_helper', __FILE__)
 require 'linecook/line'
 
 class LineTest < Test::Unit::TestCase

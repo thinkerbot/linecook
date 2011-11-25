@@ -1,9 +1,8 @@
-require 'test/unit'
+require File.expand_path('../../test_helper', __FILE__)
 require 'linecook/document'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
-  Format = Linecook::Format
   Line = Linecook::Line
 
   attr_accessor :doc
