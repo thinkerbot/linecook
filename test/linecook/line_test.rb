@@ -119,36 +119,6 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
-  # each test
-  #
-
-  def test_each_calls_block_with_each_line
-    a, b, c = abc_lines
-
-    lines = []
-    b.each do |line|
-      lines << line
-    end
-
-    assert_equal [a, b, c], lines
-  end
-
-  #
-  # reverse_each test
-  #
-
-  def test_reverse_each_calls_block_with_each_line_in_reverse
-    a, b, c = abc_lines
-
-    lines = []
-    b.reverse_each do |line|
-      lines << line
-    end
-
-    assert_equal [c, b, a], lines
-  end
-
-  #
   # complete? test
   #
 

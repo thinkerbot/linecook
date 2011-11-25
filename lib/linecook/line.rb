@@ -69,16 +69,19 @@ module Linecook
 
     # Returns an array of lines that self is a part of.
     def lines
-      map {|line| line }
+      lines = []
+      line  = first
+      while line
+        lines << line
+        line = line.nex
+      end
+      lines
     end
 
     # Returns the position of content in lines (ie assuming the content of all
     # the lines were joined together).
     def pos
-      inject(0) do |pos, line|
-        return pos if line == self
-        pos + line.length
-      end
+      first? ? 0 : pre.pos + pre.length
     end
 
     # Returns the length of content
@@ -89,26 +92,6 @@ module Linecook
     # Returns the index of self in lines.
     def lineno
       pre ? pre.lineno + 1 : 0
-    end
-
-    # Yields each line in lines to the block.
-    def each
-      line = first
-      while line
-        yield line
-        line = line.nex
-      end
-      self
-    end
-
-    # Same as each but traverses lines in reverse order. 
-    def reverse_each
-      line = last
-      while line
-        yield line
-        line = line.pre
-      end
-      self
     end
 
     # Returns true if content ends with a newline character.
