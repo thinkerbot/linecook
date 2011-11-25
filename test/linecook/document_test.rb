@@ -1,6 +1,5 @@
 require 'test/unit'
 require 'linecook/document'
-require 'logger'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
@@ -256,7 +255,7 @@ class DocumentTest < Test::Unit::TestCase
 
   def test_insert_accepts_negative_pos
     doc.write "abc\nyz"
-    doc.insert -2, "pqr\nx"
+    doc.insert(-2, "pqr\nx")
 
     assert_equal "abc\npqr\nxyz", doc.to_s
   end

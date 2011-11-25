@@ -110,7 +110,7 @@ module Linecook
       end
 
       lines.inject(self) do |tail, content|
-        Line.new(format, tail, tail.nex, content) 
+        Line.new(format, tail, tail.nex, content)
       end
 
       self

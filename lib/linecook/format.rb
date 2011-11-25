@@ -60,7 +60,7 @@ module Linecook
     end
 
     def render(line)
-      endofline = line =~ /\r?\n\z/ ? (eol || $&) : nil 
+      endofline = line =~ /\r?\n\z/ ? (eol || $&) : nil
       line = $` || line.dup
 
       line.rstrip! if rstrip
