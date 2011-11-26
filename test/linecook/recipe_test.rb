@@ -69,6 +69,14 @@ echo 'x y z'
   end
 
   #
+  # _globals_ test
+  #
+
+  def test__globals__returns_the_package_globals
+    assert_equal package.globals, recipe._globals_
+  end
+
+  #
   # _ test
   #
 
