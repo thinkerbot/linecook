@@ -69,6 +69,42 @@ echo 'x y z'
   end
 
   #
+  # _ test
+  #
+
+  def test___returns_child_recipe_with_new_document
+    recipe.write "abc"
+    child = recipe._
+    child.write "xyz"
+
+    assert_equal recipe._package_, child._package_
+    assert_equal recipe._cookbook_, child._cookbook_
+
+    assert_equal "abc", recipe._result_
+    assert_equal "xyz", child._result_
+  end
+
+  def test___child_inherits__locals__
+    child = recipe._
+    assert_equal recipe._locals_, child._locals_
+  end
+
+  def test___child_inherits_attributes
+    child = recipe._
+    assert_equal recipe.attributes, child.attributes
+  end
+
+  def test___writes_str_to_child_if_given
+    child = recipe._("abc")
+    assert_equal "abc", child._result_
+  end
+
+  def test___evaluates_block_in_contenxt_of_child_if_given
+    child = recipe._ { write "abc" }
+    assert_equal "abc", child._result_
+  end
+
+  #
   # _capture_ test
   #
 

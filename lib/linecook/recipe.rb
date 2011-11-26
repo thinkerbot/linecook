@@ -72,8 +72,8 @@ module Linecook
     # including local data and attributes.
     def _initialize_clone_(orig)
       super
-      @_package_ = orig.package
-      @_cookbook_ = orig.cookbook
+      @_package_ = orig._package_
+      @_cookbook_ = orig._cookbook_
       @_locals_ = orig._locals_
       @_doc_ = orig._doc_
 
@@ -82,16 +82,19 @@ module Linecook
     end
 
     # Initializes children created by _beget_ by setting _doc_ to a new
-    # Document.
+    # Document.  Note that the child shares the same locals and attributes as
+    # the parent, and so can (un)intentionally cause changes in the parent.
     def _initialize_child_(orig)
       super
       @_doc_ = Document.new
     end
 
+    # Returns a child of self with it's own Document.  Writes str to the
+    # child, and evaluates the block in the context of the child, if given.
     def _(str=nil, &block)
       child = _beget_
       child.write str if str
-      child.instance_eva(&block) if block
+      child.instance_eval(&block) if block
       child
     end
 

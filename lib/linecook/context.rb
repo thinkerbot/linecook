@@ -51,6 +51,7 @@ module Linecook
     # Returns a clone of self created by _clone_, but also calls
     # _initialize_child_ on the clone.
     def _beget_
+      clone = _clone_
       clone._initialize_child_(self)
       clone
     end
