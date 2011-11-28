@@ -6,134 +6,123 @@ module Linecook
     # The package environment
     attr_reader :env
 
-    # A registry of (target_path, source) pairs recording what is included in
-    # the package.
-    attr_reader :registry
-
-    # A hash of the default export options.  These are merged with the export
-    # opts for a given target path.
-    attr_reader :default_export_options
-
-    # A hash of (target_path, Hash) pairs identifing export options for a
-    # target path.  See on_export.
-    attr_reader :export_option_overrides
-
     # A hash of global to self
     attr_reader :globals
 
+    # A registry of (target_path, source_path) pairs recording what files are
+    # included in the package.
+    attr_reader :registry
+
+    # A hash of (target_path, Hash) pairs identifing export options for a
+    # target path.  See on_export.
+    attr_reader :export_options
+
+    # A hash of default export options.
+    attr_reader :default_export_options
+
     def initialize(env={})
       @env = env
-      @registry = {}
-      @default_export_options  = {}
-      @export_option_overrides = {}
       @globals = {}
+      @registry = {}
+      @export_options = {}
+      @default_export_options  = {}
     end
 
-    # Resolves a source (ex a String, StringIO, or Tempfile) to a source path.
-    # Non-String sources are converted to sources by calling`source.path`.
-    # Returns the expanded source path, or nil if the source is nil.
-    def resolve_source_path(source)
-      if source.nil?
-        return nil
+    # Registers the target path with the source path and export options. The
+    # source path should be the path to a file or directory to include.  To
+    # make an empty file or directory use :file or :dir as the source_path.
+    #
+    # Raises an error if the target path is already registered.
+    def register(target_path, source_path, options={})
+      if registry.has_key?(target_path)
+        raise "already registered: #{target_path.inspect}"
       end
 
-      unless source_path?(source)
-        source = source.path
-      end
-
-      File.expand_path(source)
-    end
-
-    # Registers the source to the target_path.  Raises an error if a different
-    # source is already registerd to the target_path.
-    def register(target_path, source, options={})
-      if current = source_path(target_path)
-        unless current == resolve_source_path(source)
-          raise "already registered: #{target_path.inspect} (#{current.inspect})"
-        end
-      end
-
-      if !source.nil? && source_path?(source)
-        source = File.expand_path(source)
-
-        if File.directory?(source)
-          options[:as] ||= :dir
-        end
-      end
-
-      registry[target_path] = source
+      source_path = resolve_source_path(source_path)
+      registry[target_path] = source_path
       on_export(target_path, options)
 
-      source
+      source_path
     end
 
-    # Removes all target paths that reference a source in the registry.
-    def unregister(source)
-      source_path = resolve_source_path(source)
-      registry.delete_if do |target_path, current|
-        source_path == resolve_source_path(current)
-      end
+    # Removes a target path from the registry.  Returns the source path if one
+    # was registered.
+    def unregister(target_path)
+      registry.delete(target_path)
+      export_options.delete(target_path)
+    end
+
+    # Sets export options for the target path.  Available options (as
+    # symbols):
+    #
+    #   move:: When set to true the source will be moved into place
+    #          rather than copied (the default)
+    #   mode:: Sets the mode of the target
+    #
+    # Unless specified, the values in default_export_options will be used.
+    def on_export(target_path, options={})
+      export_options[target_path] = default_export_options.merge(options)
     end
 
     # Generates a tempfile for the target path and registers it to self.
     # Returns the open tempfile.
     def add(target_path, options={})
-      source  = Tempfile.new File.basename(target_path)
-      options = {:move => true}.merge(options)
-      register target_path, source, options
+      options  = {
+        :move => true
+      }.merge(options)
+
+      # preserve a reference to tempfile so that it will not be unlinked
+      # before it can be moved to the target path during export
+      tempfile = Tempfile.new File.basename(target_path)
+      options[:tempfile] = tempfile
+
+      if block_given?
+        begin
+          yield tempfile
+        ensure
+          tempfile.close
+        end
+      end
+
+      register target_path, tempfile.path, options
+      tempfile
     end
 
-    # Registers the target_path as a dir.  Returns nil.
+    # Adds an empty dir, and all parent directories. Returns nil.
     def add_dir(target_path, options={})
-      options[:as] = :dir
-      register target_path, nil, options
+      register target_path, :dir, options
     end
 
-    # Removes a target path from the registry.  Returns the source if one was
-    # registered.
-    def rm(target_path)
-      registry.delete(target_path)
-    end
+    alias rm unregister
 
     # Returns the source path registered to target path, or nil if the target
     # path is not registered.
     def source_path(target_path)
-      resolve_source_path registry[target_path]
+      registry[target_path]
     end
 
-    # Returns an array of target paths that register the source.
-    def target_paths(source)
-      source_path = resolve_source_path(source)
+    # Returns an array of target paths that register the source_path.
+    def target_paths(source_path)
+      source = resolve_source_path(source_path)
 
       target_paths = []
-      registry.delete_if do |target_path, current|
-        if source_path == resolve_source_path(current)
+      registry.each_pair do |target_path, current|
+        if current == source
           target_paths << target_path
         end
       end
-
       target_paths
     end
 
-    # Returns the content for a target, as registered in self.  Returns nil if
-    # the target is not registered.
+    # Returns the content for the target path.  Returns nil if the target path
+    # is not registered.
     def content(target_path, length=nil, offset=nil)
-      source = registry[target_path]
-
-      if source.nil?
-        return nil
-      end
-
-      unless source_path?(source)
-        source.flush unless source.closed?
-      end
-
-      source_path = resolve_source_path(source)
-      File.read(source_path, length, offset)
+      source = source_path(target_path)
+      source ? File.read(source, length, offset) : nil
     end
 
     # Increments target_path until an unregistered path is found and returns
-    # the result.
+    # the result in the format "target_path.count".
     def next_target_path(target_path='file')
       count = 0
       registry.each_key do |current|
@@ -149,43 +138,11 @@ module Linecook
       target_path
     end
 
-    # Closes all open sources in the registry and returns self.
-    def close
-      registry.each_value do |source|
-        unless source.nil? || source_path?(source)
-          source.close unless source.closed?
-        end
-      end
-      self
-    end
-
-    # Sets export options for the target path.  Available options include:
-    #
-    #   Option    Description
-    #   :move     When set to true the target source will be moved into place
-    #             rather than copied (the default)
-    #   :mode     Sets the mode of the target to the option value
-    #
-    def on_export(target_path, options={})
-      export_option_overrides[target_path] = options
-    end
-
-    # Returns a hash of the export options for a target path, equivalent to
-    # the default_export_options merged with any overriding options set for
-    # the target.
-    def export_options(target_path)
-      overrides = export_option_overrides[target_path] || {}
-      default_export_options.merge(overrides)
-    end
-
     def export(dir)
-      close
-
       registry.keys.sort.each do |target_path|
-        source      = registry[target_path]
         export_path = File.join(dir, target_path)
-        source_path = resolve_source_path(source)
-        options     = export_options(target_path)
+        source_path = registry[target_path]
+        options     = export_options[target_path] || default_export_options
 
         if source_path != export_path
           if File.exists?(export_path)
@@ -201,10 +158,17 @@ module Linecook
           export_dir = File.dirname(export_path)
           FileUtils.mkdir_p(export_dir)
 
-          if options[:as] == :dir
-            export_dir(source_path, export_path, options)
+          case source_path
+          when :file
+            FileUtils.touch export_path
+          when :dir
+            FileUtils.mkdir export_path
           else
-            export_file(source_path, export_path, options)
+            if File.directory?(source_path)
+              export_dir(source_path, export_path, options)
+            else
+              export_file(source_path, export_path, options)
+            end
           end
         end
 
@@ -220,33 +184,26 @@ module Linecook
 
     private
 
-    # helper to determine if a source is indeed the path to a source file (ie
-    # a String) or if it must be treated as some type of IO.
-    def source_path?(source) # :nodoc:
-      source.kind_of?(String)
+    def resolve_source_path(source_path) # :nodoc:
+      case source_path
+      when :file, :dir then source_path
+      else File.expand_path(source_path.to_s)
+      end
     end
 
     def export_dir(source_path, export_path, options) # :nodoc:
-      if source_path.nil?
-        FileUtils.mkdir(export_path)
+      if options[:move]
+        FileUtils.mv(source_path, export_path)
       else
-        if options[:move]
-          FileUtils.mv(source_path, export_path)
-        else
-          FileUtils.cp_r(source_path, export_path)
-        end
+        FileUtils.cp_r(source_path, export_path)
       end
     end
 
     def export_file(source_path, export_path, options) # :nodoc:
-      if source_path.nil?
-        FileUtils.touch(export_path)
+      if options[:move]
+        FileUtils.mv(source_path, export_path)
       else
-        if options[:move]
-          FileUtils.mv(source_path, export_path)
-        else
-          FileUtils.cp(source_path, export_path)
-        end
+        FileUtils.cp(source_path, export_path)
       end
     end
   end

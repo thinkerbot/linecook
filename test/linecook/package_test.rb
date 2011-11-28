@@ -17,86 +17,37 @@ class PackageTest < Test::Unit::TestCase
   end
 
   #
-  # resolve_source_path test
-  #
-
-  def test_resolve_source_path_resolves_sources_to_path_using_path_method
-    source = OpenStruct.new :path => '/source/path'
-    assert_equal '/source/path', package.resolve_source_path(source)
-  end
-
-  def test_resolve_source_path_uses_source_as_path_if_it_does_not_have_a_path_method
-    assert_equal '/source/path', package.resolve_source_path('/source/path')
-  end
-
-  def test_resolve_source_path_expands_path
-    assert_equal File.expand_path('source/path'), package.resolve_source_path('source/path')
-  end
-
-  #
   # register test
   #
 
   def test_register_registers_source_to_target_path
-    package.register('target/path', 'source/path')
-    assert_equal File.expand_path('source/path'), package.registry['target/path']
+    source_path = path('source/path')
+    package.register('target/path', source_path)
+    assert_equal source_path, package.registry['target/path']
   end
 
-  def test_register_accepts_nil_source_paths
-    package.register('target/dir', nil)
-    assert_equal nil, package.registry['target/dir']
-    assert_equal true, package.registry.has_key?('target/dir')
+  def test_register_expands_source_path
+    assert_equal File.expand_path('source/path'), package.register('target/path', 'source/path')
   end
 
-  def test_register_raises_error_for_target_path_registered_to_a_different_source
+  def test_register_raises_error_for_target_path_is_already_registered
     package.register('target/path', 'source/a')
-
     err = assert_raises(RuntimeError) { package.register('target/path', 'source/b') }
-    assert_equal %{already registered: "target/path" ("#{File.expand_path('source/a')}")}, err.message
-  end
-
-  def test_register_does_not_raise_error_for_double_register_of_same_source_and_target_path
-    package.register('target/path', 'source/a')
-    assert_nothing_raised { package.register('target/path', 'source/a') }
-  end
-
-  def test_register_checks_resolved_source_paths_to_determine_target_path_conflict
-    source = Tempfile.new('source')
-    package.register('target/path', source.path)
-    assert_nothing_raised { package.register('target/path', source) }
+    assert_equal %{already registered: "target/path"}, err.message
   end
 
   def test_register_accepts_export_options
     package.register('target/path', 'source/path', :move => true)
-    assert_equal true, package.export_options('target/path')[:move]
-  end
-
-  def test_register_guesses_directory_for_directory_source
-    source_path = prepare_dir('dir')
-
-    assert_equal source_path, package.register('target/dir', source_path)
-    assert_equal source_path, package.source_path('target/dir')
-    assert_equal :dir, package.export_options('target/dir')[:as]
+    assert_equal true, package.export_options['target/path'][:move]
   end
 
   #
   # unregister test
   #
 
-  def test_unregister_removes_source_path_from_registry
-    package.register('target/a', 'source/one')
-    package.register('target/b', 'source/one')
-    package.register('target/c', 'source/two')
-    package.unregister('source/one')
-
-    assert_equal({'target/c' => File.expand_path('source/two')}, package.registry)
-  end
-
-  def test_unregister_resolves_source_to_source_path
-    source = Tempfile.new('source')
-    package.register('target/path', source.path)
-    package.unregister(source)
-
+  def test_unregister_removes_target_path_from_registry
+    package.register('target/path', 'source/a')
+    package.unregister('target/path')
     assert_equal false, package.registry.has_key?('target/path')
   end
 
@@ -113,12 +64,13 @@ class PackageTest < Test::Unit::TestCase
 
   def test_added_tempfiles_are_marked_for_move_by_default
     package.add('target/path')
-    assert_equal true, package.export_options('target/path')[:move]
+    assert_equal true, package.export_options['target/path'][:move]
   end
 
   def test_add_accepts_export_options
-    package.add('target/path', :mode => 0640)
-    assert_equal 0640, package.export_options('target/path')[:mode]
+    package.add('target/path', :mode => 0640, :move => false)
+    assert_equal 0640, package.export_options['target/path'][:mode]
+    assert_equal false, package.export_options['target/path'][:move]
   end
 
   #
@@ -126,15 +78,13 @@ class PackageTest < Test::Unit::TestCase
   #
 
   def test_add_dir_registers_a_directory_in_registry_at_the_specified_target_path
-    assert_equal nil, package.add_dir('target/dir')
-    assert_equal nil, package.source_path('target/dir')
-    assert_equal true, package.registry.has_key?('target/dir')
-    assert_equal :dir, package.export_options('target/dir')[:as]
+    package.add_dir('target/dir')
+    assert_equal :dir, package.source_path('target/dir')
   end
 
   def test_add_dir_accepts_export_options
     package.add_dir('target/dir', :mode => 0640)
-    assert_equal 0640, package.export_options('target/dir')[:mode]
+    assert_equal 0640, package.export_options['target/dir'][:mode]
   end
 
   #
@@ -181,13 +131,6 @@ class PackageTest < Test::Unit::TestCase
     assert_equal 'content', package.content('target/path')
   end
 
-  def test_content_flushes_source_if_applicable
-    source = Tempfile.new 'source'
-    package.register 'target/path', source
-    source << 'content'
-    assert_equal 'content', package.content('target/path')
-  end
-
   def test_content_returns_the_specified_length_and_offset
     source_path = prepare('source', 'content')
     package.register 'target/path', source_path
@@ -195,9 +138,7 @@ class PackageTest < Test::Unit::TestCase
   end
 
   def test_content_returns_the_specified_length_and_offset_for_source
-    source = Tempfile.new 'source'
-    package.register 'target/path', source
-    source << 'content'
+    package.add('target/path') {|io| io << 'content' }
     assert_equal 'nte', package.content('target/path', 3, 2)
   end
 
@@ -220,36 +161,22 @@ class PackageTest < Test::Unit::TestCase
   end
 
   #
-  # close test
-  #
-
-  def test_close_closes_open_sources_in_registry
-    a = package.add('a')
-    b = package.add('b')
-    a.close
-
-    assert a.closed?
-    assert !b.closed?
-
-    package.close
-
-    assert a.closed?
-    assert b.closed?
-  end
-
-  def test_close_returns_self
-    assert_equal package, package.close
-  end
-
-  #
   # on_export test
   #
 
   def test_on_export_sets_export_options_for_target_path
     package.on_export('target/path', :move => true)
-    assert_equal({:move => true}, package.export_options('target/path'))
+    assert_equal true, package.export_options['target/path'][:move]
   end
 
+  def test_on_export_merges_default_export_options_unless_specified
+    package.register('target/path', 'source/path')
+    package.default_export_options[:mode] = 0640
+    package.on_export 'target/path', :move => true
+
+    assert_equal 0640, package.export_options['target/path'][:mode]
+    assert_equal true, package.export_options['target/path'][:move]
+  end
   #
   # export test
   #
@@ -273,15 +200,15 @@ class PackageTest < Test::Unit::TestCase
     assert_equal 'content', File.read(path('export/dir/target/path'))
   end
 
-  def test_export_makes_empty_file_for_targets_with_nil_source
-    package.register('target/path', nil)
+  def test_export_makes_empty_file_for_targets_with_file_source_path
+    package.register('target/path', :file)
     package.export path('export/dir')
 
     assert_equal "", content('export/dir/target/path')
   end
 
-  def test_export_makes_directories_for_targets_with_nil_source_and_marked_as_dir
-    package.register('target/path', nil, :as => :dir)
+  def test_export_makes_directories_for_targets_with_dir_source_path
+    package.register('target/path', :dir)
     package.export path('export/dir')
 
     assert_equal true, File.directory?(path('export/dir/target/path'))
@@ -317,7 +244,7 @@ class PackageTest < Test::Unit::TestCase
     prepare('source/dir/b/c', 'c')
 
     package.register('dir', path('source/dir'))
-    package.add('dir/file.txt') << 'content'
+    package.add('dir/file.txt') {|io| io << 'content' }
     package.export path('export')
 
     assert_equal 'content', File.read(path('export/dir/file.txt'))
@@ -354,26 +281,9 @@ class PackageTest < Test::Unit::TestCase
     assert_equal '100600', mode('export/dir/target/path')
   end
 
-  def test_export_uses_default_export_options
-    source_path = prepare('source', 'content')
-    package.register('target/path', source_path)
-    package.default_export_options[:mode] = 0640
-    package.export path('export/dir')
-
-    assert_equal '100640', mode('export/dir/target/path')
-  end
-
-  def test_export_closes_package
-    a = package.add('a')
-    a << 'content'
-    package.export path('export/dir')
-    assert a.closed?
-    assert_equal 'content', content('export/dir/a')
-  end
-
   def test_export_allows_export_into_existing_directory
     prepare 'dir/a', 'a'
-    package.add('b') << 'b'
+    package.add('b') {|io| io << 'b' }
 
     package.export path('dir')
     assert_equal 'a', content('dir/a')
@@ -381,9 +291,8 @@ class PackageTest < Test::Unit::TestCase
   end
 
   def test_export_raises_error_for_existing_file
-    previous = prepare 'dir/file', 'previous'
-    current  = package.add('file')
-    current << 'current'
+    prepare 'dir/file', 'previous'
+    package.add('file') {|io| io << 'current' }
 
     err = assert_raises(RuntimeError) { package.export path('dir') }
     assert_equal "already exists: #{path('dir/file').inspect}", err.message
@@ -391,9 +300,8 @@ class PackageTest < Test::Unit::TestCase
   end
 
   def test_export_continues_export_if_block_returns_true_for_existing_file
-    previous = prepare 'dir/file', 'previous'
-    current  = package.add('file')
-    current << 'current'
+    prepare 'dir/file', 'previous'
+    package.add('file') {|io| io << 'current' }
 
     package.export path('dir') do |src, dest|
       true
@@ -403,9 +311,8 @@ class PackageTest < Test::Unit::TestCase
   end
 
   def test_export_skips_if_block_returns_false_for_existing_file
-    previous = prepare 'dir/file', 'previous'
-    current  = package.add('file')
-    current << 'current'
+    prepare 'dir/file', 'previous'
+    package.add('file') {|io| io << 'current' }
 
     package.export path('dir') do |src, dest|
       false
