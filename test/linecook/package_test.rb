@@ -20,7 +20,7 @@ class PackageTest < Test::Unit::TestCase
   # register test
   #
 
-  def test_register_registers_source_to_target_path
+  def test_register_registers_source_to_path
     source_path = path('source/path')
     package.register('target/path', source_path)
     assert_equal source_path, package.registry['target/path']
@@ -30,7 +30,7 @@ class PackageTest < Test::Unit::TestCase
     assert_equal File.expand_path('source/path'), package.register('target/path', 'source/path')
   end
 
-  def test_register_raises_error_for_target_path_is_already_registered
+  def test_register_raises_error_if_path_is_already_registered
     package.register('target/path', 'source/a')
     err = assert_raises(RuntimeError) { package.register('target/path', 'source/b') }
     assert_equal %{already registered: "target/path"}, err.message
@@ -45,7 +45,7 @@ class PackageTest < Test::Unit::TestCase
   # unregister test
   #
 
-  def test_unregister_removes_target_path_from_registry
+  def test_unregister_removes_path_from_registry
     package.register('target/path', 'source/a')
     package.unregister('target/path')
     assert_equal false, package.registry.has_key?('target/path')
@@ -55,7 +55,7 @@ class PackageTest < Test::Unit::TestCase
   # add test
   #
 
-  def test_add_adds_and_returns_a_tempfile_at_the_specified_target_path
+  def test_add_adds_and_returns_a_tempfile_at_the_specified_path
     tempfile = package.add('target/path')
     assert_equal Tempfile, tempfile.class
     assert_equal false, tempfile.closed?
@@ -77,7 +77,7 @@ class PackageTest < Test::Unit::TestCase
   # add_dir test
   #
 
-  def test_add_dir_registers_a_directory_in_registry_at_the_specified_target_path
+  def test_add_dir_registers_a_directory_in_registry_at_the_specified_path
     package.add_dir('target/dir')
     assert_equal :dir, package.source_path('target/dir')
   end
@@ -91,7 +91,7 @@ class PackageTest < Test::Unit::TestCase
   # rm test
   #
 
-  def test_rm_removes_target_path_from_registry
+  def test_rm_removes_path_from_registry
     package.register('target/path', 'source/a')
     package.rm('target/path')
     assert_equal false, package.registry.has_key?('target/path')
@@ -101,24 +101,24 @@ class PackageTest < Test::Unit::TestCase
   # source_path test
   #
 
-  def test_source_path_returns_the_source_path_registered_to_the_target_path
+  def test_source_path_returns_the_source_path_registered_to_the_path
     source = package.add('target/path')
     assert_equal source.path, package.source_path('target/path') 
   end
 
-  def test_source_path_returns_nil_if_nothing_is_registered_to_target_path
+  def test_source_path_returns_nil_if_nothing_is_registered_to_path
     assert_equal nil, package.source_path('target/path')
   end
 
   #
-  # target_paths test
+  # paths test
   #
 
-  def test_target_paths_returns_all_target_paths_that_register_the_source
+  def test_paths_returns_all_package_paths_that_register_the_source
     source_path = path('source/path')
     package.register('target/a', source_path)
     package.register('target/b', source_path)
-    assert_equal ['target/a', 'target/b'], package.target_paths(source_path)
+    assert_equal ['target/a', 'target/b'], package.paths(source_path)
   end
 
   #
@@ -147,24 +147,24 @@ class PackageTest < Test::Unit::TestCase
   end
 
   #
-  # next_target_path test
+  # next_path test
   #
 
-  def test_next_target_path_increments_target_name_if_already_registered
-    assert_equal 'target/path',   package.next_target_path('target/path')
+  def test_next_path_increments_path_name_if_already_registered
+    assert_equal 'target/path',   package.next_path('target/path')
 
     package.register('target/path', 'source')
-    assert_equal 'target/path.1', package.next_target_path('target/path')
+    assert_equal 'target/path.1', package.next_path('target/path')
 
     package.register('target/path.1', 'source')
-    assert_equal 'target/path.2', package.next_target_path('target/path')
+    assert_equal 'target/path.2', package.next_path('target/path')
   end
 
   #
   # on_export test
   #
 
-  def test_on_export_sets_export_options_for_target_path
+  def test_on_export_sets_export_options_for_path
     package.on_export('target/path', :move => true)
     assert_equal true, package.export_options['target/path'][:move]
   end
