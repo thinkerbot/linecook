@@ -43,50 +43,45 @@ module Linecook
     # The recipe Cookbook
     attr_reader :_cookbook_
 
-    # A hash just for self
-    attr_reader :_locals_
-
     # The recipe Document
-    attr_reader :_doc_
+    attr_reader :_document_
 
-    def initialize(package = Package.new, cookbook = Cookbook.new, doc = Document.new)
-      @_package_ = package
+    # The recipe locals hash
+    attr_reader :locals
+
+    def initialize(package = Package.new, cookbook = Cookbook.new, document = Document.new)
+      @_package_  = package
       @_cookbook_ = cookbook
-      @_locals_ = {}
-      @_doc_ = doc
+      @_document_ = document
 
       @attributes = {}
       @attrs = nil
+      @locals = {}
 
       if Kernel.block_given?
         instance_eval(&Proc.new)
       end
     end
 
-    # Returns the package globals.
-    def _globals_
-      _package_.globals
-    end
-
     # Initializes clones created by _clone_ by passing forward all state,
     # including local data and attributes.
     def _initialize_clone_(orig)
       super
-      @_package_ = orig._package_
+      @_package_  = orig._package_
       @_cookbook_ = orig._cookbook_
-      @_locals_ = orig._locals_
-      @_doc_ = orig._doc_
+      @_document_ = orig._document_
 
       @attributes = orig.attributes
       @attrs = nil
+      @locals = orig.locals
     end
 
-    # Initializes children created by _beget_ by setting _doc_ to a new
+    # Initializes children created by _beget_ by setting _document_ to a new
     # Document.  Note that the child shares the same locals and attributes as
     # the parent, and so can (un)intentionally cause changes in the parent.
     def _initialize_child_(orig)
       super
-      @_doc_ = Document.new
+      @_document_ = Document.new
     end
 
     # Returns a child of self with it's own Document.  Writes str to the
@@ -98,21 +93,9 @@ module Linecook
       child
     end
 
-    # Captures output to the doc for the duration of a block. Returns the doc.
-    def _capture_(doc = Document.new)
-      current = @_doc_
-      begin
-        @_doc_ = doc
-        yield
-      ensure
-        @_doc_ = current
-      end
-      doc
-    end
-
-    # Returns the formatted contents of _doc_.
-    def _result_
-      _doc_.to_s
+    # Returns the package globals hash.
+    def globals
+      _package_.globals
     end
 
     # Loads the specified attributes file and merges the results into attrs. A
@@ -165,25 +148,32 @@ module Linecook
     end
 
     # Captures and returns the formatted output of the block as a string.
-    def capture
-      _capture_ { yield }.to_s
+    def capture(doc = Document.new)
+      current = @_document_
+      begin
+        @_document_ = doc
+        yield
+      ensure
+        @_document_ = current
+      end
+      doc
     end
 
-    # Writes input to _doc_ using 'write'.  Returns self.
+    # Writes input to _document_ using 'write'.  Returns self.
     def write(input)
-      _doc_.write input
+      _document_.write input
       self
     end
 
-    # Writes input to _doc_ using 'writeln'.  Returns self.
+    # Writes input to _document_ using 'writeln'.  Returns self.
     def writeln(input=nil)
-      _doc_.writeln input
+      _document_.writeln input
       self
     end
 
     # Indents n levels for the duration of the block.
     def indent(n=1)
-      _doc_.with(:indent => n) do
+      _document_.with(:indent => n) do
         yield
       end
     end
@@ -191,9 +181,14 @@ module Linecook
     # Outdents for the duration of the block.  A negative number can be
     # provided to outdent n levels.
     def outdent(n=nil)
-      _doc_.with(:indent => n) do
+      _document_.with(:indent => n) do
         yield
       end
+    end
+
+    # Returns the formatted contents of _document_.
+    def to_s
+      _document_.to_s
     end
   end
 end

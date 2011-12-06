@@ -34,7 +34,7 @@ class RecipeTest < Test::Unit::TestCase
 
   def assert_recipe(expected, &block)
     setup_recipe(&block)
-    assert_equal outdent(expected), recipe._result_
+    assert_equal outdent(expected), recipe.to_s
   end
 
   #
@@ -65,15 +65,15 @@ class RecipeTest < Test::Unit::TestCase
 echo 'a b c'
 echo 'x y z'
 }
-    assert_equal expected, "\n" + recipe._result_
+    assert_equal expected, "\n" + recipe.to_s
   end
 
   #
-  # _globals_ test
+  # globals test
   #
 
-  def test__globals__returns_the_package_globals
-    assert_equal package.globals, recipe._globals_
+  def test_globals_returns_the_package_globals
+    assert_equal package.globals, recipe.globals
   end
 
   #
@@ -88,13 +88,13 @@ echo 'x y z'
     assert_equal recipe._package_, child._package_
     assert_equal recipe._cookbook_, child._cookbook_
 
-    assert_equal "abc", recipe._result_
-    assert_equal "xyz", child._result_
+    assert_equal "abc", recipe.to_s
+    assert_equal "xyz", child.to_s
   end
 
-  def test___child_inherits__locals__
+  def test___child_inherits_locals
     child = recipe._
-    assert_equal recipe._locals_, child._locals_
+    assert_equal recipe.locals, child.locals
   end
 
   def test___child_inherits_attributes
@@ -104,49 +104,33 @@ echo 'x y z'
 
   def test___writes_str_to_child_if_given
     child = recipe._("abc")
-    assert_equal "abc", child._result_
+    assert_equal "abc", child.to_s
   end
 
   def test___evaluates_block_in_contenxt_of_child_if_given
     child = recipe._ { write "abc" }
-    assert_equal "abc", child._result_
+    assert_equal "abc", child.to_s
   end
 
   #
-  # _capture_ test
+  # to_s test
   #
 
-  def test__capture__reassigns_doc_for_block
-    setup_recipe do
-      write 'a'
-      _capture_ do
-        write 'b'
-      end
-      write 'c'
-    end
-
-    assert_equal "ac", recipe._result_
+  def test_to_s_returns_formatted_document_content
+    recipe._document_.set :indent => '..'
+    recipe._document_.writeln 'content'
+    assert_equal "..content\n", recipe.to_s
   end
 
-  #
-  # _result_ test
-  #
-
-  def test__result__returns_formatted_doc_content
-    recipe._doc_.set :indent => '..'
-    recipe._doc_.writeln 'content'
-    assert_equal "..content\n", recipe._result_
-  end
-
-  def test__result__allows_further_modification
+  def test_to_s_allows_further_modification
     recipe.write 'abc'
 
-    assert_equal 'abc', recipe._result_
-    assert_equal 'abc', recipe._result_
+    assert_equal 'abc', recipe.to_s
+    assert_equal 'abc', recipe.to_s
 
     recipe.write 'xyz'
 
-    assert_equal 'abcxyz', recipe._result_
+    assert_equal 'abcxyz', recipe.to_s
   end
 
   #
@@ -283,13 +267,21 @@ echo 'x y z'
   # capture test
   #
 
-  def test_capture_captures_block_and_returns_output
-    recipe.write 'a'
-    str = recipe.capture { recipe.write 'b' }
-    recipe.write str.upcase
-    recipe.write 'c'
+  def test_capture_reassigns_document_for_block
+    setup_recipe do
+      write 'a'
+      capture do
+        write 'b'
+      end
+      write 'c'
+    end
 
-    assert_equal "aBc", recipe._result_
+    assert_equal "ac", recipe.to_s
+  end
+
+  def test_capture_returns_captured_doc
+    doc = recipe.capture { recipe.write 'abc' }
+    assert_equal "abc", doc.to_s
   end
 
   #
@@ -298,7 +290,7 @@ echo 'x y z'
 
   def test_write_writes_to_target
     recipe.write 'content'
-    assert_equal 'content', recipe._result_
+    assert_equal 'content', recipe.to_s
   end
 
   #
@@ -307,7 +299,7 @@ echo 'x y z'
 
   def test_writeln_writes_to_target
     recipe.writeln 'content'
-    assert_equal "content\n", recipe._result_
+    assert_equal "content\n", recipe.to_s
   end
 
   #
@@ -442,7 +434,7 @@ echo 'x y z'
       ..b
       a
     } do
-      _doc_.set(:indent_str => '.')
+      _document_.set(:indent_str => '.')
       writeln "a"
       indent(2) do
         writeln "b"
