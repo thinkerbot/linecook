@@ -4,6 +4,7 @@ require 'linecook/attributes'
 require 'linecook/cookbook'
 require 'linecook/document'
 require 'linecook/package'
+require 'linecook/resource'
 require 'linecook/utils'
 require 'linecook/proxy'
 
@@ -37,6 +38,8 @@ module Linecook
   #   # }
   #
   class Recipe < Context
+    include Resource
+
     # The recipe Package
     attr_reader :_package_
 

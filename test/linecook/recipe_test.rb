@@ -6,8 +6,8 @@ class RecipeTest < Test::Unit::TestCase
   include FileMethodsShim
 
   Recipe   = Linecook::Recipe
-  Package  = Linecook::Recipe
-  Cookbook = Linecook::Recipe
+  Package  = Linecook::Package
+  Cookbook = Linecook::Cookbook
   Document = Linecook::Document
 
   # Note these methods are similar to those in Linecook::Test but I prefer to
