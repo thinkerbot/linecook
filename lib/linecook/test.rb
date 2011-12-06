@@ -84,45 +84,53 @@ module Linecook
       @host ||= self.class.host
     end
 
-    def runlist
-      @runlist ||= []
-    end
-
-    def setup_recipe(target_path=package.next_target_path('recipe'), &block)
-      target = package.add(target_path, :mode => 0744)
-      recipe = Recipe.new(package, cookbook, target)
-      recipe.helpers(*helpers)
-
-      recipe.instance_eval(&block) if block_given?
-      runlist << target_path
-
-      @recipe = recipe
-    end
-
     def recipe
       @recipe ||= setup_recipe
     end
 
+    def recipes
+      @recipes ||= []
+    end
+
+    def resources
+      recipes
+    end
+
+    def runlist
+      recipes.map {|recipe| recipe.package_path }.join(',')
+    end
+
+    def setup_recipe(package_path=package.next_path('recipe'), options={:mode => 0744}, &block)
+      recipe = Recipe.new(package, cookbook)
+      recipe.helpers(*helpers)
+      recipe.instance_eval(&block) if block_given?
+      recipe.register_as(package_path, options)
+
+      recipes << recipe
+      @recipe = recipe
+    end
+
     def assert_recipe(expected, recipe=setup_recipe, &block)
       recipe.instance_eval(&block) if block_given?
-      assert_str_equal expected, recipe._result_
+      assert_str_equal expected, recipe.to_s
       recipe
     end
 
     def assert_recipe_matches(expected, recipe=setup_recipe, &block)
       recipe.instance_eval(&block) if block_given?
-      assert_str_match expected, recipe._result_
+      assert_str_match expected, recipe.to_s
       recipe
     end
 
     def export_package(host=self.host)
+      resources.each {|resource| resource.register_to(package) }
       package_dir = path("packages/#{host}")
       package.export package_dir
       package_dir
     end
 
     def run_package(options={}, host=self.host, &block)
-      options['S'] ||= runlist.join(',')
+      options['S'] ||= runlist
       run_project options, export_package(host), &block
     end
 

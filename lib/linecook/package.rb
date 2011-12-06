@@ -34,13 +34,19 @@ module Linecook
     #
     # Raises an error if a source is already registered at the path.
     def register(path, source_path, options={})
-      if registry.has_key?(path)
+      package_path = path.to_s.strip
+
+      if package_path.empty?
+        raise "invalid package path: #{path.inspect}"
+      end
+
+      if registry.has_key?(package_path)
         raise "already registered: #{path.inspect}"
       end
 
       source_path = resolve_source_path(source_path)
-      registry[path] = source_path
-      on_export(path, options)
+      registry[package_path] = source_path
+      on_export(package_path, options)
 
       source_path
     end

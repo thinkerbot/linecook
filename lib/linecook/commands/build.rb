@@ -80,7 +80,7 @@ module Linecook
           recipe_file = File.expand_path(recipe_file)
           target   = package.add('run', :mode => 0744)
           recipe   = Recipe.new(package, cookbook, target)
-          recipe._compile_ recipe_file
+          recipe.instance_eval File.read(recipe_file), recipe_file
 
           package.export(export_dir)
           puts export_dir

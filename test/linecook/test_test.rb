@@ -70,19 +70,19 @@ class TestTest < Test::Unit::TestCase
   # setup_recipe test
   #
 
-  def test_setup_recipe_initializes_a_new_recipe_with_the_target_path
+  def test_setup_recipe_initializes_a_new_recipe_assigned_to_the_package_path
     recipe = setup_recipe('a')
-    assert_equal recipe.target.path, package.source_path('a')
+    assert_equal 'a', recipe.package_path
   end
 
   def test_setup_recipe_sets_recipe
     setup_recipe
     recipe.write 'a'
-    assert_equal 'a', recipe._result_
+    assert_equal 'a', recipe.to_s
 
     setup_recipe
     recipe.write 'b'
-    assert_equal 'b', recipe._result_
+    assert_equal 'b', recipe.to_s
   end
 
   module HelperModule
@@ -96,7 +96,7 @@ class TestTest < Test::Unit::TestCase
     setup_recipe
 
     recipe.echo 'a', 'b', 'c'
-    assert_equal "echo 'a b c'\n", recipe._result_
+    assert_equal "echo 'a b c'\n", recipe.to_s
   end
 
   def test_setup_recipe_uses_package_and_cookbook_as_currently_set
@@ -110,7 +110,7 @@ class TestTest < Test::Unit::TestCase
     setup_recipe('a')
     setup_recipe('b')
 
-    assert_equal ['a', 'b'], runlist
+    assert_equal 'a,b', runlist
   end
 
   #
@@ -142,7 +142,7 @@ class TestTest < Test::Unit::TestCase
 
   def test_assert_recipe_returns_recipe
     recipe = assert_recipe('a') { write 'a'}
-    assert_equal 'a', recipe._result_
+    assert_equal 'a', recipe.to_s
   end
 
   def test_assert_recipe_may_specify_recipe_to_check
@@ -226,7 +226,7 @@ class TestTest < Test::Unit::TestCase
 
   def test_a_project_with_inputs
     prepare "recipes/#{host}.rb", %q{
-      target << %{
+      write %{
       while true; do
         printf "Do you wish to continue: "
         read answer

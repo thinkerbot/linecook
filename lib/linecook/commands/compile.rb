@@ -116,7 +116,7 @@ module Linecook
             target = package.add target_path
 
             recipe = Recipe.new(package, cookbook, target)
-            recipe._compile_ recipe_path
+            recipe.instance_eval File.read(recipe_path), recipe_path
           end
         end
 
