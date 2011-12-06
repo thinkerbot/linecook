@@ -46,7 +46,7 @@ module Linecook
     # The recipe Document
     attr_reader :_document_
 
-    # The recipe locals hash
+    # The recipe locals hash.
     attr_reader :locals
 
     def initialize(package = Package.new, cookbook = Cookbook.new, document = Document.new)
@@ -101,6 +101,10 @@ module Linecook
     # Loads the specified attributes file and merges the results into attrs. A
     # block may be given to specify attrs as well; it will be evaluated in the
     # context of an Attributes instance.
+    #
+    # Returns a hash representing all attributes loaded thusfar (specifically
+    # attrs prior to merging in the package env). The attributes hash should
+    # be treated as if it were read-only. Use locals or globals instead.
     def attributes(source_name=nil, &block)
       if source_name || block
         attributes = Attributes.new
@@ -123,8 +127,10 @@ module Linecook
     end
 
     # Returns the package env merged over any attrs specified by attributes.
+    #
     # The attrs hash should be treated as if it were read-only because changes
     # could alter the package env and thereby spill over into other recipes.
+    # Use locals or globals instead.
     def attrs
       @attrs ||= Utils.deep_merge(@attributes, _package_.env)
     end
@@ -137,7 +143,7 @@ module Linecook
           module_name = Utils.camelize(helper_name)
 
           helper = Utils.constantize(module_name) do
-            # Don't use Kernel because the may evade RubyGems
+            # Don't use Kernel because that may evade RubyGems
             Utils.__send__(:require, Utils.underscore(helper_name))
             Utils.constantize(module_name)
           end
