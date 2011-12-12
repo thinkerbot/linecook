@@ -74,14 +74,14 @@ module Linecook
           end
 
           package_file = File.expand_path(package_file, input_dir)
+          recipe_file = File.expand_path(recipe_file)
+
           package  = Package.new(load_env(package_file))
           cookbook = Cookbook.new(*cookbook_path)
-
-          recipe_file = File.expand_path(recipe_file)
-          target   = package.add('run', :mode => 0744)
-          recipe   = Recipe.new(package, cookbook, target)
+          recipe   = Recipe.new(package, cookbook)
           recipe.instance_eval File.read(recipe_file), recipe_file
 
+          package.add('run', :mode => 0744) {|io| io << recipe }
           package.export(export_dir)
           puts export_dir
         end

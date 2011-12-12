@@ -107,16 +107,17 @@ module Linecook
         stdout   = StringIO.new
 
         recipes.each do |recipe_path|
+          recipe = Recipe.new(package, cookbook)
+
           if recipe_path == '-'
-            recipe = Recipe.new(package, cookbook, stdout)
             recipe.instance_eval $stdin.read, 'stdin'
+            stdout.print recipe
           else
             recipe_path = File.expand_path(recipe_path)
-            target_path = relative_path(input_dir, recipe_path).chomp('.rb')
-            target = package.add target_path
-
-            recipe = Recipe.new(package, cookbook, target)
             recipe.instance_eval File.read(recipe_path), recipe_path
+
+            target_path = relative_path(input_dir, recipe_path).chomp('.rb')
+            package.add(target_path) {|io| io << recipe }
           end
         end
 
