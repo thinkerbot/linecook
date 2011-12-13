@@ -361,7 +361,7 @@ class DocumentTest < Test::Unit::TestCase
   # ltrim test
   #
 
-  def test_ltrim_removes_empty_lines_from_head
+  def test_ltrim_removes_newlines_from_head
     doc.write "\n\n\nabc\nxyz\n"
     doc.ltrim
     assert_equal "abc\nxyz\n", doc.to_s
@@ -371,20 +371,20 @@ class DocumentTest < Test::Unit::TestCase
   # rtrim test
   #
 
-  def test_rtrim_removes_empty_lines_from_tail
+  def test_rtrim_removes_newlines_from_tail
     doc.write "abc\nxyz\n\n\n"
     doc.rtrim
-    assert_equal "abc\nxyz\n", doc.to_s
+    assert_equal "abc\nxyz", doc.to_s
   end
 
   #
   # trim test
   #
 
-  def test_trim_removes_empty_lines_from_head_and_tail
+  def test_trim_removes_newlines_from_head_and_tail
     doc.write "\n\n\nabc\nxyz\n\n\n"
     doc.trim
-    assert_equal "abc\nxyz\n", doc.to_s
+    assert_equal "abc\nxyz", doc.to_s
   end
 
   #
