@@ -77,6 +77,12 @@ class LineTest < Test::Unit::TestCase
     assert_equal false, line.empty?
   end
 
+  def test_empty_check_returns_true_if_line_content_is_just_a_newline
+    assert_equal true, line.empty?
+    line.write "\n"
+    assert_equal true, line.empty?
+  end
+
   #
   # lines test
   #

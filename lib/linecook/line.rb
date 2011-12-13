@@ -67,9 +67,9 @@ module Linecook
       nex.nil?
     end
 
-    # Returns true if content is empty.
+    # Returns true if content is empty (not counting the newline, if present).
     def empty?
-      content.empty?
+      content.empty? || content == "\n"
     end
 
     # Returns an array of lines that self is a part of.
