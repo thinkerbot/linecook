@@ -118,7 +118,7 @@ echo 'x y z'
 
   def test_to_s_returns_formatted_document_content
     recipe._document_.set :indent => '..'
-    recipe._document_.writeln 'content'
+    recipe._document_.write "content\n"
     assert_equal "..content\n", recipe.to_s
   end
 
@@ -293,6 +293,19 @@ echo 'x y z'
     assert_equal 'content', recipe.to_s
   end
 
+  def test_write_chains_to_target_if_invoked_via_chain
+    recipe.write "abc\n"
+    recipe.chain.write 'xyz'
+    assert_equal "abcxyz\n", recipe.to_s
+  end
+
+  def test_write_unchains
+    recipe.chain
+    assert_equal true, recipe.chain?
+    recipe.write "abc\n"
+    assert_equal false, recipe.chain?
+  end
+
   #
   # writeln test
   #
@@ -300,6 +313,19 @@ echo 'x y z'
   def test_writeln_writes_to_target
     recipe.writeln 'content'
     assert_equal "content\n", recipe.to_s
+  end
+
+  def test_writeln_chains_to_target_if_invoked_via_chain
+    recipe.write "abc\n"
+    recipe.chain.writeln 'xyz'
+    assert_equal "abcxyz\n", recipe.to_s
+  end
+
+  def test_writeln_unchains
+    recipe.chain
+    assert_equal true, recipe.chain?
+    recipe.writeln "abc"
+    assert_equal false, recipe.chain?
   end
 
   #
@@ -445,5 +471,48 @@ echo 'x y z'
       end
       writeln "a"
     end
+  end
+
+  #
+  # chain test
+  #
+
+  def test_chain_sets_chain_check_to_return_true
+    assert_equal false, recipe.chain?
+    recipe.chain
+    assert_equal true, recipe.chain?
+  end
+
+  def test_chain_returns_self
+    assert_equal recipe, recipe.chain
+  end
+
+  #
+  # unchain test
+  #
+
+  def test_unchain_sets_chain_check_to_return_true
+    recipe.chain
+    assert_equal true, recipe.chain?
+    recipe.unchain
+    assert_equal false, recipe.chain?
+  end
+
+  def test_unchain_returns_self
+    assert_equal recipe, recipe.unchain
+  end
+
+  #
+  # chain_proxy test
+  #
+
+  def test_chain_proxy_unchains
+    recipe.chain
+    recipe.chain_proxy
+    assert_equal false, recipe.chain?
+  end
+
+  def test_chain_proxy_returns__proxy_
+    assert_equal recipe._proxy_, recipe.chain_proxy
   end
 end

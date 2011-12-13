@@ -7,6 +7,7 @@ require 'linecook/package'
 require 'linecook/resource'
 require 'linecook/utils'
 require 'linecook/proxy'
+require 'linecook/context'
 
 module Linecook
   # Recipe is the context in which recipes are evaluated (literally).  Recipe
@@ -49,6 +50,9 @@ module Linecook
     # The recipe Document
     attr_reader :_document_
 
+    # The recipe Proxy
+    attr_reader :_proxy_
+
     # The recipe locals hash.
     attr_reader :locals
 
@@ -56,6 +60,8 @@ module Linecook
       @_package_  = package
       @_cookbook_ = cookbook
       @_document_ = document
+      @_proxy_ = Proxy.new(self)
+      @chain   = false
 
       @attributes = {}
       @attrs = nil
@@ -73,6 +79,8 @@ module Linecook
       @_package_  = orig._package_
       @_cookbook_ = orig._cookbook_
       @_document_ = orig._document_
+      @_proxy_ = Proxy.new(self)
+      @chain   = orig.chain?
 
       @attributes = orig.attributes
       @attrs = nil
@@ -168,15 +176,27 @@ module Linecook
       doc
     end
 
-    # Writes input to _document_ using 'write'.  Returns self.
+    # Writes input to _document_ using `write`.  If chaining then write using
+    # `chain` and then turn off. Returns self.
     def write(input)
-      _document_.write input
+      if chain?
+        _document_.chain input
+        unchain
+      else
+        _document_.write input
+      end
       self
     end
 
-    # Writes input to _document_ using 'writeln'.  Returns self.
+    # Writes input to self, writes a newline, and returns last.  If chaining,
+    # trailing newlines are trimmed from the document first.
     def writeln(input=nil)
-      _document_.writeln input
+      if chain?
+        _document_.rtrim
+      end
+
+      write input
+      write "\n"
       self
     end
 
@@ -193,6 +213,30 @@ module Linecook
       _document_.with(:indent => n) do
         yield
       end
+    end
+
+    # Causes chain? to return true.  Returns self.
+    def chain
+      @chain = true
+      self
+    end
+
+    # Causes chain? to return false.  Returns self.
+    def unchain
+      @chain = false
+      self
+    end
+
+    # Returns true as per chain/unchain.
+    def chain?
+      @chain
+    end
+
+    # Returns the proxy.  Unchains first to ensure that if the proxy is not
+    # called, then the previous chain is stopped.
+    def chain_proxy
+      unchain
+      _proxy_
     end
 
     # Returns the formatted contents of _document_.
