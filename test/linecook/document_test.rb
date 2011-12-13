@@ -222,6 +222,17 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "abc\nxyz\n", doc.to_s
   end
 
+  class WriteToInput
+    def write_to(line)
+      line.write "abc"
+    end
+  end
+
+  def test_write_delegates_to_write_to_method_on_input_if_possible
+    doc.write WriteToInput.new
+    assert_equal "abc", doc.to_s
+  end
+
   #
   # writeln test
   #

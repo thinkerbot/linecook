@@ -91,9 +91,14 @@ module Linecook
       nil
     end
 
-    # Writes str to last.  Returns last.
-    def write(str)
-      last.write(str)
+    # Writes input to last.  If the input has a `write_to` method, then write
+    # delegates by calling it with last.  Returns last.
+    def write(input)
+      if input.respond_to?(:write_to)
+        input.write_to last
+      else
+        last.write input
+      end
       last
     end
 
