@@ -182,6 +182,16 @@ module Linecook
       rtrim
     end
 
+    # Ensures the last line ends in a newline.  Does nothing if the last line
+    # is already complete, or empty (in that case the assumption is that the
+    # previous line is complete).
+    def complete
+      unless last.complete? || last.empty?
+        last.write "\n"
+      end
+      self
+    end
+
     # Removes the str from the end of the last line in place. Currently only
     # affects the last line, so str cannot span lines.  Returns self.
     def chomp!(str="\n")

@@ -388,6 +388,27 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # complete test
+  #
+
+  def test_complete_adds_a_newline_to_last_if_incomplete
+    doc.write "abc"
+    doc.complete
+    assert_equal "abc\n", doc.to_s
+  end
+
+  def test_complete_does_nothing_if_last_line_is_complete
+    doc.write "abc\n"
+    doc.complete
+    assert_equal "abc\n", doc.to_s
+  end
+
+  def test_complete_does_nothing_if_last_line_is_empty
+    doc.complete
+    assert_equal "", doc.to_s
+  end
+
+  #
   # chomp! test
   #
 
