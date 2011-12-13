@@ -188,11 +188,10 @@ module Linecook
       self
     end
 
-    # Writes input to self, writes a newline, and returns last.  If chaining,
-    # trailing newlines are trimmed from the document first.
+    # Writes input to self, writes a newline, and returns last.
     def writeln(input=nil)
       if chain?
-        _document_.rtrim
+        _document_.chomp!("\n")
       end
 
       write input
