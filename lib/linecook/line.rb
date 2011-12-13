@@ -108,7 +108,7 @@ module Linecook
     # the content is a complete line (ie ends in "\n").  New lines will have
     # the same format as self.  Returns self.
     def write(str)
-      lines = Line.split(str)
+      lines = Line.split(str.to_s)
 
       unless complete? || lines.empty?
         content << lines.shift
@@ -139,7 +139,7 @@ module Linecook
         content.replace content.chomp(eol).ljust(col) + eol
       end
 
-      rewrite content.insert(col, str)
+      rewrite content.insert(col, str.to_s)
     end
 
     # Prepends a line and writes str, if specified.  The prepended line will

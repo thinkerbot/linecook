@@ -168,6 +168,11 @@ class LineTest < Test::Unit::TestCase
     assert_equal [""], line.lines.map(&:content)
   end
 
+  def test_write_converts_input_to_s
+    line.write :str
+    assert_equal ["str"], line.lines.map(&:content)
+  end
+
   def test_write_propagates_format_to_new_lines
     format = formatter {|str| "..#{str}" }
     line = Line.new format
@@ -196,6 +201,13 @@ class LineTest < Test::Unit::TestCase
     line.rewrite "pqr\nxyz"
 
     assert_equal ["pqr\n", "xyz"], line.lines.map(&:content)
+  end
+
+  def test_rewrite_converts_input_to_s
+    line.write "abc"
+    line.rewrite :xyz
+
+    assert_equal "xyz", line.content
   end
 
   #
@@ -228,6 +240,13 @@ class LineTest < Test::Unit::TestCase
     line.insert 3, "\npqr\nxyz"
 
     assert_equal ["abc\n", "pqr\n", "xyz\n"], line.lines.map(&:content)
+  end
+
+  def test_insert_converts_input_to_s
+    line.write "ac"
+    line.insert 1, :b
+
+    assert_equal "abc", line.content
   end
 
   #
