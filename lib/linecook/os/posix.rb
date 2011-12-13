@@ -54,7 +54,7 @@ module Linecook
       # Defines a function from the block.  The block content is indented and
       # cleaned up some to make a nice function definition.
       def function(name, method_name=name)
-        str = capture { indent { yield(*signature(Proc.new.arity)) } }
+        str = capture { indent { yield(*signature(Proc.new.arity)) } }.to_s
         function = %{#{name}() {\n#{str.chomp("\n")}\n}}
         
         if function?(name)
@@ -102,7 +102,7 @@ module Linecook
       def var(name, value=nil)
         if Kernel.block_given?
           if value.nil?
-            value = "$(\n#{capture(&Proc.new).strip}\n)"
+            value = "$(\n#{capture(&Proc.new).to_s.strip}\n)"
           else
             Kernel.raise "value and block cannot both be specified"
           end
@@ -127,7 +127,7 @@ module Linecook
       end
 
       def _append(*args, &block) # :nodoc:
-        str = capture { append(*args, &block) }
+        str = capture { append(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -142,7 +142,7 @@ module Linecook
       end
 
       def _break_(*args, &block) # :nodoc:
-        str = capture { break_(*args, &block) }
+        str = capture { break_(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -161,7 +161,7 @@ module Linecook
       end
 
       def _check_status(*args, &block) # :nodoc:
-        str = capture { check_status(*args, &block) }
+        str = capture { check_status(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -183,7 +183,7 @@ module Linecook
       end
 
       def _check_status_function(*args, &block) # :nodoc:
-        str = capture { check_status_function(*args, &block) }
+        str = capture { check_status_function(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -197,7 +197,7 @@ module Linecook
       end
 
       def _comment(*args, &block) # :nodoc:
-        str = capture { comment(*args, &block) }
+        str = capture { comment(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -212,7 +212,7 @@ module Linecook
       end
 
       def _continue_(*args, &block) # :nodoc:
-        str = capture { continue_(*args, &block) }
+        str = capture { continue_(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -235,7 +235,7 @@ module Linecook
       end
 
       def _elif_(*args, &block) # :nodoc:
-        str = capture { elif_(*args, &block) }
+        str = capture { elif_(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -256,7 +256,7 @@ module Linecook
       end
 
       def _else_(*args, &block) # :nodoc:
-        str = capture { else_(*args, &block) }
+        str = capture { else_(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -265,13 +265,14 @@ module Linecook
       # that aren't already quoted. Accepts a trailing hash which will be transformed
       # into command line options.
       def execute(command, *args)
-        Command.new self do
-          writeln Utils.command_str(command, *args)
-        end
+        args = args.compact
+        options = args.last.kind_of?(Hash) ? args.pop : {}
+        writeln Command.new(command, args, options)
+        chain_proxy
       end
 
       def _execute(*args, &block) # :nodoc:
-        str = capture { execute(*args, &block) }
+        str = capture { execute(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -294,7 +295,7 @@ module Linecook
       end
 
       def _exit_(*args, &block) # :nodoc:
-        str = capture { exit_(*args, &block) }
+        str = capture { exit_(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -305,7 +306,7 @@ module Linecook
       end
 
       def _from(*args, &block) # :nodoc:
-        str = capture { from(*args, &block) }
+        str = capture { from(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -337,20 +338,20 @@ module Linecook
       end
 
       def _heredoc(*args, &block) # :nodoc:
-        str = capture { heredoc(*args, &block) }
+        str = capture { heredoc(*args, &block) }.to_s
         str.strip!
         str
       end
 
       # Executes the block when the expression evaluates to zero.
       def if_(expression)
-        #  if <%= expression %>
+        #  if <%= expression.to_s.chomp("\n") %>
         #  then
         #  <% indent { yield } %>
         #  fi
         #  
         #  
-        write "if "; write(( expression ).to_s); write "\n"
+        write "if "; write(( expression.to_s.chomp("\n") ).to_s); write "\n"
         ; write "then\n"
         ;  indent { yield } 
         write "fi\n"
@@ -359,20 +360,19 @@ module Linecook
       end
 
       def _if_(*args, &block) # :nodoc:
-        str = capture { if_(*args, &block) }
+        str = capture { if_(*args, &block) }.to_s
         str.strip!
         str
       end
 
       # Makes a redirect statement.
       def redirect(source, target, redirection='>')
-        source = source.nil? || source.kind_of?(Fixnum) ? source : "#{source} "
-        target = target.nil? || target.kind_of?(Fixnum) ? "&#{target}" : " #{target}"
-        Redirect.new self, "#{source}#{redirection}#{target}\n"
+        writeln Redirect.new(source, target, redirection)
+        chain_proxy
       end
 
       def _redirect(*args, &block) # :nodoc:
-        str = capture { redirect(*args, &block) }
+        str = capture { redirect(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -395,7 +395,7 @@ module Linecook
       end
 
       def _return_(*args, &block) # :nodoc:
-        str = capture { return_(*args, &block) }
+        str = capture { return_(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -413,7 +413,7 @@ module Linecook
       end
 
       def _section(*args, &block) # :nodoc:
-        str = capture { section(*args, &block) }
+        str = capture { section(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -426,7 +426,7 @@ module Linecook
       end
 
       def _test(*args, &block) # :nodoc:
-        str = capture { test(*args, &block) }
+        str = capture { test(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -437,7 +437,7 @@ module Linecook
       end
 
       def _to(*args, &block) # :nodoc:
-        str = capture { to(*args, &block) }
+        str = capture { to(*args, &block) }.to_s
         str.strip!
         str
       end
@@ -448,20 +448,20 @@ module Linecook
       end
 
       def _unless_(*args, &block) # :nodoc:
-        str = capture { unless_(*args, &block) }
+        str = capture { unless_(*args, &block) }.to_s
         str.strip!
         str
       end
 
       # Executes the block until the expression evaluates to zero.
       def until_(expression)
-        #  until <%= expression %>
+        #  until <%= expression.to_s.chomp("\n") %>
         #  do
         #  <% indent { yield } %>
         #  done
         #  
         #  
-        write "until "; write(( expression ).to_s); write "\n"
+        write "until "; write(( expression.to_s.chomp("\n") ).to_s); write "\n"
         ; write "do\n"
         ;  indent { yield } 
         write "done\n"
@@ -470,20 +470,20 @@ module Linecook
       end
 
       def _until_(*args, &block) # :nodoc:
-        str = capture { until_(*args, &block) }
+        str = capture { until_(*args, &block) }.to_s
         str.strip!
         str
       end
 
       # Executes the block while the expression evaluates to zero.
       def while_(expression)
-        #  while <%= expression %>
+        #  while <%= expression.to_s.chomp("\n") %>
         #  do
         #  <% indent { yield } %>
         #  done
         #  
         #  
-        write "while "; write(( expression ).to_s); write "\n"
+        write "while "; write(( expression.to_s.chomp("\n") ).to_s); write "\n"
         ; write "do\n"
         ;  indent { yield } 
         write "done\n"
@@ -492,7 +492,7 @@ module Linecook
       end
 
       def _while_(*args, &block) # :nodoc:
-        str = capture { while_(*args, &block) }
+        str = capture { while_(*args, &block) }.to_s
         str.strip!
         str
       end

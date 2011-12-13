@@ -4,6 +4,7 @@ into command line options.
 
 (command, *args)
 --
-  Command.new self do
-    writeln Utils.command_str(command, *args)
-  end
+  args = args.compact
+  options = args.last.kind_of?(Hash) ? args.pop : {}
+  writeln Command.new(command, args, options)
+  chain_proxy

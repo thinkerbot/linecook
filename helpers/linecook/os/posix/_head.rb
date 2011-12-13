@@ -35,7 +35,7 @@ end
 # Defines a function from the block.  The block content is indented and
 # cleaned up some to make a nice function definition.
 def function(name, method_name=name)
-  str = capture { indent { yield(*signature(Proc.new.arity)) } }
+  str = capture { indent { yield(*signature(Proc.new.arity)) } }.to_s
   function = %{#{name}() {\n#{str.chomp("\n")}\n}}
   
   if function?(name)
@@ -83,7 +83,7 @@ end
 def var(name, value=nil)
   if Kernel.block_given?
     if value.nil?
-      value = "$(\n#{capture(&Proc.new).strip}\n)"
+      value = "$(\n#{capture(&Proc.new).to_s.strip}\n)"
     else
       Kernel.raise "value and block cannot both be specified"
     end

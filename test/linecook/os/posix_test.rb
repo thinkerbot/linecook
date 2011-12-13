@@ -202,8 +202,8 @@ class PosixTest < Test::Unit::TestCase
       cat file | grep a | grep b
       ls "$path" | grep c
     } do
-      execute('cat file').execute('grep a').execute('grep b')
-      execute('ls', '$path').execute('grep c')
+      execute('cat','file').execute('grep', 'a').execute('grep', 'b')
+      execute('ls', '$path').execute('grep', 'c')
     end
   end
 
@@ -592,9 +592,9 @@ class PosixTest < Test::Unit::TestCase
 
   def test_if__can_use_proxy_chains
     assert_recipe %{
-      if tr "a" "b" < c | grep "b"
+      if tr a b < c | grep b
       then
-        echo "pass"
+        echo pass
       fi
       
     } do

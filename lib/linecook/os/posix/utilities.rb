@@ -12,7 +12,7 @@ module Linecook
         end
 
         def _basename(*args, &block) # :nodoc:
-          str = capture { basename(*args, &block) }
+          str = capture { basename(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -24,7 +24,7 @@ module Linecook
         end
 
         def _cat(*args, &block) # :nodoc:
-          str = capture { cat(*args, &block) }
+          str = capture { cat(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -44,7 +44,7 @@ module Linecook
         end
 
         def _cd(*args, &block) # :nodoc:
-          str = capture { cd(*args, &block) }
+          str = capture { cd(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -58,7 +58,7 @@ module Linecook
         end
 
         def _chgrp(*args, &block) # :nodoc:
-          str = capture { chgrp(*args, &block) }
+          str = capture { chgrp(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -77,7 +77,7 @@ module Linecook
         end
 
         def _chmod(*args, &block) # :nodoc:
-          str = capture { chmod(*args, &block) }
+          str = capture { chmod(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -91,7 +91,7 @@ module Linecook
         end
 
         def _chown(*args, &block) # :nodoc:
-          str = capture { chown(*args, &block) }
+          str = capture { chown(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -103,7 +103,7 @@ module Linecook
         end
 
         def _cmp(*args, &block) # :nodoc:
-          str = capture { cmp(*args, &block) }
+          str = capture { cmp(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -115,7 +115,7 @@ module Linecook
         end
 
         def _comm(*args, &block) # :nodoc:
-          str = capture { comm(*args, &block) }
+          str = capture { comm(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -127,7 +127,7 @@ module Linecook
         end
 
         def _cp(*args, &block) # :nodoc:
-          str = capture { cp(*args, &block) }
+          str = capture { cp(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -139,7 +139,7 @@ module Linecook
         end
 
         def _cut(*args, &block) # :nodoc:
-          str = capture { cut(*args, &block) }
+          str = capture { cut(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -151,7 +151,7 @@ module Linecook
         end
 
         def _date(*args, &block) # :nodoc:
-          str = capture { date(*args, &block) }
+          str = capture { date(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -165,7 +165,7 @@ module Linecook
         end
 
         def _directory?(*args, &block) # :nodoc:
-          str = capture { directory?(*args, &block) }
+          str = capture { directory?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -177,7 +177,7 @@ module Linecook
         end
 
         def _dirname(*args, &block) # :nodoc:
-          str = capture { dirname(*args, &block) }
+          str = capture { dirname(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -189,7 +189,7 @@ module Linecook
         end
 
         def _echo(*args, &block) # :nodoc:
-          str = capture { echo(*args, &block) }
+          str = capture { echo(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -204,7 +204,7 @@ module Linecook
         end
 
         def _executable?(*args, &block) # :nodoc:
-          str = capture { executable?(*args, &block) }
+          str = capture { executable?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -218,7 +218,7 @@ module Linecook
         end
 
         def _exists?(*args, &block) # :nodoc:
-          str = capture { exists?(*args, &block) }
+          str = capture { exists?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -230,7 +230,7 @@ module Linecook
         end
 
         def _expand(*args, &block) # :nodoc:
-          str = capture { expand(*args, &block) }
+          str = capture { expand(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -243,7 +243,7 @@ module Linecook
         end
 
         def _export(*args, &block) # :nodoc:
-          str = capture { export(*args, &block) }
+          str = capture { export(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -257,7 +257,7 @@ module Linecook
         end
 
         def _file?(*args, &block) # :nodoc:
-          str = capture { file?(*args, &block) }
+          str = capture { file?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -269,7 +269,7 @@ module Linecook
         end
 
         def _fold(*args, &block) # :nodoc:
-          str = capture { fold(*args, &block) }
+          str = capture { fold(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -281,7 +281,7 @@ module Linecook
         end
 
         def _grep(*args, &block) # :nodoc:
-          str = capture { grep(*args, &block) }
+          str = capture { grep(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -295,7 +295,7 @@ module Linecook
         end
 
         def _has_content?(*args, &block) # :nodoc:
-          str = capture { has_content?(*args, &block) }
+          str = capture { has_content?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -307,7 +307,7 @@ module Linecook
         end
 
         def _head(*args, &block) # :nodoc:
-          str = capture { head(*args, &block) }
+          str = capture { head(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -319,7 +319,7 @@ module Linecook
         end
 
         def _id(*args, &block) # :nodoc:
-          str = capture { id(*args, &block) }
+          str = capture { id(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -333,7 +333,7 @@ module Linecook
         end
 
         def _link?(*args, &block) # :nodoc:
-          str = capture { link?(*args, &block) }
+          str = capture { link?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -345,7 +345,7 @@ module Linecook
         end
 
         def _ln(*args, &block) # :nodoc:
-          str = capture { ln(*args, &block) }
+          str = capture { ln(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -357,7 +357,7 @@ module Linecook
         end
 
         def _ls(*args, &block) # :nodoc:
-          str = capture { ls(*args, &block) }
+          str = capture { ls(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -369,7 +369,7 @@ module Linecook
         end
 
         def _mkdir(*args, &block) # :nodoc:
-          str = capture { mkdir(*args, &block) }
+          str = capture { mkdir(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -381,7 +381,7 @@ module Linecook
         end
 
         def _mv(*args, &block) # :nodoc:
-          str = capture { mv(*args, &block) }
+          str = capture { mv(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -393,7 +393,7 @@ module Linecook
         end
 
         def _paste(*args, &block) # :nodoc:
-          str = capture { paste(*args, &block) }
+          str = capture { paste(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -405,7 +405,7 @@ module Linecook
         end
 
         def _pathchk(*args, &block) # :nodoc:
-          str = capture { pathchk(*args, &block) }
+          str = capture { pathchk(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -417,7 +417,7 @@ module Linecook
         end
 
         def _pwd(*args, &block) # :nodoc:
-          str = capture { pwd(*args, &block) }
+          str = capture { pwd(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -429,7 +429,7 @@ module Linecook
         end
 
         def _read(*args, &block) # :nodoc:
-          str = capture { read(*args, &block) }
+          str = capture { read(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -443,7 +443,7 @@ module Linecook
         end
 
         def _readable?(*args, &block) # :nodoc:
-          str = capture { readable?(*args, &block) }
+          str = capture { readable?(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -455,7 +455,7 @@ module Linecook
         end
 
         def _rm(*args, &block) # :nodoc:
-          str = capture { rm(*args, &block) }
+          str = capture { rm(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -467,7 +467,7 @@ module Linecook
         end
 
         def _rmdir(*args, &block) # :nodoc:
-          str = capture { rmdir(*args, &block) }
+          str = capture { rmdir(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -479,7 +479,7 @@ module Linecook
         end
 
         def _sed(*args, &block) # :nodoc:
-          str = capture { sed(*args, &block) }
+          str = capture { sed(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -508,7 +508,7 @@ module Linecook
         end
 
         def _set(*args, &block) # :nodoc:
-          str = capture { set(*args, &block) }
+          str = capture { set(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -520,7 +520,7 @@ module Linecook
         end
 
         def _sort(*args, &block) # :nodoc:
-          str = capture { sort(*args, &block) }
+          str = capture { sort(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -532,7 +532,7 @@ module Linecook
         end
 
         def _split(*args, &block) # :nodoc:
-          str = capture { split(*args, &block) }
+          str = capture { split(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -544,7 +544,7 @@ module Linecook
         end
 
         def _tail(*args, &block) # :nodoc:
-          str = capture { tail(*args, &block) }
+          str = capture { tail(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -556,7 +556,7 @@ module Linecook
         end
 
         def _touch(*args, &block) # :nodoc:
-          str = capture { touch(*args, &block) }
+          str = capture { touch(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -568,7 +568,7 @@ module Linecook
         end
 
         def _tr(*args, &block) # :nodoc:
-          str = capture { tr(*args, &block) }
+          str = capture { tr(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -580,7 +580,7 @@ module Linecook
         end
 
         def _tsort(*args, &block) # :nodoc:
-          str = capture { tsort(*args, &block) }
+          str = capture { tsort(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -592,7 +592,7 @@ module Linecook
         end
 
         def _uname(*args, &block) # :nodoc:
-          str = capture { uname(*args, &block) }
+          str = capture { uname(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -604,7 +604,7 @@ module Linecook
         end
 
         def _unexpand(*args, &block) # :nodoc:
-          str = capture { unexpand(*args, &block) }
+          str = capture { unexpand(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -616,7 +616,7 @@ module Linecook
         end
 
         def _uniq(*args, &block) # :nodoc:
-          str = capture { uniq(*args, &block) }
+          str = capture { uniq(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -628,7 +628,7 @@ module Linecook
         end
 
         def _unset(*args, &block) # :nodoc:
-          str = capture { unset(*args, &block) }
+          str = capture { unset(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -640,7 +640,7 @@ module Linecook
         end
 
         def _wc(*args, &block) # :nodoc:
-          str = capture { wc(*args, &block) }
+          str = capture { wc(*args, &block) }.to_s
           str.strip!
           str
         end
@@ -654,7 +654,7 @@ module Linecook
         end
 
         def _writable?(*args, &block) # :nodoc:
-          str = capture { writable?(*args, &block) }
+          str = capture { writable?(*args, &block) }.to_s
           str.strip!
           str
         end

@@ -54,7 +54,7 @@ module Linecook
       end
 
       def _login(*args, &block) # :nodoc:
-        str = capture { login(*args, &block) }
+        str = capture { login(*args, &block) }.to_s
         str.strip!
         str
       end
