@@ -68,6 +68,16 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
+  # empty? test
+  #
+
+  def test_empty_check_returns_true_if_line_content_is_empty
+    assert_equal true, line.empty?
+    line.write ' '
+    assert_equal false, line.empty?
+  end
+
+  #
   # lines test
   #
 
