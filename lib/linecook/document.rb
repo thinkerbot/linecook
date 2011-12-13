@@ -150,7 +150,7 @@ module Linecook
       head
     end
 
-    # Removes any leading newlines.
+    # Removes any leading empty lines.
     def ltrim
       length = 0
       line = first
@@ -163,7 +163,7 @@ module Linecook
       cut 0, length
     end
 
-    # Removes any trailing newlines.
+    # Removes any trailing empty lines.
     def rtrim
       index = 0
       line = last
@@ -173,14 +173,10 @@ module Linecook
         line = line.pre
       end
 
-      if line.complete?
-        line.rewrite line.content.chomp("\n")
-      end
-
       cut index, index * -1
     end
 
-    # Removes leading and trailing newlines.
+    # Removes leading and trailing empty lines.
     def trim
       ltrim
       rtrim
