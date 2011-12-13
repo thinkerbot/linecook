@@ -338,37 +338,23 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal [doc.first], doc.lines
   end
 
-  def test_cut_allows_negative_index_from_end
-    a, b, c, doc = abc_doc
-    assert_equal c, doc.cut(-1)
-    assert_equal [a, b], doc.lines
-  end
-
-  def test_cut_allows_negative_length_to_count_backwards
-    a, b, c, doc = abc_doc
-    assert_equal a, doc.cut(1, -1)
-    assert_equal [b, c], doc.lines
-  end
-
-  def test_cut_with_allows_negative_length_to_cut_to_head
-    a, b, c, doc = abc_doc
-    a.write 'a'
-    b.write 'b'
-    c.write 'c'
-    assert_equal a, doc.cut(2, -3)
-    assert_equal [a, b], a.lines
-    assert_equal [c], doc.lines
-  end
-
   def test_cut_returns_nil_for_index_out_of_range
     a, b, c, doc = abc_doc
     assert_equal nil, doc.cut(100)
     assert_equal nil, doc.cut(-100)
+    assert_equal [a, b, c], doc.lines
   end
 
   def test_cut_returns_nil_for_zero_length
     a, b, c, doc = abc_doc
     assert_equal nil, doc.cut(1, 0)
+    assert_equal [a, b, c], doc.lines
+  end
+
+  def test_cut_returns_nil_for_negative_length
+    a, b, c, doc = abc_doc
+    assert_equal nil, doc.cut(1, -1)
+    assert_equal [a, b, c], doc.lines
   end
 
   #

@@ -125,16 +125,8 @@ module Linecook
 
     # Removes lines starting at index.  Returns the line at index.
     def cut(index, length=1)
-      if length == 0
+      if length <= 0
         return nil 
-      end
-
-      if length < 0
-        index, length = index + length, length * -1
-
-        if index < 0
-          index, length = 0, index + length
-        end
       end
 
       head = line(index)
