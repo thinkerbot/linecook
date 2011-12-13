@@ -142,6 +142,24 @@ module Linecook
       rewrite content.insert(col, str.to_s)
     end
 
+    # Inserts str to self, prior to the end of line (if present).  Existing
+    # content is separated from the new content using sep.  If there is no
+    # existing content, or if the only content is a newline, then chain is
+    # equivalent to write.
+    def chain(str, sep=nil)
+      if complete?
+        content.chomp!("\n")
+        str = "#{str}\n"
+      end
+
+      unless empty? || sep.nil?
+        write sep
+      end
+
+      write str
+      self
+    end
+
     # Prepends a line and writes str, if specified.  The prepended line will
     # have the same format as self.
     def prepend(str=nil)
