@@ -182,6 +182,14 @@ module Linecook
       rtrim
     end
 
+    # Removes the str from the end of the last line in place. Currently only
+    # affects the last line, so str cannot span lines.  Returns self.
+    def chomp!(str="\n")
+      line = last
+      line.rewrite line.content.chomp(str)
+      self
+    end
+
     # Returns the current format for self (ie the format of last).
     def format
       last.format

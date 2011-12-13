@@ -388,6 +388,21 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # chomp! test
+  #
+
+  def test_chomp_bang_removes_str_from_the_end_of_last_if_present
+    doc.write 'abc'
+    doc.chomp! 'c'
+    doc.chomp! 'x'
+    assert_equal 'ab', doc.to_s
+  end
+
+  def test_chomp_bang_returns_self
+    assert_equal doc, doc.chomp!
+  end
+
+  #
   # set test
   #
 
