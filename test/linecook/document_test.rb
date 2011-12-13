@@ -305,6 +305,39 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # chain test
+  #
+
+  def test_chain_chains_to_last
+    doc.write "ab\n"
+    doc.chain "c"
+
+    assert_equal "abc\n", doc.to_s
+  end
+
+  def test_chain_returns_last
+    line = doc.chain("ab\n")
+    assert_equal doc.last, line
+    assert_equal "ab\n", doc.to_s
+
+    line = doc.chain("c\nxyz")
+    assert_equal doc.last, line
+    assert_equal "abc\nxyz\n", doc.to_s
+  end
+
+  class ChainToInput
+    def chain_to(line)
+      line.chain "xyz"
+    end
+  end
+
+  def test_chain_delegates_to_chain_to_method_on_input_if_possible
+    doc.write "abc\n"
+    doc.chain ChainToInput.new
+    assert_equal "abcxyz\n", doc.to_s
+  end
+
+  #
   # set test
   #
 

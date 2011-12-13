@@ -118,6 +118,17 @@ module Linecook
       line.insert(col, str)
     end
 
+    # Chains input to last. If the input has a `chain_to` method, then chain
+    # delegates by calling it with last.  Returns last.
+    def chain(input)
+      if input.respond_to?(:chain_to)
+        input.chain_to last
+      else
+        last.chain input
+      end
+      last
+    end
+
     # Returns the current format for self (ie the format of last).
     def format
       last.format
