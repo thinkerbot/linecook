@@ -150,6 +150,38 @@ module Linecook
       head
     end
 
+    # Removes any leading empty lines.
+    def ltrim
+      length = 0
+      line = first
+
+      while line.empty? && !line.last?
+        length += 1
+        line = line.nex
+      end
+
+      cut 0, length
+    end
+
+    # Removes any trailing empty lines.
+    def rtrim
+      index = 0
+      line = last
+
+      while line.empty? && !line.first?
+        index -= 1
+        line = line.pre
+      end
+
+      cut index, index * -1
+    end
+
+    # Removes leading and trailing empty lines.
+    def trim
+      ltrim
+      rtrim
+    end
+
     # Returns the current format for self (ie the format of last).
     def format
       last.format
