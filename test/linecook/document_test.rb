@@ -237,7 +237,7 @@ class DocumentTest < Test::Unit::TestCase
   # writeln test
   #
 
-  def test_writeln_adds_linebreak_and_writes_to_doc
+  def test_writeln_writes_to_doc_and_adds_newline
     doc.writeln "abc"
     assert_equal "abc\n", doc.to_s
   end
@@ -250,6 +250,17 @@ class DocumentTest < Test::Unit::TestCase
     line = doc.writeln("xyz")
     assert_equal doc.last, line
     assert_equal "abc\nxyz\n", doc.to_s
+  end
+
+  class WritelnToInput
+    def write_to(line)
+      line.write "abc"
+    end
+  end
+
+  def test_writeln_delegates_to_write_to_method_and_then_writes_newline
+    doc.writeln WritelnToInput.new
+    assert_equal "abc\n", doc.to_s
   end
 
   #
