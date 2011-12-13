@@ -102,12 +102,6 @@ module Linecook
       last
     end
 
-    # Writes input to self, writes a newline, and returns last.
-    def writeln(input)
-      write input
-      write "\n"
-    end
-
     # Inserts str at the specified pos. Negative positions count back from
     # length.  Raises a RangeError for out-of-range positions.
     def insert(pos, str)
