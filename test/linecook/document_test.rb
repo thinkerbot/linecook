@@ -433,6 +433,24 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "..", doc.format.indent
   end
 
+  def test_set_completes_line_before_changing_format
+    doc.write 'abc'
+    doc.set :indent => ".."
+    doc.write 'xyz'
+    assert_equal "abc\n..xyz", doc.to_s
+  end
+
+  #
+  # set! test
+  #
+
+  def test_set_bang_changes_format_for_current_line
+    doc.write 'abc'
+    doc.set!(:indent => "..")
+    doc.write 'xyz'
+    assert_equal "..abcxyz", doc.to_s
+  end
+
   #
   # with test
   #
@@ -443,6 +461,14 @@ class DocumentTest < Test::Unit::TestCase
       assert_equal "..", doc.format.indent
     end
     assert_equal "", doc.format.indent
+  end
+
+  def test_with_completes_lines_before_and_after_block
+    doc.write 'abc'
+    doc.with :indent => ".." do
+      doc.write 'xyz'
+    end
+    assert_equal "abc\n..xyz\n", doc.to_s
   end
 
   #

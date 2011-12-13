@@ -184,10 +184,11 @@ module Linecook
 
     # Ensures the last line ends in a newline.  Does nothing if the last line
     # is already complete, or empty (in that case the assumption is that the
-    # previous line is complete).
+    # previous line is complete).  Returns the last line.
     def complete
-      unless last.complete? || last.empty?
-        last.write "\n"
+      line = last
+      unless line.complete? || line.empty?
+        line.write "\n"
       end
       self
     end
@@ -205,10 +206,16 @@ module Linecook
       last.format
     end
 
-    # Sets format attributes (note this resets format to a new object).
+    # Completes the current last line and sets format attributes for the next
+    # line.  See set! to change attributes for the last line in place.
     def set(attrs)
-      last.append if last.complete?
+      complete
+      last.append unless last.empty?
+      set! attrs
+    end
 
+    # Sets format attributes for the last line.
+    def set!(attrs)
       new_format  = attrs.respond_to?(:call) ? attrs : format.with(attrs)
       last.format = new_format
     end
