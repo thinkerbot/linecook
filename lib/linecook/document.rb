@@ -123,6 +123,41 @@ module Linecook
       last
     end
 
+    # Removes lines starting at index.  Returns the line at index.
+    def cut(index, length=1)
+      if length == 0
+        return nil 
+      end
+
+      if length < 0
+        index, length = index + length, length * -1
+
+        if index < 0
+          index, length = 0, index + length
+        end
+      end
+
+      head = line(index)
+
+      if head
+        tail = line(index + length - 1) || last
+
+        pre = head.pre
+        nex = tail.nex
+
+        pre.nex = nex if pre
+        nex.pre = pre if nex
+
+        head.pre = nil
+        tail.nex = nil
+
+        # ensure first and last are pointing at something valid
+        @first = @last = pre || nex || Line.new(head.format)
+      end
+
+      head
+    end
+
     # Returns the current format for self (ie the format of last).
     def format
       last.format

@@ -308,6 +308,70 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # cut test
+  #
+
+  def test_cut_removes_and_return_line_at_index
+    a, b, c, doc = abc_doc
+    assert_equal b, doc.cut(1)
+    assert_equal [a, c], doc.lines
+  end
+
+  def test_cut_removes_n_lines
+    a, b, c, doc = abc_doc
+    assert_equal a, doc.cut(0,2)
+    assert_equal [a, b], a.lines
+    assert_equal [c], doc.lines
+  end
+
+  def test_cut_allows_cut_to_last
+    a, b, c, doc = abc_doc
+    assert_equal b, doc.cut(1, 3)
+    assert_equal [b, c], b.lines
+    assert_equal [a], doc.lines
+  end
+
+  def test_cut_allows_removal_of_all_lines
+    a, b, c, doc = abc_doc
+    assert_equal a, doc.cut(0,3)
+    assert_equal [a, b, c], a.lines
+    assert_equal [doc.first], doc.lines
+  end
+
+  def test_cut_allows_negative_index_from_end
+    a, b, c, doc = abc_doc
+    assert_equal c, doc.cut(-1)
+    assert_equal [a, b], doc.lines
+  end
+
+  def test_cut_allows_negative_length_to_count_backwards
+    a, b, c, doc = abc_doc
+    assert_equal a, doc.cut(1, -1)
+    assert_equal [b, c], doc.lines
+  end
+
+  def test_cut_with_allows_negative_length_to_cut_to_head
+    a, b, c, doc = abc_doc
+    a.write 'a'
+    b.write 'b'
+    c.write 'c'
+    assert_equal a, doc.cut(2, -3)
+    assert_equal [a, b], a.lines
+    assert_equal [c], doc.lines
+  end
+
+  def test_cut_returns_nil_for_index_out_of_range
+    a, b, c, doc = abc_doc
+    assert_equal nil, doc.cut(100)
+    assert_equal nil, doc.cut(-100)
+  end
+
+  def test_cut_returns_nil_for_zero_length
+    a, b, c, doc = abc_doc
+    assert_equal nil, doc.cut(1, 0)
+  end
+
+  #
   # set test
   #
 
