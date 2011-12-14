@@ -92,14 +92,26 @@ echo 'x y z'
     assert_equal "xyz", child.to_s
   end
 
-  def test___child_inherits_locals
+  def test___inherits_locals
     child = recipe._
     assert_equal recipe.locals, child.locals
   end
 
-  def test___child_inherits_attributes
+  def test___inherits_attributes
     child = recipe._
     assert_equal recipe.attributes, child.attributes
+  end
+
+  module ChildHelpers
+    def a
+      :a
+    end
+  end
+
+  def test___inherits_helpers
+    recipe.helpers ChildHelpers
+    child = recipe._
+    assert_equal :a, child.a
   end
 
   def test___writes_str_to_child_if_given

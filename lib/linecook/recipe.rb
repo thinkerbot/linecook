@@ -7,7 +7,6 @@ require 'linecook/package'
 require 'linecook/resource'
 require 'linecook/utils'
 require 'linecook/proxy'
-require 'linecook/context'
 
 module Linecook
   # Recipe is the context in which recipes are evaluated (literally).  Recipe
@@ -38,7 +37,7 @@ module Linecook
   #   # echo 'x y z'
   #   # }
   #
-  class Recipe < Context
+  class Recipe < BasicObject
     include Resource
 
     # The recipe Package
@@ -72,10 +71,38 @@ module Linecook
       end
     end
 
-    # Initializes clones created by _clone_ by passing forward all state,
+    # Overridden to look up constants as normal.
+    def self.const_missing(name)
+      ::Object.const_get(name)
+    end
+
+    # Returns the singleton class for self.  Used by clone to access modules
+    # included in self (ex via _extend_).
+    def _singleton_class_
+      class << self
+        SINGLETON_CLASS = self
+        def _singleton_class_
+          SINGLETON_CLASS
+        end
+      end
+
+      # this and future calls go to the _singleton_class_ as defined above.
+      _singleton_class_
+    end
+
+    # Returns the class for self.
+    def _class_
+      _singleton_class_.superclass
+    end
+
+    # Extends self with the module.
+    def _extend_(mod)
+      mod.__send__(:extend_object, self)
+    end
+
+    # Callback to initialize a clone of self. Passes forward all state,
     # including local data and attributes.
     def _initialize_clone_(orig)
-      super
       @_package_  = orig._package_
       @_cookbook_ = orig._cookbook_
       @_document_ = orig._document_
@@ -87,12 +114,31 @@ module Linecook
       @locals = orig.locals
     end
 
+    # Returns a clone of self, kind of like Object#clone.
+    #
+    # Note that unlike Object.clone this currently does not carry forward
+    # tainted/frozen state, nor can it carry forward singleton methods.
+    # Modules and internal state only.
+    def _clone_
+      clone = _class_.allocate
+      clone._initialize_clone_(self)
+      _singleton_class_.included_modules.each {|mod| clone._extend_ mod }
+      clone
+    end
+
     # Initializes children created by _beget_ by setting _document_ to a new
     # Document.  Note that the child shares the same locals and attributes as
     # the parent, and so can (un)intentionally cause changes in the parent.
     def _initialize_child_(orig)
-      super
       @_document_ = Document.new
+    end
+
+    # Returns a clone of self created by _clone_, but also calls
+    # _initialize_child_ on the clone.
+    def _beget_
+      clone = _clone_
+      clone._initialize_child_(self)
+      clone
     end
 
     # Returns a child of self with it's own Document.  Writes str to the
