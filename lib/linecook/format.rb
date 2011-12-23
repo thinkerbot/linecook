@@ -8,7 +8,7 @@ module Linecook
     attr_accessor :lstrip
 
     def initialize(attrs={})
-      @eol = nil
+      @eol = "\n"
       @indent_str = "  "
       @indent_level = 0
       @rstrip = false

@@ -8,7 +8,7 @@ class FormatTest < Test::Unit::TestCase
 
   def setup
     super
-    @format = Format.new
+    @format = Format.new :eol => nil
   end
 
   #
