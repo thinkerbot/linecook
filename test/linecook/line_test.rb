@@ -323,6 +323,30 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
+  # prepend_line
+  #
+
+  def test_prepend_line_inserts_lines_as_pre
+    a, b, c = abc_lines
+    x, y, z = xyz_lines
+
+    assert_equal x, b.prepend_line(y)
+    assert_equal [a, x, y, z, b, c], a.lines
+  end
+
+  #
+  # append_line
+  #
+
+  def test_append_line_inserts_lines_as_nex
+    a, b, c = abc_lines
+    x, y, z = xyz_lines
+
+    assert_equal z, b.append_line(y)
+    assert_equal [a, b, x, y, z, c], a.lines
+  end
+
+  #
   # render test
   #
 

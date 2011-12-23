@@ -160,6 +160,34 @@ module Linecook
       line
     end
 
+    # Prepends the lines of line to self.  Returns the first prepended line.
+    def prepend_line(line)
+      head = line.first
+      tail = line.last
+
+      head.pre = pre
+      pre.nex  = head if pre
+
+      tail.nex = self
+      self.pre = tail
+
+      head
+    end
+
+    # Appends the lines of line to self.  Returns the last appended line.
+    def append_line(line)
+      head = line.first
+      tail = line.last
+
+      tail.nex = nex
+      nex.pre  = tail if nex
+
+      head.pre = self
+      self.nex = head
+
+      tail
+    end
+
     # Renders content using `format.call`.
     def render
       format.call(content)
