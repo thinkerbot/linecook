@@ -97,30 +97,6 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
-  # pos test
-  #
-
-  def test_pos_returns_the_position_of_content_in_lines
-    a, b, c = abc_lines
-    a.write "abc"
-    b.write "abc"
-    c.write "abc"
-
-    assert_equal 0, a.pos
-    assert_equal 3, b.pos
-    assert_equal 6, c.pos
-  end
-
-  #
-  # length test
-  #
-
-  def test_length_returns_the_length_of_content
-    line.write "abc"
-    assert_equal 3, line.length
-  end
-
-  #
   # lineno test
   #
 
@@ -204,74 +180,6 @@ class LineTest < Test::Unit::TestCase
 
   def test_prewrite_returns_first_line_written
     assert_equal "abc", line.prewrite("abc\nxyz").content
-  end
-
-  #
-  # rewrite test
-  #
-
-  def test_rewrite_replaces_content_for_self
-    line.write "abc"
-    line.rewrite "xyz"
-
-    assert_equal "xyz", line.content
-  end
-
-  def test_rewrite_appends_lines_as_needed
-    line.write "ABC\n\n"
-    assert_equal ["ABC", "", ""], line.lines.map(&:content)
-
-    line.rewrite "abc\nxyz"
-    assert_equal ["abc", "xyz", "", ""], line.lines.map(&:content)
-  end
-
-  def test_rewrite_converts_input_to_s
-    line.write "abc"
-    line.rewrite :xyz
-
-    assert_equal "xyz", line.content
-  end
-
-  def test_rewrite_returns_last_line_written
-    line.write "ABC"
-    assert_equal "xyz", line.rewrite("abc\nxyz").content
-  end
-
-  #
-  # insert test
-  #
-
-  def test_insert_inserts_content_at_col
-    line.write "ac"
-    line.insert 1, "b"
-
-    assert_equal "abc", line.content
-  end
-
-  def test_insert_pads_to_col_if_needed
-    line.write "abc"
-    line.insert 6, "xyz"
-
-    assert_equal "abc   xyz", line.content
-  end
-
-  def test_insert_appends_new_lines_as_needed
-    line.write "ab\n"
-    line.insert 2, "c\nxyz"
-
-    assert_equal ["abc", "xyz", ""], line.lines.map(&:content)
-  end
-
-  def test_insert_converts_input_to_s
-    line.write "ac"
-    line.insert 1, :b
-
-    assert_equal "abc", line.content
-  end
-
-  def test_insert_returns_last_line_written
-    line.write "ab\n"
-    assert_equal "xyz", line.insert(2, "c\nxyz").content
   end
 
   #

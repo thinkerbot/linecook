@@ -80,17 +80,6 @@ module Linecook
       lines
     end
 
-    # Returns the position of content in lines (ie assuming the content of all
-    # the lines were joined together).
-    def pos
-      first? ? 0 : pre.pos + pre.length
-    end
-
-    # Returns the length of content
-    def length
-      content.length
-    end
-
     # Returns the index of self in lines.
     def lineno
       pre ? pre.lineno + 1 : 0
@@ -124,24 +113,6 @@ module Linecook
       end
 
       first
-    end
-
-    # Rewrites the content of self and appends new lines as per write. Returns
-    # the last line written.
-    def rewrite(str)
-      @content = ""
-      write(str)
-    end
-
-    # Inserts str at the specified column in self, padding with whitespace if
-    # needed.  New lines are appended as per write.  Returns the last line
-    # written.
-    def insert(col, str)
-      if col > length
-        content.replace content.ljust(col)
-      end
-
-      rewrite content.insert(col, str.to_s)
     end
 
     # Prepends a line and writes str, if specified.  The prepended line will
