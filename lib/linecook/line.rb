@@ -114,11 +114,12 @@ module Linecook
         content << lines.shift
       end
 
+      last = self
       lines.inject(self) do |tail, content|
-        Line.new(format, tail, tail.nex, content)
+        last = Line.new(format, tail, tail.nex, content)
       end
 
-      self
+      last
     end
 
     # Rewrites the content of self and appends new lines as per write. Returns

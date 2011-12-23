@@ -187,8 +187,8 @@ class LineTest < Test::Unit::TestCase
     assert_equal ["..abc\n", "..xyz\n"], line.lines.map(&:render)
   end
 
-  def test_write_returns_self
-    assert_equal line, line.write("str")
+  def test_write_returns_last_line_written
+    assert_equal "xyz", line.write("abc\nxyz").content
   end
 
   #
