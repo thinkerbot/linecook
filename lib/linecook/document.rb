@@ -170,7 +170,9 @@ module Linecook
     # target using '<<'.
     def render_to(target)
       each do |line|
-        target << line.render
+        unless line.last? && line.empty?
+          target << line.render
+        end
       end
       target
     end
