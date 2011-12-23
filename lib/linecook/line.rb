@@ -98,7 +98,7 @@ module Linecook
 
     # Writes str to the end of content, appending a new line for every "\n".
     # New lines will have the same format as self.  Returns the last line
-    # written (usually self).
+    # written.
     def write(str)
       lines = Line.split(str.to_s)
       content << lines.shift
@@ -113,7 +113,7 @@ module Linecook
 
     # Writes str to the start of content, prepending a new line for every
     # "\n". New lines will have the same format as self.  Returns the first
-    # line written (usually self).
+    # line written.
     def prewrite(str)
       lines = Line.split(str.to_s)
       content.replace "#{lines.pop}#{content}"
@@ -127,7 +127,7 @@ module Linecook
     end
 
     # Rewrites the content of self and appends new lines as per write. Returns
-    # the last line written (usually self).
+    # the last line written.
     def rewrite(str)
       @content = ""
       write(str)
@@ -135,7 +135,7 @@ module Linecook
 
     # Inserts str at the specified column in self, padding with whitespace if
     # needed.  New lines are appended as per write.  Returns the last line
-    # written (usually self).
+    # written.
     def insert(col, str)
       if col > length
         content.replace content.ljust(col)
@@ -145,19 +145,15 @@ module Linecook
     end
 
     # Prepends a line and writes str, if specified.  The prepended line will
-    # have the same format as self.
+    # have the same format as self.  Returns the first line prepended.
     def prepend(str=nil)
-      line = Line.new(format, pre, self)
-      line.write(str) if str
-      line
+      Line.new(format, pre, self).prewrite(str)
     end
 
     # Appends a line and writes str, if specified.  The appended line will
-    # have the same format as self.
+    # have the same format as self.  Returns the last line appended.
     def append(str=nil)
-      line = Line.new(format, self, nex)
-      line.write(str) if str
-      line
+      Line.new(format, self, nex).write(str)
     end
 
     # Prepends the lines of line to self.  Returns the first prepended line.

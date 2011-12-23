@@ -232,6 +232,11 @@ class LineTest < Test::Unit::TestCase
     assert_equal "xyz", line.content
   end
 
+  def test_rewrite_returns_last_line_written
+    line.write "ABC"
+    assert_equal "xyz", line.rewrite("abc\nxyz").content
+  end
+
   #
   # insert test
   #
@@ -264,6 +269,11 @@ class LineTest < Test::Unit::TestCase
     assert_equal "abc", line.content
   end
 
+  def test_insert_returns_last_line_written
+    line.write "ab\n"
+    assert_equal "xyz", line.insert(2, "c\nxyz").content
+  end
+
   #
   # prepend test
   #
@@ -293,6 +303,11 @@ class LineTest < Test::Unit::TestCase
     assert_equal ["..abc", "..xyz"], line.lines.map(&:render)
   end
 
+  def test_prepend_returns_first_line_prepended
+    line.write "xyz"
+    assert_equal "abc", line.prepend("abc\npqr").content
+  end
+
   #
   # append test
   #
@@ -320,6 +335,11 @@ class LineTest < Test::Unit::TestCase
     line.append "xyz"
 
     assert_equal ["..abc", "..xyz"], line.lines.map(&:render)
+  end
+
+  def test_append_returns_the_last_line_appended
+    line.write "abc"
+    assert_equal "xyz", line.append("pqr\nxyz").content
   end
 
   #
