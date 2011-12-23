@@ -44,33 +44,6 @@ module Linecook
       self
     end
 
-    # Returns the length of all content in self
-    def length
-      inject(0) {|length, line| length + line.length }
-    end
-
-    # Returns the line and column at the given position (as an array).
-    # Negative positions count back from length.  Returns nil for out-of-range
-    # positions.
-    def at(pos)
-      if pos < 0
-        pos = length + pos
-      end
-
-      if pos >= 0
-        inject(0) do |line_end_pos, line|
-          line_end_pos += line.length
-          if line_end_pos > pos
-            col = pos - line_end_pos + line.length
-            return [line, col]
-          end
-          line_end_pos
-        end
-      end
-
-      nil
-    end
-
     # Returns the line at the specified index (lineno). A negative index
     # counts back from last.  Returns nil for an out-of-range index.
     def line(index)
@@ -94,32 +67,7 @@ module Linecook
     # Writes input to last.  If the input has a `write_to` method, then write
     # delegates by calling it with last.  Returns last.
     def write(input)
-      if input.respond_to?(:write_to)
-        input.write_to last
-      else
-        last.write input
-      end
-      last
-    end
-
-    # Inserts str at the specified pos. Negative positions count back from
-    # length.  Raises a RangeError for out-of-range positions.
-    def insert(pos, str)
-      line, col = at(pos)
-      if line.nil?
-        raise RangeError, "pos out of range: #{pos}"
-      end
-      line.insert(col, str)
-    end
-
-    # Chains input to last. If the input has a `chain_to` method, then chain
-    # delegates by calling it with last.  Returns last.
-    def chain(input)
-      if input.respond_to?(:chain_to)
-        input.chain_to last
-      else
-        last.chain input
-      end
+      last.write input
       last
     end
 
@@ -182,25 +130,6 @@ module Linecook
       rtrim
     end
 
-    # Ensures the last line ends in a newline.  Does nothing if the last line
-    # is already complete, or empty (in that case the assumption is that the
-    # previous line is complete).  Returns the last line.
-    def complete
-      line = last
-      unless line.complete? || line.empty?
-        line.write "\n"
-      end
-      self
-    end
-
-    # Removes the str from the end of the last line in place. Currently only
-    # affects the last line, so str cannot span lines.  Returns self.
-    def chomp!(str="\n")
-      line = last
-      line.rewrite line.content.chomp(str)
-      self
-    end
-
     # Returns the current format for self (ie the format of last).
     def format
       last.format
@@ -209,7 +138,6 @@ module Linecook
     # Completes the current last line and sets format attributes for the next
     # line.  See set! to change attributes for the last line in place.
     def set(attrs)
-      complete
       last.append unless last.empty?
       set! attrs
     end

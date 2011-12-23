@@ -104,47 +104,6 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
-  # length test
-  #
-
-  def test_length_returns_sum_of_line_lengths
-    doc.write "abc\n"
-    assert_equal 4, doc.length
-    doc.write "xyz\n"
-    assert_equal 8, doc.length
-  end
-
-  #
-  # at test
-  #
-
-  def test_at_returns_line_and_col_at_position
-    a = doc.write "abc\n"
-    b = doc.write "xyz\n"
-
-    assert a != b
-    assert_equal [a, 0], doc.at(0)
-    assert_equal [a, 3], doc.at(3)
-    assert_equal [b, 0], doc.at(4)
-  end
-
-  def test_at_allows_negative_pos_from_end
-    a = doc.write "abc\n"
-    b = doc.write "xyz\n"
-
-    assert a != b
-    assert_equal [b, 3], doc.at(-1)
-    assert_equal [b, 0], doc.at(-4)
-    assert_equal [a, 3], doc.at(-5)
-  end
-
-  def test_at_returns_nil_for_pos_out_of_range
-    assert_equal 0, doc.length
-    assert_equal nil, doc.at(100)
-    assert_equal nil, doc.at(-100)
-  end
-
-  #
   # line test
   #
 
@@ -201,13 +160,6 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "..abc\n..xyz\n", doc.to_s
   end
 
-  def test_write_formats_incomplete_lines
-    doc.set :indent => '..'
-    doc.write "abc\nxy"
-
-    assert_equal "..abc\n..xy", doc.to_s
-  end
-
   def test_write_returns_last
     line = doc.write("abc\n")
     assert_equal doc.last, line
@@ -220,91 +172,6 @@ class DocumentTest < Test::Unit::TestCase
     line = doc.write("z\n")
     assert_equal doc.last, line
     assert_equal "abc\nxyz\n", doc.to_s
-  end
-
-  class WriteToInput
-    def write_to(line)
-      line.write "abc"
-    end
-  end
-
-  def test_write_delegates_to_write_to_method_on_input_if_possible
-    doc.write WriteToInput.new
-    assert_equal "abc", doc.to_s
-  end
-
-  #
-  # insert test
-  #
-
-  def test_insert_writes_str_at_pos
-    doc.write "abc\nyz"
-    doc.insert 4, "pqr\nx"
-
-    assert_equal "abc\npqr\nxyz", doc.to_s
-  end
-
-  def test_insert_accepts_negative_pos
-    doc.write "abc\nyz"
-    doc.insert(-2, "pqr\nx")
-
-    assert_equal "abc\npqr\nxyz", doc.to_s
-  end
-
-  def test_insert_raises_range_error_for_pos_out_of_range
-    err = assert_raises(RangeError) { doc.insert(100, "abc") }
-    assert_equal "pos out of range: 100", err.message
-    err = assert_raises(RangeError) { doc.insert(-100, "xyz") }
-    assert_equal "pos out of range: -100", err.message
-
-    assert_equal "", doc.to_s
-  end
-
-  def test_insert_returns_the_line_that_recieves_the_new_content
-    doc.write "abc\nxyz"
-    line = doc.insert 3, "\npqr"
-    assert_equal "abc\n", line.to_s
-  end
-
-  def test_insert_formats_inserted_content
-    doc.set :indent => '..'
-    doc.write "abc\nyz"
-    doc.insert 4, "pqr\nx"
-
-    assert_equal "..abc\n..pqr\n..xyz", doc.to_s
-  end
-
-  #
-  # chain test
-  #
-
-  def test_chain_chains_to_last
-    doc.write "ab\n"
-    doc.chain "c"
-
-    assert_equal "abc\n", doc.to_s
-  end
-
-  def test_chain_returns_last
-    line = doc.chain("ab\n")
-    assert_equal doc.last, line
-    assert_equal "ab\n", doc.to_s
-
-    line = doc.chain("c\nxyz")
-    assert_equal doc.last, line
-    assert_equal "abc\nxyz\n", doc.to_s
-  end
-
-  class ChainToInput
-    def chain_to(line)
-      line.chain "xyz"
-    end
-  end
-
-  def test_chain_delegates_to_chain_to_method_on_input_if_possible
-    doc.write "abc\n"
-    doc.chain ChainToInput.new
-    assert_equal "abcxyz\n", doc.to_s
   end
 
   #
@@ -388,42 +255,6 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
-  # complete test
-  #
-
-  def test_complete_adds_a_newline_to_last_if_incomplete
-    doc.write "abc"
-    doc.complete
-    assert_equal "abc\n", doc.to_s
-  end
-
-  def test_complete_does_nothing_if_last_line_is_complete
-    doc.write "abc\n"
-    doc.complete
-    assert_equal "abc\n", doc.to_s
-  end
-
-  def test_complete_does_nothing_if_last_line_is_empty
-    doc.complete
-    assert_equal "", doc.to_s
-  end
-
-  #
-  # chomp! test
-  #
-
-  def test_chomp_bang_removes_str_from_the_end_of_last_if_present
-    doc.write 'abc'
-    doc.chomp! 'c'
-    doc.chomp! 'x'
-    assert_equal 'ab', doc.to_s
-  end
-
-  def test_chomp_bang_returns_self
-    assert_equal doc, doc.chomp!
-  end
-
-  #
   # set test
   #
 
@@ -437,7 +268,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.write 'abc'
     doc.set :indent => ".."
     doc.write 'xyz'
-    assert_equal "abc\n..xyz", doc.to_s
+    assert_equal "abc\n..xyz\n", doc.to_s
   end
 
   #
@@ -448,7 +279,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.write 'abc'
     doc.set!(:indent => "..")
     doc.write 'xyz'
-    assert_equal "..abcxyz", doc.to_s
+    assert_equal "..abcxyz\n", doc.to_s
   end
 
   #
