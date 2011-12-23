@@ -4,9 +4,12 @@ module Linecook
   class Document
     include Enumerable
 
-    def initialize(first = Line.new)
-      @first = first
-      @last  = @first.last
+    attr_reader :head
+    attr_reader :current_line
+    attr_reader :tail
+
+    def initialize(line = Line.new)
+      @first = @head = @current_line = @tail = @last = line
     end
 
     # Returns the first line in lines.
@@ -64,11 +67,17 @@ module Linecook
       nil
     end
 
-    # Writes input to last.  If the input has a `write_to` method, then write
-    # delegates by calling it with last.  Returns last.
-    def write(input)
-      last.write input
-      last
+    # Writes the string to end of current_line and advances current_line to
+    # the last line written.  Returns self.
+    def write(str)
+      last = current_line.write str
+
+      if current_line == tail
+        @tail = last
+      end
+
+      @current_line = last
+      self
     end
 
     # Removes lines starting at index.  Returns the line at index.
@@ -130,22 +139,32 @@ module Linecook
       rtrim
     end
 
-    # Returns the current format for self (ie the format of last).
+    def reset(line)
+      @first = @head = @current_line = @tail = @last = line
+    end
+
+    # Clears all lines.
+    def clear
+      reset Line.new(format)
+      self
+    end
+
+    # Returns the current format for self (ie the format of current_line).
     def format
-      last.format
+      current_line.format
     end
 
     # Completes the current last line and sets format attributes for the next
     # line.  See set! to change attributes for the last line in place.
     def set(attrs)
-      last.append unless last.empty?
+      @current_line = current_line.append unless current_line.empty?
       set! attrs
     end
 
     # Sets format attributes for the last line.
     def set!(attrs)
-      new_format  = attrs.respond_to?(:call) ? attrs : format.with(attrs)
-      last.format = new_format
+      new_format = attrs.respond_to?(:call) ? attrs : format.with(attrs)
+      current_line.format = new_format
     end
 
     # Sets format attributes for the duration of a block.
@@ -157,13 +176,6 @@ module Linecook
       ensure
         set current
       end
-    end
-
-    # Clears all lines.
-    def clear
-      @first = Line.new(format)
-      @last  = @first
-      self
     end
 
     # Renders each line to the target.  The render output is appended to

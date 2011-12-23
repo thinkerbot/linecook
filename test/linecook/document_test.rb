@@ -160,20 +160,6 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "..abc\n..xyz\n", doc.to_s
   end
 
-  def test_write_returns_last
-    line = doc.write("abc\n")
-    assert_equal doc.last, line
-    assert_equal "abc\n", doc.to_s
-
-    line = doc.write("xy")
-    assert_equal doc.last, line
-    assert_equal "abc\nxy", doc.to_s
-
-    line = doc.write("z\n")
-    assert_equal doc.last, line
-    assert_equal "abc\nxyz\n", doc.to_s
-  end
-
   #
   # cut test
   #
