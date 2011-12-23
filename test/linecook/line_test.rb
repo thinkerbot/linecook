@@ -256,37 +256,6 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
-  # chain test
-  #
-
-  def test_chain_inserts_content_after_existing_content_but_before_newline
-    line.write "ab\n"
-    line.chain "c"
-
-    assert_equal "abc\n", line.content
-  end
-
-  def test_chain_does_not_add_a_newline
-    line.write "ab"
-    line.chain "c"
-
-    assert_equal "abc", line.content
-  end
-
-  def test_chain_converts_input_to_s
-    line.write "ab\n"
-    line.chain :c
-
-    assert_equal "abc\n", line.content
-  end
-
-  def test_chain_inserts_new_lines_as_needed
-    line.write "a\n"
-    line.chain "bc\nxyz"
-    assert_equal ["abc\n", "xyz\n"], line.lines.map(&:content)
-  end
-
-  #
   # prepend test
   #
 
