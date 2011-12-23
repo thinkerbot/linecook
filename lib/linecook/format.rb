@@ -60,17 +60,26 @@ module Linecook
     end
 
     def render(line)
-      endofline = line =~ /\r?\n\z/ ? (eol || $&) : nil
-      line = $` || line.dup
-
-      line.rstrip! if rstrip
-      line.lstrip! if lstrip
-      line = "#{indent}#{line}#{endofline}"
+      line = "#{indent}#{strip_line(line)}#{eol}"
       line.tr!("\t", tab) if tab
-
       line
     end
 
     alias call render
+
+    private
+
+    def strip_line(line) # :nodoc:
+      case
+      when lstrip && rstrip
+        line.strip
+      when lstrip
+        line.lstrip
+      when rstrip
+        line.rstrip
+      else
+        line
+      end
+    end
   end
 end

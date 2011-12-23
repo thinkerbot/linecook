@@ -116,30 +116,12 @@ class FormatTest < Test::Unit::TestCase
 
   def test_render_prefixes_line_with_indent
     format.indent = '..'
-    assert_equal "..abc\n", format.render("abc\n")
+    assert_equal "..abc", format.render("abc")
   end
 
-  def test_render_replaces_nl_with_eol
+  def test_render_adds_eol
     format.eol = '.'
-    assert_equal "abc.", format.render("abc\n")
-  end
-
-  def test_render_replaces_crnl_with_eol
-    format.eol = '.'
-    assert_equal "abc.", format.render("abc\r\n")
-  end
-
-  def test_render_preserves_nl_if_eol_is_nil
-    assert_equal "abc\n", format.render("abc\n")
-  end
-
-  def test_render_preserves_crnl_if_eol_is_nil
-    assert_equal "abc\r\n", format.render("abc\r\n")
-  end
-
-  def test_render_does_not_add_eol_if_str_does_not_end_with_nl
-    format.eol = '.'
-    assert_equal "abc\r", format.render("abc\r")
+    assert_equal "abc.", format.render("abc")
   end
 
   def test_render_expands_tabs_with_tab
@@ -147,26 +129,27 @@ class FormatTest < Test::Unit::TestCase
     assert_equal "a.b.c", format.render("a\tb\tc")
   end
 
-  def test_render_expands_tabs_after_indent
+  def test_render_expands_tabs_after_adding_indent
     format.indent = "\t"
     format.tab = '.'
     assert_equal ".abc", format.render("abc")
   end
 
-  def test_render_expands_tabs_after_eol_tr
+  def test_render_expands_tabs_after_adding_eol
     format.eol = "\t"
     format.tab = '.'
-    assert_equal "abc.", format.render("abc\n")
+    assert_equal "abc.", format.render("abc")
   end
 
-  def test_render_rstrips_to_eol_if_specified
-    format.rstrip = true
-    assert_equal "abc\n", format.render("abc  \n")
-  end
-
-  def test_render_rstrips_to_end_if_no_eol
+  def test_render_rstrips_if_specified
     format.rstrip = true
     assert_equal "abc", format.render("abc  ")
+  end
+
+  def test_render_rstrips_before_adding_eol
+    format.eol = "\n"
+    format.rstrip = true
+    assert_equal "abc\n", format.render("abc  ")
   end
 
   def test_render_lstrips_if_specified
