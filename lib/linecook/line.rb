@@ -4,21 +4,18 @@ require 'strscan'
 module Linecook
   class Line
     class << self
-      # Splits str into an array of lines, preserving end-of-line characters.
-      # For example:
+      # Splits str into an array of line content. For example:
       #
-      #   Line.split "abc\nxyz\n"  # => ["abc\n", "xyz\n"]
-      #   Line.split "\nabc\nxyz"  # => ["\n", "abc\n", "xyz"]
+      #   Line.split "abc\nxyz\n"  # => ["abc", "xyz", ""]
+      #   Line.split "\nabc\nxyz"  # => ["", "abc", "xyz"]
       #
       def split(str)
         lines = []
         scanner = StringScanner.new(str)
         while line = scanner.scan_until(/\n/)
-          lines << line
+          lines << line.chomp("\n")
         end
-        unless scanner.eos?
-          lines << scanner.rest
-        end
+        lines << scanner.rest
         lines
       end
     end
@@ -33,7 +30,7 @@ module Linecook
     # The next line, or nil if last in lines
     attr_accessor :nex
 
-    # The unformatted content for self
+    # The unformatted content for self.
     attr_reader   :content
 
     def initialize(format = Format.new, pre = nil, nex = nil, content = "")
@@ -67,9 +64,9 @@ module Linecook
       nex.nil?
     end
 
-    # Returns true if content is empty (not counting the newline, if present).
+    # Returns true if content is empty.
     def empty?
-      content.empty? || content == "\n"
+      content.empty?
     end
 
     # Returns an array of lines that self is a part of.
@@ -99,20 +96,12 @@ module Linecook
       pre ? pre.lineno + 1 : 0
     end
 
-    # Returns true if content ends with a newline character.
-    def complete?
-      content[-1] == ?\n
-    end
-
-    # Writes str to the end of content, appending new lines if necessary once
-    # the content is a complete line (ie ends in "\n").  New lines will have
-    # the same format as self.  Returns self.
+    # Writes str to the end of content, appending a new line for every "\n".
+    # New lines will have the same format as self.  Returns the last line
+    # written (usually self).
     def write(str)
       lines = Line.split(str.to_s)
-
-      unless complete? || lines.empty?
-        content << lines.shift
-      end
+      content << lines.shift
 
       last = self
       lines.inject(self) do |tail, content|
@@ -123,21 +112,18 @@ module Linecook
     end
 
     # Rewrites the content of self and appends new lines as per write. Returns
-    # self.
+    # the last line written (usually self).
     def rewrite(str)
       @content = ""
       write(str)
     end
 
     # Inserts str at the specified column in self, padding with whitespace if
-    # needed.  New lines are appended as per write.  Returns self.
+    # needed.  New lines are appended as per write.  Returns the last line
+    # written (usually self).
     def insert(col, str)
-      ncols = length
-      ncols -= 1 if complete?
-
-      if col > ncols
-        eol = complete? ? "\n" : ""
-        content.replace content.chomp(eol).ljust(col) + eol
+      if col > length
+        content.replace content.ljust(col)
       end
 
       rewrite content.insert(col, str.to_s)
@@ -159,14 +145,12 @@ module Linecook
       line
     end
 
-    # Renders self by calling format, if specified.  Render adds "\n" to
-    # incomplete content, unless self is the last line.
+    # Renders content using `format.call`.
     def render
-      line = complete? || last? ? content : "#{content}\n"
-      format ? format.call(line) : line
+      format.call(content)
     end
 
-    # Returns the content of self
+    # Returns content.
     def to_s
       content
     end
