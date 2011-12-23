@@ -173,6 +173,40 @@ class LineTest < Test::Unit::TestCase
   end
 
   #
+  # prewrite test
+  #
+
+  def test_prewrite_writes_to_start_of_line
+    line.prewrite "c"
+    line.prewrite "b"
+    line.prewrite "a"
+    assert_equal "abc", line.content
+  end
+
+  def test_prewrite_prepends_lines_on_NL
+    line.write "yz"
+    line.prewrite "abc\n\nx"
+    assert_equal ["abc", "", "xyz"], line.lines.map(&:content)
+  end
+
+  def test_prewrite_converts_input_to_s
+    line.prewrite :str
+    assert_equal "str", line.content
+  end
+
+  def test_prewrite_propagates_format_to_new_lines
+    format = formatter {|str| "..#{str}" }
+    line = Line.new format
+
+    line.prewrite "abc\nxyz"
+    assert_equal ["..abc", "..xyz"], line.lines.map(&:render)
+  end
+
+  def test_prewrite_returns_first_line_written
+    assert_equal "abc", line.prewrite("abc\nxyz").content
+  end
+
+  #
   # rewrite test
   #
 

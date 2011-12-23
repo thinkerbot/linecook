@@ -104,11 +104,26 @@ module Linecook
       content << lines.shift
 
       last = self
-      lines.inject(self) do |tail, content|
-        last = Line.new(format, tail, tail.nex, content)
+      lines.inject(self) do |line, content|
+        last = Line.new(format, line, line.nex, content)
       end
 
       last
+    end
+
+    # Writes str to the start of content, prepending a new line for every
+    # "\n". New lines will have the same format as self.  Returns the first
+    # line written (usually self).
+    def prewrite(str)
+      lines = Line.split(str.to_s)
+      content.replace "#{lines.pop}#{content}"
+
+      first = self
+      lines.inject(pre) do |line, content|
+        first = Line.new(format, line, line ? line.nex : self, content)
+      end
+
+      first
     end
 
     # Rewrites the content of self and appends new lines as per write. Returns
