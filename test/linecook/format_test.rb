@@ -96,7 +96,6 @@ class FormatTest < Test::Unit::TestCase
     assert_equal false, format.rstrip
   end
 
-
   #
   # with test
   #
