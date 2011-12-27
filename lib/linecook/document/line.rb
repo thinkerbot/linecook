@@ -23,6 +23,7 @@ module Linecook
           lines
         end
       end
+
       include Enumerable
 
       # The format for self
@@ -35,17 +36,23 @@ module Linecook
       attr_accessor :nex
 
       # The unformatted content for self
-      attr_reader   :content
+      attr_accessor :content
 
       def initialize(format = Format.new, pre = nil, nex = nil, content = "")
         @format = format
         @pre = pre
         @nex = nex
-
-        pre.nex = self if pre
-        nex.pre = self if nex
-
         @content = content
+
+        if pre
+          pre.nex = self
+          pre.complete!
+        end
+
+        if nex
+          nex.pre = self
+          self.complete!
+        end
       end
 
       # Returns the first line in lines.
@@ -100,84 +107,60 @@ module Linecook
         pre ? pre.lineno + 1 : 0
       end
 
-      # Returns true if content ends with a newline character.
+      # Returns true if content ends with a "\n".
       def complete?
         content[-1] == ?\n
       end
 
-      # Writes str to the end of content, appending new lines if necessary
-      # once the content is a complete line (ie ends in "\n").  New lines will
-      # have the same format as self.  Returns self.
-      def write(str)
-        lines = Line.split(str.to_s)
-
-        unless complete? || lines.empty?
-          content << lines.shift
-        end
-
-        last = self
-        lines.inject(self) do |tail, content|
-          last = Line.new(format, tail, tail.nex, content)
-        end
-
-        last
-      end
-
-      # Rewrites the content of self and appends new lines as per write.
-      # Returns self.
-      def rewrite(str)
-        @content = ""
-        write(str)
-      end
-
-      # Inserts str at the specified column in self, padding with whitespace
-      # if needed.  New lines are appended as per write.  Returns self.
-      def insert(col, str)
-        ncols = length
-        ncols -= 1 if complete?
-
-        if col > ncols
-          eol = complete? ? "\n" : ""
-          content.replace content.chomp(eol).ljust(col) + eol
-        end
-
-        rewrite content.insert(col, str.to_s)
-      end
-
-      # Inserts str to self, prior to the end of line (if present).  If there
-      # is no existing content, or if the only content is a newline, then
-      # chain is equivalent to write.
-      def chain(str)
-        if complete?
-          content.chomp!("\n")
-          str = "#{str}\n"
-        end
-
-        write str
+      # Completes the line by adding "\n" to content, if necessary.
+      def complete!
+        content << "\n" unless complete?
         self
       end
 
-      # Prepends a line and writes str, if specified.  The prepended line will
-      # have the same format as self.
-      def prepend(str=nil)
-        line = Line.new(format, pre, self)
-        line.write(str) if str
-        line
+      # Inserts str at the end of content, prior to "\n" if present.
+      def write(str)
+        insert(complete? ? -2 : -1, str).first
       end
 
-      # Appends a line and writes str, if specified.  The appended line will
-      # have the same format as self.
-      def append(str=nil)
-        line = Line.new(format, self, nex)
-        line.write(str) if str
-        line
+      # Inserts str at the specified column, padding with whitespace and
+      # appending new lines as needed.  Returns the line and col after the
+      # insert.
+      def insert(col, str)
+        if col < 0
+          col += length + 1
+        end
+
+        offset = length - col
+
+        if offset < 0
+          eol = complete? ? "\n" : ""
+          @content = @content.chomp(eol).ljust(col) + eol
+          offset = eol.length
+        end
+
+        lines = Line.split @content.insert(col, str.to_s)
+        @content = lines.shift
+
+        last = lines.inject(self) do |line, content|
+          Line.new(format, line, line.nex, content)
+        end
+        [last, last.length - offset]
       end
 
-      # Renders self by calling format, if specified.  Render adds "\n" to
-      # incomplete content, unless self is the last line.
+      # Prepends a line. Returns the new line.
+      def prepend_line
+        Line.new(format, pre, self)
+      end
+
+      # Appends a line. Returns the new line.
+      def append_line
+        Line.new(format, self, nex)
+      end
+
+      # Renders self by calling format, if specified.
       def render
-        line = complete? || last? ? content : "#{content}\n"
-        format ? format.call(line) : line
+        format ? format.call(content) : content
       end
 
       # Returns the content of self
