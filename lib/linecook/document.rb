@@ -1,4 +1,4 @@
-require 'linecook/line'
+require 'linecook/document/line'
 
 module Linecook
   class Document

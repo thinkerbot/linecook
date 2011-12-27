@@ -1,8 +1,8 @@
-require File.expand_path('../../test_helper', __FILE__)
-require 'linecook/line'
+require File.expand_path('../../../test_helper', __FILE__)
+require 'linecook/document/line'
 
 class LineTest < Test::Unit::TestCase
-  Line = Linecook::Line
+  Line = Linecook::Document::Line
 
   attr_accessor :line
 

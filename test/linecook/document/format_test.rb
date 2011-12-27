@@ -1,8 +1,8 @@
-require File.expand_path('../../test_helper', __FILE__)
-require 'linecook/format'
+require File.expand_path('../../../test_helper', __FILE__)
+require 'linecook/document/format'
 
 class FormatTest < Test::Unit::TestCase
-  Format = Linecook::Format
+  Format = Linecook::Document::Format
 
   attr_accessor :format
 

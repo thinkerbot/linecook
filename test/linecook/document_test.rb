@@ -3,7 +3,7 @@ require 'linecook/document'
 
 class DocumentTest < Test::Unit::TestCase
   Document = Linecook::Document
-  Line = Linecook::Line
+  Line = Linecook::Document::Line
 
   attr_accessor :doc
 
