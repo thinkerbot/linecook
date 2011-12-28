@@ -47,20 +47,24 @@ module Linecook
       self
     end
 
-    # Returns the line at the specified index (lineno). A negative index
-    # counts back from last.  Returns nil for an out-of-range index.
+    # Returns the line at the specified index (lineno) in lines. A negative
+    # index counts back from last.  Returns nil for an out-of-range index.
     def line(index)
-      if index < 0
-        index = count + index
-        return nil if index < 0
-      end
-
       if index >= 0
-        inject(0) do |current, line|
+        current = 0
+        each do |line|
           if current == index
             return line
           end
-          current + 1
+          current += 1
+        end
+      else
+        current = -1
+        reverse_each do |line|
+          if current == index
+            return line
+          end
+          current -= 1
         end
       end
 
