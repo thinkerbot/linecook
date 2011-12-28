@@ -171,6 +171,48 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # prepend test
+  #
+
+  def test_prepend_prepends_a_line_to_head_and_writes_str
+    a, b, c, doc = abc_doc
+    a.write "a"
+    b.write "b"
+    c.write "c"
+    doc.set_marks(b)
+
+    doc.prepend("XYZ")
+    assert_equal "aXYZbc", doc.to_s
+  end
+
+  def test_prepend_does_not_move_head
+    doc.write "xyz"
+    doc.prepend "abc\npqr"
+    assert_equal "xyz", doc.head.to_s
+  end
+
+  #
+  # append test
+  #
+
+  def test_append_appends_a_line_to_tail_and_writes_str
+    a, b, c, doc = abc_doc
+    a.write "a"
+    b.write "b"
+    c.write "c"
+    doc.set_marks(b)
+
+    doc.append("XYZ")
+    assert_equal "abXYZc", doc.to_s
+  end
+
+  def test_append_advances_tail_to_last_line_appended
+    doc.write "abc"
+    doc.append "pqr\nxyz"
+    assert_equal "xyz", doc.tail.to_s
+  end
+
+  #
   # cut test
   #
 

@@ -71,6 +71,19 @@ module Linecook
       nil
     end
 
+    # Sets current_line, head, and tail.
+    def set_marks(line, head=line, tail=line)
+      @current_line = line
+      @head = head
+      @tail = tail
+      self
+    end
+
+    # Returns the marks (current_line, head, tail) as an array.
+    def marks
+      [current_line, head, tail]
+    end
+
     # Returns true if the current line is not empty.
     def chain?
       !current_line.empty?
@@ -86,6 +99,19 @@ module Linecook
       end
 
       @current_line = last
+      self
+    end
+
+    # Prepends the string to head (head remains the same).  Returns self.
+    def prepend(str)
+      head.prepend str
+      self
+    end
+
+    # Appends the string to tail and advances both tail to the last line
+    # appended. Returns self.
+    def append(str)
+      @tail = tail.append str
       self
     end
 
