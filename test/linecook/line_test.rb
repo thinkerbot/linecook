@@ -11,10 +11,6 @@ class LineTest < Test::Unit::TestCase
     @line = Line.new
   end
 
-  def formatter(&block)
-    block
-  end
-
   def abc_lines(&format)
     a = Line.new format, nil, nil
     b = Line.new format, a,   nil
@@ -137,7 +133,7 @@ class LineTest < Test::Unit::TestCase
   end
 
   def test_write_propagates_format_to_new_lines
-    format = formatter {|str| "..#{str}" }
+    format = lambda {|str, first, last| "..#{str}" }
     line = Line.new format
 
     line.write "abc\nxyz"
@@ -171,7 +167,7 @@ class LineTest < Test::Unit::TestCase
   end
 
   def test_prewrite_propagates_format_to_new_lines
-    format = formatter {|str| "..#{str}" }
+    format = lambda {|str, first, last| "..#{str}" }
     line = Line.new format
 
     line.prewrite "abc\nxyz"
@@ -202,7 +198,7 @@ class LineTest < Test::Unit::TestCase
   end
 
   def test_prepend_propagates_format
-    format = formatter {|str| "..#{str}" }
+    format = lambda {|str, first, last| "..#{str}" }
     line = Line.new format
 
     line.write "xyz"
@@ -236,7 +232,7 @@ class LineTest < Test::Unit::TestCase
   end
 
   def test_append_propagates_format
-    format = formatter {|str| "..#{str}" }
+    format = lambda {|str, first, last| "..#{str}" }
     line = Line.new format
 
     line.write "abc"
@@ -279,7 +275,7 @@ class LineTest < Test::Unit::TestCase
   #
 
   def test_render_renders_content_by_calling_format
-    format = formatter {|str| "..#{str}\n" }
+    format = lambda {|str, first, last| "..#{str}\n" }
     line = Line.new format
 
     line.write "abc"
