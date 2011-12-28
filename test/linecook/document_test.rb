@@ -128,6 +128,16 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # chain? test
+  #
+
+  def test_chain_check_returns_true_if_current_line_is_not_empty
+    assert_equal false, doc.chain?
+    doc.current_line.write "a"
+    assert_equal true, doc.chain?
+  end
+
+  #
   # write test
   #
 

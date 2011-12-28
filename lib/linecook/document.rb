@@ -71,6 +71,11 @@ module Linecook
       nil
     end
 
+    # Returns true if the current line is not empty.
+    def chain?
+      !current_line.empty?
+    end
+
     # Writes the string to end of current_line and advances current_line to
     # the last line written.  Returns self.
     def write(str)
