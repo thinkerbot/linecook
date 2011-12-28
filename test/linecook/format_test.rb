@@ -162,4 +162,10 @@ class FormatTest < Test::Unit::TestCase
     format.indent = "\t"
     assert_equal "\tabc", format.render("  abc")
   end
+
+  def test_render_returns_empty_str_if_empty_content_and_last
+    format.indent = ".."
+    format.eol = "."
+    assert_equal "", format.render("", false, true)
+  end
 end

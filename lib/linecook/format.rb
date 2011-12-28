@@ -59,7 +59,11 @@ module Linecook
       self.rstrip = value
     end
 
-    def render(line)
+    def render(line, first=false, last=false)
+      if last && line.empty?
+        return ""
+      end
+
       line = "#{indent}#{strip_line(line)}#{eol}"
       line.tr!("\t", tab) if tab
       line

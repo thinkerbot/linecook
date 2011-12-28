@@ -157,7 +157,7 @@ module Linecook
 
     # Renders content using `format.call`.
     def render
-      format.call(content)
+      format.call(content, first?, last?)
     end
 
     # Returns content.
