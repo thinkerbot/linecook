@@ -154,9 +154,9 @@ module Linecook
       tail
     end
 
-    # Renders content using `format.call`.
+    # Renders and returns content using `format.call`.
     def render
-      format.call(content, first?, last?)
+      format ? format.call(content, first?, last?) : content
     end
 
     # Returns content.

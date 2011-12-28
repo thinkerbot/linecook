@@ -299,4 +299,10 @@ class LineTest < Test::Unit::TestCase
 
     assert_equal ["aA", "bB", "cC"], a.lines.map(&:render)
   end
+
+  def test_render_returns_content_if_format_is_nil
+    line = Line.new nil
+    line.write "abc"
+    assert_equal "abc", line.render
+  end
 end
