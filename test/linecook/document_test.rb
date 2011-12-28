@@ -305,4 +305,12 @@ class DocumentTest < Test::Unit::TestCase
   def test_clear_returns_self
     assert_equal doc, doc.clear
   end
+
+  #
+  # to_s test
+  #
+
+  def test_new_documents_are_empty
+    assert_equal "", doc.to_s
+  end
 end
