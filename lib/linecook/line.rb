@@ -19,7 +19,6 @@ module Linecook
         lines
       end
     end
-    include Enumerable
 
     # The format for self
     attr_accessor :format
