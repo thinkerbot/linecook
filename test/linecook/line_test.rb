@@ -281,4 +281,22 @@ class LineTest < Test::Unit::TestCase
     line.write "abc"
     assert_equal "..abc\n", line.render
   end
+
+  def test_render_passes_in_first_and_last_flags
+    a, b, c = abc_lines do |str, first, last| 
+      if first
+        "a#{str}"
+      elsif last
+        "c#{str}"
+      else
+        "b#{str}"
+      end
+    end
+
+    a.write "A"
+    b.write "B"
+    c.write "C"
+
+    assert_equal ["aA", "bB", "cC"], a.lines.map(&:render)
+  end
 end
