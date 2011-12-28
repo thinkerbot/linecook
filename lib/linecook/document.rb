@@ -115,6 +115,18 @@ module Linecook
       self
     end
 
+    # Prepends a line to head.
+    def prepend_line(line)
+      head.prepend_line line
+      self
+    end
+
+    # Appends a line to tail and advances tail to the last line added.
+    def append_line(line)
+      @tail = tail.append_line line
+      self
+    end
+
     # Removes lines starting at index.  Returns the line at index.
     def cut(index, length=1)
       if length <= 0

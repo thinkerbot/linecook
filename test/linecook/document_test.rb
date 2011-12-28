@@ -213,6 +213,45 @@ class DocumentTest < Test::Unit::TestCase
   end
 
   #
+  # prepend_line test
+  #
+
+  def test_prepend_line_prepends_a_line_to_head
+    a, b, c, doc = abc_doc
+    doc.set_marks(b)
+
+    x = Line.new
+    doc.prepend_line x
+    assert_equal [a, x, b, c], doc.lines
+  end
+
+  def test_prepend_line_does_not_move_head
+    head = doc.head
+    doc.prepend_line Line.new
+    assert_equal head, doc.head
+  end
+
+  #
+  # append_line test
+  #
+
+  def test_append_line_appends_a_line_to_tail
+    a, b, c, doc = abc_doc
+    doc.set_marks(b)
+
+    x = Line.new
+    doc.append_line x
+    assert_equal [a, b, x, c], doc.lines
+  end
+
+  def test_append_advances_tail_to_last_line_appended
+    x = Line.new
+    y = x.append
+    doc.append_line x
+    assert_equal y, doc.tail
+  end
+  
+  #
   # cut test
   #
 
