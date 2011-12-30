@@ -79,6 +79,17 @@ module Linecook
       self
     end
 
+    # Set marks for the duration of a block.
+    def with_marks(line, head=line, tail=line)
+      current = marks
+      begin
+        set_marks(line, head, tail)
+        yield
+      ensure
+        set_marks *current
+      end
+    end
+
     # Returns the marks (current_line, head, tail) as an array.
     def marks
       [current_line, head, tail]
@@ -127,57 +138,79 @@ module Linecook
       self
     end
 
-    # Removes lines starting at index.  Returns the line at index.
-    def cut(index, length=1)
-      if length <= 0
-        return nil 
+    def cut(head = self.head, tail = self.tail)
+      pre = head.pre
+      nex = tail.nex
+
+      pre.nex = nex if pre
+      nex.pre = pre if nex
+
+      head.pre = nil
+      tail.nex = nil
+
+      # ensure first and last are pointing at something valid
+      if head == first
+        @first = nex || Line.new(head.format)
       end
 
-      head = line(index)
-
-      if head
-        tail = line(index + length - 1) || last
-
-        pre = head.pre
-        nex = tail.nex
-
-        pre.nex = nex if pre
-        nex.pre = pre if nex
-
-        head.pre = nil
-        tail.nex = nil
-
-        # ensure first and last are pointing at something valid
-        @first = @last = pre || nex || Line.new(head.format)
+      if tail == last
+        @last = pre || @first
       end
 
+      set_marks(pre || @first)
       head
+    end
+
+    def paste(line)
+      first = line.first
+      last  = line.last
+
+      current_line.append_line first
+
+      if current_line == tail
+        @tail = last
+      end
+
+      @current_line = last
+    end
+
+    def replace(line)
+      cut
+      paste line
     end
 
     # Removes any leading empty lines.
     def ltrim
-      length = 0
-      line = first
-
-      while line.empty? && !line.last?
-        length += 1
-        line = line.nex
+      head = first
+      unless head.empty?
+        return nil
       end
 
-      cut 0, length
+      tail = head
+      while !tail.last? && tail.nex.empty?
+        tail = tail.nex
+      end
+
+      with_marks head, head, tail do
+        cut
+      end
     end
 
     # Removes any trailing empty lines.
     def rtrim
-      index = 0
-      line = last
-
-      while line.empty? && !line.first?
-        index -= 1
-        line = line.pre
+      tail = last
+      unless tail.empty?
+        return nil
       end
 
-      cut index, index * -1
+      head = tail
+      while !head.first? && head.pre.empty?
+        head = head.pre
+      end
+
+      with_marks head, head, tail do
+        cut
+      end
     end
 
     # Removes leading and trailing empty lines.
