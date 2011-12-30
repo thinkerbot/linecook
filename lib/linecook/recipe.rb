@@ -47,7 +47,7 @@ module Linecook
     attr_reader :_cookbook_
 
     # The recipe Document
-    attr_reader :_document_
+    attr_reader :doc
 
     # The recipe Proxy
     attr_reader :_proxy_
@@ -55,13 +55,13 @@ module Linecook
     # The recipe locals hash.
     attr_reader :locals
 
-    def initialize(package = Package.new, cookbook = Cookbook.new, document = Document.new)
+    def initialize(package = Package.new, cookbook = Cookbook.new)
       @_package_  = package
       @_cookbook_ = cookbook
-      @_document_ = document
       @_proxy_ = Proxy.new(self)
-      @chain   = false
 
+      @doc        = Document.new
+      @chain      = false
       @attributes = {}
       @attrs = nil
       @locals = {}
@@ -105,12 +105,12 @@ module Linecook
     def _initialize_clone_(orig)
       @_package_  = orig._package_
       @_cookbook_ = orig._cookbook_
-      @_document_ = orig._document_
-      @_proxy_ = Proxy.new(self)
-      @chain   = orig.chain?
+      @_proxy_    = Proxy.new(self)
 
+      @doc        = orig.doc
+      @chain      = orig.chain?
       @attributes = orig.attributes
-      @attrs = nil
+      @attrs      = nil
       @locals = orig.locals
     end
 
@@ -126,11 +126,12 @@ module Linecook
       clone
     end
 
-    # Initializes children created by _beget_ by setting _document_ to a new
+    # Initializes children created by _beget_ by setting doc to a new
     # Document.  Note that the child shares the same locals and attributes as
     # the parent, and so can (un)intentionally cause changes in the parent.
     def _initialize_child_(orig)
-      @_document_ = Document.new
+      @doc   = Document.new
+      @chain = false
     end
 
     # Returns a clone of self created by _clone_, but also calls
@@ -212,34 +213,32 @@ module Linecook
 
     # Captures and returns the formatted output of the block as a string.
     def capture(doc = Document.new)
-      current = @_document_
+      current = @doc
       begin
-        @_document_ = doc
+        @doc = doc
         yield
       ensure
-        @_document_ = current
+        @doc = current
       end
       doc
     end
 
-    # Writes input to _document_ using `write`.  If chaining then write using
+    # Writes input to doc using `write`.  If chaining then write using
     # `chain` and then turn off. Returns self.
     def write(input)
-      if chain?
-        _document_.chain input
-        unchain
+      unchain
+
+      if input.respond_to?(:write_to)
+        input.write_to doc
       else
-        _document_.write input
+        doc.write input
       end
+
       self
     end
 
     # Writes input to self, writes a newline, and returns last.
     def writeln(input=nil)
-      if chain?
-        _document_.chomp!("\n")
-      end
-
       write input
       write "\n"
       self
@@ -247,7 +246,7 @@ module Linecook
 
     # Indents n levels for the duration of the block.
     def indent(n=1)
-      _document_.with(:indent => n) do
+      doc.with(:indent => n) do
         yield
       end
     end
@@ -255,7 +254,7 @@ module Linecook
     # Outdents for the duration of the block.  A negative number can be
     # provided to outdent n levels.
     def outdent(n=nil)
-      _document_.with(:indent => n) do
+      doc.with(:indent => n) do
         yield
       end
     end
@@ -268,6 +267,10 @@ module Linecook
 
     # Causes chain? to return false.  Returns self.
     def unchain
+      unless @chain
+        doc.set_marks doc.last
+      end
+
       @chain = false
       self
     end
@@ -284,9 +287,9 @@ module Linecook
       _proxy_
     end
 
-    # Returns the formatted contents of _document_.
+    # Returns the formatted contents of doc.
     def to_s
-      _document_.to_s
+      doc.to_s
     end
   end
 end

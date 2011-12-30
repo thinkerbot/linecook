@@ -129,8 +129,8 @@ echo 'x y z'
   #
 
   def test_to_s_returns_formatted_document_content
-    recipe._document_.set :indent => '..'
-    recipe._document_.write "content\n"
+    recipe.doc.set :indent => '..'
+    recipe.doc.write "content\n"
     assert_equal "..content\n", recipe.to_s
   end
 
@@ -305,12 +305,6 @@ echo 'x y z'
     assert_equal 'content', recipe.to_s
   end
 
-  def test_write_chains_to_target_if_invoked_via_chain
-    recipe.write "abc\n"
-    recipe.chain.write 'xyz'
-    assert_equal "abcxyz\n", recipe.to_s
-  end
-
   def test_write_unchains
     recipe.chain
     assert_equal true, recipe.chain?
@@ -325,12 +319,6 @@ echo 'x y z'
   def test_writeln_writes_to_target
     recipe.writeln 'content'
     assert_equal "content\n", recipe.to_s
-  end
-
-  def test_writeln_chains_to_target_if_invoked_via_chain
-    recipe.write "abc\n"
-    recipe.chain.writeln 'xyz'
-    assert_equal "abcxyz\n", recipe.to_s
   end
 
   def test_writeln_unchains
@@ -472,7 +460,7 @@ echo 'x y z'
       ..b
       a
     } do
-      _document_.set(:indent_str => '.')
+      doc.set(:indent_str => '.')
       writeln "a"
       indent(2) do
         writeln "b"
