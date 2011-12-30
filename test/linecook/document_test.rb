@@ -190,7 +190,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.prepend "abc\npqr", :indent => '..'
 
     assert_equal "", doc.format.indent
-    assert_equal "..abc\n..pqr\nxyz\n", doc.to_s
+    assert_equal "..abc\n..pqr\nxyz", doc.to_s
   end
 
   def test_prepend_does_not_move_head
@@ -219,7 +219,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.append "pqr\nxyz", :indent => '..'
 
     assert_equal "", doc.format.indent
-    assert_equal "abc\n..pqr\n..xyz\n", doc.to_s
+    assert_equal "abc\n..pqr\n..xyz", doc.to_s
   end
 
   def test_append_advances_tail_to_last_line_appended
@@ -281,7 +281,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.write 'abc'
     doc.set :indent => ".."
     doc.write 'xyz'
-    assert_equal "abc\n..xyz\n", doc.to_s
+    assert_equal "abc\n..xyz", doc.to_s
   end
 
   #
@@ -292,7 +292,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.write 'abc'
     doc.set!(:indent => "..")
     doc.write 'xyz'
-    assert_equal "..abcxyz\n", doc.to_s
+    assert_equal "..abcxyz", doc.to_s
   end
 
   #
@@ -314,7 +314,6 @@ class DocumentTest < Test::Unit::TestCase
     end
     assert_equal "abc\n..xyz\n", doc.to_s
   end
-
 
   #
   # reset test

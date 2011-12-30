@@ -60,11 +60,7 @@ module Linecook
     end
 
     def render(line, first=false, last=false)
-      if last && line.empty?
-        return ""
-      end
-
-      line = "#{indent}#{strip_line(line)}#{eol}"
+      line = "#{line.empty? ? '' : indent}#{strip_line(line)}#{last ? '' : eol}"
       line.tr!("\t", tab) if tab
       line
     end

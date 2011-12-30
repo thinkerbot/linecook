@@ -119,9 +119,19 @@ class FormatTest < Test::Unit::TestCase
     assert_equal "..abc", format.render("abc")
   end
 
+  def test_render_does_not_indent_if_content_is_empty
+    format.indent = '..'
+    assert_equal "", format.render("")
+  end
+
   def test_render_adds_eol
     format.eol = '.'
     assert_equal "abc.", format.render("abc")
+  end
+
+  def test_render_does_not_add_eol_if_last
+    format.eol = '.'
+    assert_equal "abc", format.render("abc", false, true)
   end
 
   def test_render_expands_tabs_with_tab
