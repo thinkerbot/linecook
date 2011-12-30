@@ -114,15 +114,17 @@ module Linecook
       first
     end
 
-    # Prepends a line and writes str, if specified.  The prepended line will
-    # have the same format as self.  Returns the first line prepended.
-    def prepend(str=nil)
+    # Prepends a line with the format and writes str, if specified.  The
+    # prepended line will have the same format as self.  Returns the first
+    # line prepended.
+    def prepend(str = nil, format = self.format)
       Line.new(format, pre, self).prewrite(str)
     end
 
-    # Appends a line and writes str, if specified.  The appended line will
-    # have the same format as self.  Returns the last line appended.
-    def append(str=nil)
+    # Appends a line with the format and writes str, if specified.  The
+    # appended line will have the same format as self.  Returns the last line
+    # appended.
+    def append(str = nil, format = self.format)
       Line.new(format, self, nex).write(str)
     end
 

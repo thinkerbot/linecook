@@ -185,6 +185,14 @@ class DocumentTest < Test::Unit::TestCase
     assert_equal "aXYZbc", doc.to_s
   end
 
+  def test_prepend_prepends_with_format_attrs
+    doc.write "xyz"
+    doc.prepend "abc\npqr", :indent => '..'
+
+    assert_equal "", doc.format.indent
+    assert_equal "..abc\n..pqr\nxyz\n", doc.to_s
+  end
+
   def test_prepend_does_not_move_head
     doc.write "xyz"
     doc.prepend "abc\npqr"
@@ -204,6 +212,14 @@ class DocumentTest < Test::Unit::TestCase
 
     doc.append("XYZ")
     assert_equal "abXYZc", doc.to_s
+  end
+
+  def test_append_appends_with_format_attrs
+    doc.write "abc"
+    doc.append "pqr\nxyz", :indent => '..'
+
+    assert_equal "", doc.format.indent
+    assert_equal "abc\n..pqr\n..xyz\n", doc.to_s
   end
 
   def test_append_advances_tail_to_last_line_appended

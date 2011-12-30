@@ -113,16 +113,19 @@ module Linecook
       self
     end
 
-    # Prepends the string to head (head remains the same).  Returns self.
-    def prepend(str)
-      head.prepend str
+    # Prepends the string to head with the format attrs (head remains the
+    # same).  Returns self.
+    def prepend(str, attrs=nil)
+      new_format = attrs ? format.with(attrs) : format
+      head.prepend str, new_format
       self
     end
 
-    # Appends the string to tail and advances both tail to the last line
-    # appended. Returns self.
-    def append(str)
-      @tail = tail.append str
+    # Appends the string to tail with the format attrs and advances both tail
+    # to the last line appended. Returns self.
+    def append(str, attrs=nil)
+      new_format = attrs ? format.with(attrs) : format
+      @tail = tail.append str, new_format
       self
     end
 

@@ -207,6 +207,17 @@ class LineTest < Test::Unit::TestCase
     assert_equal ["..abc", "..xyz"], line.lines.map(&:render)
   end
 
+  def test_prepend_can_overwrite_format
+    format_a = lambda {|str, first, last| str }
+    format_b = lambda {|str, first, last| "..#{str}" }
+    line = Line.new format_a
+
+    line.write "xyz"
+    line.prepend "abc", format_b
+
+    assert_equal ["..abc", "xyz"], line.lines.map(&:render)
+  end
+
   def test_prepend_returns_first_line_prepended
     line.write "xyz"
     assert_equal "abc", line.prepend("abc\npqr").content
@@ -239,6 +250,17 @@ class LineTest < Test::Unit::TestCase
     line.append "xyz"
 
     assert_equal ["..abc", "..xyz"], line.lines.map(&:render)
+  end
+
+  def test_append_can_overwrite_format
+    format_a = lambda {|str, first, last| str }
+    format_b = lambda {|str, first, last| "..#{str}" }
+    line = Line.new format_a
+
+    line.write "abc"
+    line.append "xyz", format_b
+
+    assert_equal ["abc", "..xyz"], line.lines.map(&:render)
   end
 
   def test_append_returns_the_last_line_appended
