@@ -186,6 +186,7 @@ module Linecook
       rtrim
     end
 
+    # Resets all lines to line (effectively changing the doc).
     def reset(line)
       @first = @head = @current_line = @tail = @last = line
     end

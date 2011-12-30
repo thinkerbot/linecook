@@ -250,7 +250,7 @@ class DocumentTest < Test::Unit::TestCase
     doc.append_line x
     assert_equal y, doc.tail
   end
-  
+
   #
   # cut test
   #
@@ -377,6 +377,23 @@ class DocumentTest < Test::Unit::TestCase
       doc.write 'xyz'
     end
     assert_equal "abc\n..xyz\n", doc.to_s
+  end
+
+
+  #
+  # reset test
+  #
+
+  def test_reset_resets_all_lines_to_line
+    a, b, c, doc = abc_doc
+    line = Line.new
+
+    doc.reset line
+    assert_equal line, doc.first
+    assert_equal line, doc.head
+    assert_equal line, doc.current_line
+    assert_equal line, doc.tail
+    assert_equal line, doc.last
   end
 
   #
