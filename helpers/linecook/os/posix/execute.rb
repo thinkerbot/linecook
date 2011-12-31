@@ -4,7 +4,14 @@ into command line options.
 
 (command, *args)
 --
+  if chain?
+    write " | "
+  else
+    doc.append_line
+  end
+
   args = args.compact
   options = args.last.kind_of?(Hash) ? args.pop : {}
-  writeln Command.new(command, args, options)
+  Command.new(command, args, options).write_to doc
+
   chain_proxy

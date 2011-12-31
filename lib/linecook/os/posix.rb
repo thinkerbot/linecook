@@ -265,9 +265,16 @@ module Linecook
       # that aren't already quoted. Accepts a trailing hash which will be transformed
       # into command line options.
       def execute(command, *args)
+        if chain?
+          write " | "
+        else
+          doc.append_line
+        end
+
         args = args.compact
         options = args.last.kind_of?(Hash) ? args.pop : {}
-        writeln Command.new(command, args, options)
+        Command.new(command, args, options).write_to doc
+
         chain_proxy
       end
 
@@ -367,7 +374,11 @@ module Linecook
 
       # Makes a redirect statement.
       def redirect(source, target, redirection='>')
-        writeln Redirect.new(source, target, redirection)
+        if chain?
+          write " "
+        end
+
+        Redirect.new(source, target, redirection).write_to doc
         chain_proxy
       end
 

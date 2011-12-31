@@ -17,21 +17,15 @@ module Linecook
           @redirection = redirection
         end
 
-        def write_to(line = Line.new)
-          line.write to_s
-          line
-        end
-
-        def chain_to(line = Line.new)
-          line.chain " ", to_s
-          line
-        end
-
-        def to_s
+        def write_to(doc, context={})
           source_str = source.nil? || source.kind_of?(Fixnum) ? source : "#{source} "
           target_str = target.nil? || target.kind_of?(Fixnum) ? "&#{target}" : " #{quote target}"
 
-          "#{source_str}#{redirection}#{target_str}"
+          doc.write "#{source_str}#{redirection}#{target_str}"
+        end
+
+        def to_s
+          write_to(Document.new).to_s
         end
       end
     end

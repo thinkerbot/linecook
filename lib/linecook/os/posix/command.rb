@@ -62,20 +62,20 @@ module Linecook
           results
         end
 
-        def write_to(line = Line.new)
-          line.write to_s
-          line
-        end
+        def write_to(doc, context={})
+          doc.write quote(name)
 
-        def chain_to(line = Line.new)
-          line.chain " | ", to_s
-          line
+          (option_args + args).each do |arg|
+            if arg.respond_to?(:write_to)
+              arg.write_to doc, context
+            else
+              doc.write " #{quote(arg)}"
+            end
+          end
         end
 
         def to_s
-          words = option_args + args
-          words.unshift(name)
-          words.map {|word| quote(word) }.join(' ').strip
+          write_to(Document.new).to_s
         end
       end
     end

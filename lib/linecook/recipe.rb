@@ -283,7 +283,6 @@ module Linecook
     # Returns the proxy.  Unchains first to ensure that if the proxy is not
     # called, then the previous chain is stopped.
     def chain_proxy
-      unchain
       _proxy_
     end
 

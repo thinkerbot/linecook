@@ -130,15 +130,19 @@ module Linecook
     end
 
     # Prepends a line to head.
-    def prepend_line(line)
+    def prepend_line(line=new_line)
       head.prepend_line line
       self
     end
 
     # Appends a line to tail and advances tail to the last line added.
-    def append_line(line)
+    def append_line(line=new_line)
       @tail = tail.append_line line
       self
+    end
+
+    def new_line
+      Line.new(format)
     end
 
     # Resets all lines to line (effectively changing the doc).
@@ -148,7 +152,7 @@ module Linecook
 
     # Clears all lines.
     def clear
-      reset Line.new(format)
+      reset new_line
       self
     end
 

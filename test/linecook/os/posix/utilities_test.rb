@@ -128,7 +128,7 @@ For preventing the children of poor people in Ireland...
 
   def test_chgrp_sets_up_chgrp
     assert_recipe_matches %q{
-      chgrp "group" "file"
+      chgrp group file
     } do
       chgrp 'group', 'file'
     end
@@ -163,7 +163,7 @@ For preventing the children of poor people in Ireland...
 
   def test_chomd_converts_fixnums_to_octal
     assert_recipe %q{
-      chmod "644" "file"
+      chmod 644 file
     } do
       chmod 0644, 'file'
     end
@@ -185,7 +185,7 @@ For preventing the children of poor people in Ireland...
 
   def test_chown_sets_up_file_chown
     assert_recipe_matches %q{
-      chown "owner:group" "file"
+      chown owner:group file
     } do
       chown 'owner:group', 'file'
     end
@@ -204,7 +204,7 @@ For preventing the children of poor people in Ireland...
 
   def test_cp
     assert_recipe %q{
-      cp "source" "target"
+      cp source target
     } do
       cp 'source', 'target'
     end
@@ -393,7 +393,7 @@ For preventing the children of poor people in Ireland...
 
   def test_ln
     assert_recipe %q{
-      ln "source" "target"
+      ln source target
     } do
       ln 'source', 'target'
     end
@@ -405,7 +405,7 @@ For preventing the children of poor people in Ireland...
 
   def test_mkdir
     assert_recipe %q{
-      mkdir "target"
+      mkdir target
     } do
       mkdir 'target'
     end
@@ -417,7 +417,7 @@ For preventing the children of poor people in Ireland...
 
   def test_mv
     assert_recipe %q{
-      mv "source" "target"
+      mv source target
     } do
       mv 'source', 'target'
     end
@@ -441,7 +441,7 @@ For preventing the children of poor people in Ireland...
 
   def test_read
     assert_recipe %q{
-      read "xx" "yy"
+      read xx yy
     } do
       read 'xx', 'yy'
     end
@@ -489,7 +489,7 @@ For preventing the children of poor people in Ireland...
 
   def test_rm
     assert_recipe %q{
-      rm "file"
+      rm file
     } do
       rm 'file'
     end
@@ -551,7 +551,7 @@ For preventing the children of poor people in Ireland...
 
   def test_unset_unsets_a_list_of_variables
     assert_recipe %q{
-      unset "ONE" "TWO"
+      unset ONE TWO
     } do
       unset 'ONE', 'TWO'
     end

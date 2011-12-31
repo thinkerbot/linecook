@@ -673,7 +673,7 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source > target
     } do
-      write "cat source "
+      write "cat source"
       to 'target'
     end
   end
@@ -682,7 +682,7 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source > /dev/null
     } do
-      write "cat source "
+      write "cat source"
       to nil
     end
   end
@@ -691,7 +691,7 @@ class PosixTest < Test::Unit::TestCase
     assert_recipe %q{
       cat source > /dev/null
     } do
-      write "cat source "
+      write "cat source"
       to
     end
   end
