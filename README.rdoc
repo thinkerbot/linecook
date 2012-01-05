@@ -4,15 +4,68 @@ A shell script generator.
 
 == Description
 
-Linecook generates shell scripts using an extensible set of ERB helpers. The
-shell scripts and associated resources (files, subscripts, etc) make up
-packages that can be used, for example, to provision servers.
+Linecook helps to make scripts more manageable by allowing you to compose them
+from ERB helpers and attributes files. Scripts can be written at a higher
+level, and easily reconstructed when something changes. Scripts can be
+compiled in place, or built into packages that can be used, for example, to
+provision servers.
+
+== Usage
+
+Layout a project.
+
+  mkdir -p attributes helpers packages recipes
+
+Define attributes.
+
+  cat > attributes/chalkboard.yml <<DOC
+  n: 3
+  color: blue
+  message: I will not manually configure my server
+  DOC
+
+Define a helper.
+
+  mkdir -p helpers/chalkboard
+  cat > helpers/chalkboard/echo_in_color.erb <<DOC
+  Echo a string in color.
+  (color, str)
+    color_codes = Hash[*%W{
+      black       0;30   red         0;31
+      white       1;37   green       0;32
+      light_gray  0;37   blue        0;34
+    }]
+  --
+  echo -e '\033[<%= color_codes[color.to_s] %>m<%= str %>\033[0m'
+  DOC
+
+Use both in a recipe.
+
+  cat > recipes/chalkboard.rb <<DOC
+  attributes "chalkboard"
+  helpers "chalkboard"
+
+  attrs['n'].times do
+    echo_in_color attrs['color'], attrs['message']
+  end
+  DOC
+
+Build the recipe.
+
+  linecook build -c recipes/chalkboard.rb
+
+Check the packages directory to see the resulting script.
+
+  cat packages/chalkboard/run
+  echo -e '\033[0;34mI will not manually configure my server\033[0m'
+  echo -e '\033[0;34mI will not manually configure my server\033[0m'
+  echo -e '\033[0;34mI will not manually configure my server\033[0m'
 
 == Installation
 
 Linecook is available as a {gem}[http://rubygems.org/gems/linecook].
 
-  $ gem install linecook
+  gem install linecook
 
 == Development
 
