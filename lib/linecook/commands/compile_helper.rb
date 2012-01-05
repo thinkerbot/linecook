@@ -316,6 +316,7 @@ DOC
 def <%= method_name %><%= signature %>
 <%= method_body %>
 
+  chain_proxy
 end
 <% end %>
 <%= sections['foot'] %>

@@ -197,6 +197,7 @@ class CompileHelperCommandTest < Test::Unit::TestCase
           # aaa
           def a(*args)
             body
+            chain_proxy
           end
         end
       end
@@ -220,6 +221,7 @@ class CompileHelperCommandTest < Test::Unit::TestCase
           head
           def a()
             body
+            chain_proxy
           end
           foot
         end
