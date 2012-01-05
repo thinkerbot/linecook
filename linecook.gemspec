@@ -56,11 +56,6 @@ Gem::Specification.new do |s|
     lib/linecook/commands/virtual_box_command.rb
     lib/linecook/cookbook.rb
     lib/linecook/executable.rb
-    lib/linecook/os/linux.rb
-    lib/linecook/os/linux/utilities.rb
-    lib/linecook/os/posix.rb
-    lib/linecook/os/posix/utilities.rb
-    lib/linecook/os/posix/variable.rb
     lib/linecook/package.rb
     lib/linecook/proxy.rb
     lib/linecook/recipe.rb
