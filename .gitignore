@@ -1,8 +1,0 @@
-.DS_Store
-.bundle
-/rdoc
-/coverage
-Gemfile.lock
-.rvmrc
-*.rbc
-pkg
