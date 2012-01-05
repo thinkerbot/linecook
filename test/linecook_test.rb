@@ -386,6 +386,33 @@ class LinecookTest < Test::Unit::TestCase
     assert_equal "ECHO XYZ\n", content('recipe')
   end
 
+  def test_compile_with_method_chaining
+    prepare 'helpers/example/echo.erb', %q{
+      (str)
+      if chain?
+        target.chomp!("\n")
+        write " | "
+      end
+      --
+      echo <%= str %>
+    }
+
+    recipe_path = prepare 'recipe.rb', %{
+      helpers 'example'
+      echo('a').echo('b')
+      echo('z')
+    }
+
+    assert_script %{
+      $ #{LINECOOK_EXE} compile -L helpers '#{recipe_path}'
+    }
+
+    assert_str_equal %{
+      echo a | echo b
+      echo z
+    }, content('recipe')
+  end
+
   #
   # build test
   #
