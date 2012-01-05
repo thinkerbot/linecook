@@ -1,0 +1,8 @@
+pkg/*
+rdoc/*
+.bundle
+.rvmrc
+Gemfile.lock
+/log
+packages/
+config/ssh

@@ -1,0 +1,6 @@
+Host *
+HostName localhost
+User linecook
+Port 2220
+ControlMaster auto
+ControlPath /tmp/socket-%r@%h:%p

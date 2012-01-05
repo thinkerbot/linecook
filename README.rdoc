@@ -1,0 +1,93 @@
+= Linecook
+
+A shell script generator.
+
+== Description
+
+Linecook helps to make scripts more manageable by allowing you to compose them
+from ERB helpers and attributes files. Scripts can be written at a higher
+level, and easily reconstructed when something changes. Scripts can be
+compiled in place, or built into packages that can be used, for example, to
+provision servers.
+
+== Usage
+
+Layout a project.
+
+  mkdir -p attributes helpers packages recipes
+
+Define attributes.
+
+  cat > attributes/chalkboard.yml <<DOC
+  n: 3
+  color: blue
+  message: I will not manually configure my server
+  DOC
+
+Define a helper.
+
+  mkdir -p helpers/chalkboard
+  cat > helpers/chalkboard/echo_in_color.erb <<DOC
+  Echo a string in color.
+  (color, str)
+    color_codes = Hash[*%W{
+      black       0;30   red         0;31
+      white       1;37   green       0;32
+      light_gray  0;37   blue        0;34
+    }]
+  --
+  echo -e '\033[<%= color_codes[color.to_s] %>m<%= str %>\033[0m'
+  DOC
+
+Use both in a recipe.
+
+  cat > recipes/chalkboard.rb <<DOC
+  attributes "chalkboard"
+  helpers "chalkboard"
+
+  attrs['n'].times do
+    echo_in_color attrs['color'], attrs['message']
+  end
+  DOC
+
+Build the recipe.
+
+  linecook build -c recipes/chalkboard.rb
+
+Check the packages directory to see the resulting script.
+
+  cat packages/chalkboard/run
+  echo -e '\033[0;34mI will not manually configure my server\033[0m'
+  echo -e '\033[0;34mI will not manually configure my server\033[0m'
+  echo -e '\033[0;34mI will not manually configure my server\033[0m'
+
+== Installation
+
+Linecook is available as a {gem}[http://rubygems.org/gems/linecook].
+
+  gem install linecook
+
+== Development
+
+Install dependencies using Bundler:
+
+  gem install bundler
+  bundle install
+
+Build a test VM using the {VM Setup}[rdoc-ref:doc/vm_setup.rdoc] doc, and make
+a config/ssh file that can can connect to it using the default Host (ie Host
+*). If you didn't customize anything, then you can use 'config/ssh.example'
+directly. When setup correctly this prints 'success' with any HOST:
+
+  ssh -F config/ssh [HOST] -- 'echo success'
+
+Now run the tests:
+
+  rake test
+
+Report issues and submit pull requests on {GitHub}[https://github.pinnacol.com/pinnacol/linecook].
+
+== Info 
+
+Developer:: {Simon Chiang}[http://github.com/thinkerbot]
+License:: {MIT-Style}[link:files/License_txt.html]
