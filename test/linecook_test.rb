@@ -621,6 +621,27 @@ class LinecookTest < Test::Unit::TestCase
     assert_equal 'got milk', content('recipe/run')
   end
 
+  def test_build_with_package_manipulation
+    prepare 'files/example.txt', 'ONE'
+    recipe_path = prepare 'recipe.rb', %{
+      register_as 'zero.txt'
+      write 'ZERO'
+      register 'one.txt', :source => 'example.txt'
+      capture_to 'two.txt' do
+        write 'TWO'
+      end
+    }
+
+    assert_script %{
+      $ #{LINECOOK_EXE} build -C '#{method_dir}' '#{recipe_path}'
+      #{path('recipe')}
+    }
+
+    assert_equal 'ZERO', content('recipe/zero.txt')
+    assert_equal 'ONE', content('recipe/one.txt')
+    assert_equal 'TWO', content('recipe/two.txt')
+  end
+
   def test_build_with_common_flag_compiles_helpers_and_sets_cookbook_path
     prepare 'attributes/example.yml', %q{
       greeting: hello

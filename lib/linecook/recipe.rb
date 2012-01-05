@@ -3,7 +3,6 @@ require 'tilt'
 require 'linecook/attributes'
 require 'linecook/cookbook'
 require 'linecook/package'
-require 'linecook/resource'
 require 'linecook/utils'
 require 'linecook/proxy'
 
@@ -37,13 +36,15 @@ module Linecook
   #   # }
   #
   class Recipe < BasicObject
-    include Resource
-
     # The recipe Proxy
     attr_reader :_proxy_
 
     # The recipe Package
     attr_reader :_package_
+
+    attr_reader :_package_path_
+
+    attr_reader :_package_opts_
 
     # The recipe Cookbook
     attr_reader :_cookbook_
@@ -55,6 +56,8 @@ module Linecook
       @_proxy_    = Proxy.new(self)
       @_package_  = package
       @_cookbook_ = cookbook
+      @_package_path_ = nil
+      @_package_opts_ = nil
       @target     = target
       @chain      = false
       @attributes = {}
@@ -100,6 +103,8 @@ module Linecook
       @_proxy_    = Proxy.new(self)
       @_package_  = orig._package_
       @_cookbook_ = orig._cookbook_
+      @_package_path_ = orig._package_path_
+      @_package_opts_ = orig._package_path_
       @target     = orig.target
       @chain      = orig.chain?
       @attributes = orig.attributes
@@ -124,6 +129,8 @@ module Linecook
     # (un)intentionally cause changes in the parent.
     def _initialize_child_(orig)
       @target = orig.target.dup.clear
+      @_package_path_ = nil
+      @_package_opts_ = nil
       unchain
     end
 
@@ -142,6 +149,16 @@ module Linecook
       child.write str if str
       child.instance_eval(&block) if block
       child
+    end
+
+    def register_as(path, options={})
+      @_package_path_ = path
+      @_package_opts_ = options
+      self
+    end
+
+    def register_to(package, path = _package_path_, options = _package_opts_)
+      package.add(path, options) {|io| io << to_s }
     end
 
     # Loads the specified attributes file and merges the results into attrs. A
@@ -198,6 +215,11 @@ module Linecook
       self
     end
 
+    def register(package_path, options={})
+      source_path = _cookbook_.find(:files, options[:source] || package_path)
+      _package_.register(package_path, source_path, options)
+    end
+
     # Captures writes during the block to a new target.  Returns the target.
     def capture(target = "")
       current = @target
@@ -208,6 +230,11 @@ module Linecook
         @target = current
       end
       target
+    end
+
+    def capture_to(package_path, options={})
+      str = capture { yield }
+      _package_.add(package_path, options) {|io| io << str }
     end
 
     # Writes input to target using `<<`. Stringifies input using to_s. Returns

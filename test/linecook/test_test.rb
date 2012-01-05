@@ -70,9 +70,9 @@ class TestTest < Test::Unit::TestCase
   # setup_recipe test
   #
 
-  def test_setup_recipe_initializes_a_new_recipe_assigned_to_the_package_path
+  def test_setup_recipe_initializes_a_new_recipe_assigned_to_the__package_path_
     recipe = setup_recipe('a')
-    assert_equal 'a', recipe.package_path
+    assert_equal 'a', recipe._package_path_
   end
 
   def test_setup_recipe_sets_recipe

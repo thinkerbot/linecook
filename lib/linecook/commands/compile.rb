@@ -114,10 +114,9 @@ module Linecook
             stdout.print recipe
           else
             recipe_path = File.expand_path(recipe_path)
+            recipe.register_as relative_path(input_dir, recipe_path).chomp('.rb')
             recipe.instance_eval File.read(recipe_path), recipe_path
-
-            target_path = relative_path(input_dir, recipe_path).chomp('.rb')
-            package.add(target_path) {|io| io << recipe }
+            recipe.register_to package
           end
         end
 

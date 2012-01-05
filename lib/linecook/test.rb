@@ -97,7 +97,7 @@ module Linecook
     end
 
     def runlist
-      recipes.map {|recipe| recipe.package_path }.join(',')
+      recipes.map {|recipe| recipe._package_path_ }.join(',')
     end
 
     def setup_recipe(package_path=package.next_path('recipe'), options={:mode => 0744}, &block)
