@@ -1,9 +1,0 @@
-Executes the block when the expression evaluates to zero.
-
-(expression)
---
-if <%= expression.to_s.chomp("\n") %>
-then
-<% indent { yield } %>
-fi
-

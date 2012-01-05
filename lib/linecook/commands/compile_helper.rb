@@ -317,12 +317,6 @@ def <%= method_name %><%= signature %>
 <%= method_body %>
 
 end
-
-def _<%= method_name %>(*args, &block) # :nodoc:
-  str = capture { <%= method_name %>(*args, &block) }.to_s
-  str.strip!
-  str
-end
 <% end %>
 <%= sections['foot'] %>
 DOC

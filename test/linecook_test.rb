@@ -367,29 +367,6 @@ class LinecookTest < Test::Unit::TestCase
     assert_equal 'echo HELLO WORLD', content('example')
   end
 
-  def test_compile_with_method_chaining
-    recipe_path = prepare 'recipe.rb', %{
-      helpers 'linecook/os/posix'
-      cat.heredoc('DOC') do
-        writeln 'a'
-        writeln 'b'
-        writeln 'c'
-      end
-    }
-
-    assert_script %{
-      $ #{LINECOOK_EXE} compile '#{recipe_path}'
-    }
-
-    assert_str_equal %{
-      cat << DOC
-      a
-      b
-      c
-      DOC
-    }, content('recipe')
-  end
-
   def test_compile_with_capture_methods
     prepare 'helpers/example/echo.erb', %q{
       (str)
@@ -399,52 +376,14 @@ class LinecookTest < Test::Unit::TestCase
 
     recipe_path = prepare 'recipe.rb', %q{
       helpers 'example'
-      write _echo('xyz').upcase
+      write _.echo('xyz').to_s.upcase
     }
 
     assert_script %{
       $ #{LINECOOK_EXE} compile -L helpers '#{recipe_path}'
     }
 
-    assert_equal 'ECHO XYZ', content('recipe')
-  end
-
-  def test_compile_with_callbacks
-    a = prepare 'a.rb', %q{
-      callback 'cb' do
-        write 'content'
-      end
-    }
-    b = prepare 'b.rb', %q{
-      write_callback 'cb'
-    }
-
-    assert_script %{
-      $ #{LINECOOK_EXE} compile '#{a}' '#{b}'
-    }
-
-    assert_equal '', content('a')
-    assert_equal 'content', content('b')
-  end
-
-  def test_compile_to_stdout_with_method_chains
-    recipe_path = prepare 'recipe.rb', %{
-      helpers 'linecook/os/posix'
-      cat.heredoc('DOC') do
-        writeln 'a'
-        writeln 'b'
-        writeln 'c'
-      end
-    }
-
-    assert_script %{
-      $ #{LINECOOK_EXE} compile - < '#{recipe_path}'
-      cat << DOC
-      a
-      b
-      c
-      DOC
-    }
+    assert_equal "ECHO XYZ\n", content('recipe')
   end
 
   #

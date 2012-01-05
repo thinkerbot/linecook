@@ -2,7 +2,6 @@ require 'erb'
 require 'tilt'
 require 'linecook/attributes'
 require 'linecook/cookbook'
-require 'linecook/document'
 require 'linecook/package'
 require 'linecook/resource'
 require 'linecook/utils'
@@ -25,13 +24,13 @@ module Linecook
   #     end
   #   end
   #
-  #   recipe  = Recipe.new do
+  #   recipe = Recipe.new do
   #     _extend_ Helper
   #     echo 'a', 'b c'
   #     echo 'X Y'.downcase, :z
   #   end
   #
-  #   "\n" + recipe._result_
+  #   "\n" + recipe.to_s
   #   # => %{
   #   # echo 'a b c'
   #   # echo 'x y z'
@@ -40,31 +39,26 @@ module Linecook
   class Recipe < BasicObject
     include Resource
 
+    # The recipe Proxy
+    attr_reader :_proxy_
+
     # The recipe Package
     attr_reader :_package_
 
     # The recipe Cookbook
     attr_reader :_cookbook_
 
-    # The recipe Document
-    attr_reader :doc
+    # The target recieving writes
+    attr_reader :target
 
-    # The recipe Proxy
-    attr_reader :_proxy_
-
-    # The recipe locals hash.
-    attr_reader :locals
-
-    def initialize(package = Package.new, cookbook = Cookbook.new)
+    def initialize(package = Package.new, cookbook = Cookbook.new, target = "")
+      @_proxy_    = Proxy.new(self)
       @_package_  = package
       @_cookbook_ = cookbook
-      @_proxy_ = Proxy.new(self)
-
-      @doc        = Document.new
+      @target     = target
       @chain      = false
       @attributes = {}
-      @attrs = nil
-      @locals = {}
+      @attrs      = nil
 
       if Kernel.block_given?
         instance_eval(&Proc.new)
@@ -103,15 +97,13 @@ module Linecook
     # Callback to initialize a clone of self. Passes forward all state,
     # including local data and attributes.
     def _initialize_clone_(orig)
+      @_proxy_    = Proxy.new(self)
       @_package_  = orig._package_
       @_cookbook_ = orig._cookbook_
-      @_proxy_    = Proxy.new(self)
-
-      @doc        = orig.doc
+      @target     = orig.target
       @chain      = orig.chain?
       @attributes = orig.attributes
       @attrs      = nil
-      @locals = orig.locals
     end
 
     # Returns a clone of self, kind of like Object#clone.
@@ -126,12 +118,13 @@ module Linecook
       clone
     end
 
-    # Initializes children created by _beget_ by setting doc to a new
-    # Document.  Note that the child shares the same locals and attributes as
-    # the parent, and so can (un)intentionally cause changes in the parent.
+    # Callback to initialize children created by _beget_.  Sets a new target
+    # by calling dup.clear on the original target, and unchains.  Note that
+    # the child shares the same attributes as the parent, and so can
+    # (un)intentionally cause changes in the parent.
     def _initialize_child_(orig)
-      @doc   = Document.new
-      @chain = false
+      @target = orig.target.dup.clear
+      unchain
     end
 
     # Returns a clone of self created by _clone_, but also calls
@@ -142,18 +135,13 @@ module Linecook
       clone
     end
 
-    # Returns a child of self with it's own Document.  Writes str to the
-    # child, and evaluates the block in the context of the child, if given.
+    # Returns a child of self with a new target.  Writes str to the child, and
+    # evaluates the block in the context of the child, if given.
     def _(str=nil, &block)
       child = _beget_
       child.write str if str
       child.instance_eval(&block) if block
       child
-    end
-
-    # Returns the package globals hash.
-    def globals
-      _package_.globals
     end
 
     # Loads the specified attributes file and merges the results into attrs. A
@@ -162,7 +150,7 @@ module Linecook
     #
     # Returns a hash representing all attributes loaded thusfar (specifically
     # attrs prior to merging in the package env). The attributes hash should
-    # be treated as if it were read-only. Use locals or globals instead.
+    # be treated as if it were read-only.
     def attributes(source_name=nil, &block)
       if source_name || block
         attributes = Attributes.new
@@ -188,7 +176,6 @@ module Linecook
     #
     # The attrs hash should be treated as if it were read-only because changes
     # could alter the package env and thereby spill over into other recipes.
-    # Use locals or globals instead.
     def attrs
       @attrs ||= Utils.deep_merge(@attributes, _package_.env)
     end
@@ -211,29 +198,22 @@ module Linecook
       self
     end
 
-    # Captures and returns the formatted output of the block as a string.
-    def capture(doc = Document.new)
-      current = @doc
+    # Captures writes during the block to a new target.  Returns the target.
+    def capture(target = "")
+      current = @target
       begin
-        @doc = doc
+        @target = target
         yield
       ensure
-        @doc = current
+        @target = current
       end
-      doc
+      target
     end
 
-    # Writes input to doc using `write`.  If chaining then write using
-    # `chain` and then turn off. Returns self.
+    # Writes input to target using `<<`. Stringifies input using to_s. Returns
+    # self.
     def write(input)
-      unchain
-
-      if input.respond_to?(:write_to)
-        input.write_to doc
-      else
-        doc.write input
-      end
-
+      target << input.to_s
       self
     end
 
@@ -244,19 +224,10 @@ module Linecook
       self
     end
 
-    # Indents n levels for the duration of the block.
-    def indent(n=1)
-      doc.with(:indent => n) do
-        yield
-      end
-    end
-
-    # Outdents for the duration of the block.  A negative number can be
-    # provided to outdent n levels.
-    def outdent(n=nil)
-      doc.with(:indent => n) do
-        yield
-      end
+    # Looks up a template in _cookbook_ and renders it.
+    def render(template_name, locals=attrs)
+      file = _cookbook_.find(:templates, template_name, ['.erb'])
+      Tilt.new(file).render(Object.new, locals)
     end
 
     # Causes chain? to return true.  Returns self.
@@ -267,12 +238,15 @@ module Linecook
 
     # Causes chain? to return false.  Returns self.
     def unchain
-      unless @chain
-        doc.set_marks doc.last
-      end
-
       @chain = false
       self
+    end
+
+    # Returns the proxy.  Unchains first to ensure that if the proxy is not
+    # called, then the previous chain is stopped.
+    def chain_proxy
+      unchain
+      _proxy_
     end
 
     # Returns true as per chain/unchain.
@@ -280,15 +254,9 @@ module Linecook
       @chain
     end
 
-    # Returns the proxy.  Unchains first to ensure that if the proxy is not
-    # called, then the previous chain is stopped.
-    def chain_proxy
-      _proxy_
-    end
-
-    # Returns the formatted contents of doc.
+    # Returns target.to_s.
     def to_s
-      doc.to_s
+      target.to_s
     end
   end
 end

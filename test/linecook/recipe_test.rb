@@ -8,7 +8,6 @@ class RecipeTest < Test::Unit::TestCase
   Recipe   = Linecook::Recipe
   Package  = Linecook::Package
   Cookbook = Linecook::Cookbook
-  Document = Linecook::Document
 
   # Note these methods are similar to those in Linecook::Test but I prefer to
   # repeat them to keep Recipe tests separate from the Test module tests,
@@ -55,7 +54,7 @@ class RecipeTest < Test::Unit::TestCase
   end
 
   def test_recipe_documentation
-    recipe  = Recipe.new do
+    recipe = Recipe.new do
       _extend_ Helper
       echo 'a', 'b c'
       echo 'X Y'.downcase, :z
@@ -69,18 +68,10 @@ echo 'x y z'
   end
 
   #
-  # globals test
-  #
-
-  def test_globals_returns_the_package_globals
-    assert_equal package.globals, recipe.globals
-  end
-
-  #
   # _ test
   #
 
-  def test___returns_child_recipe_with_new_document
+  def test___returns_child_recipe_with_new_target
     recipe.write "abc"
     child = recipe._
     child.write "xyz"
@@ -90,11 +81,6 @@ echo 'x y z'
 
     assert_equal "abc", recipe.to_s
     assert_equal "xyz", child.to_s
-  end
-
-  def test___inherits_locals
-    child = recipe._
-    assert_equal recipe.locals, child.locals
   end
 
   def test___inherits_attributes
@@ -122,27 +108,6 @@ echo 'x y z'
   def test___evaluates_block_in_contenxt_of_child_if_given
     child = recipe._ { write "abc" }
     assert_equal "abc", child.to_s
-  end
-
-  #
-  # to_s test
-  #
-
-  def test_to_s_returns_formatted_document_content
-    recipe.doc.set :indent => '..'
-    recipe.doc.write "content\n"
-    assert_equal "..content\n", recipe.to_s
-  end
-
-  def test_to_s_allows_further_modification
-    recipe.write 'abc'
-
-    assert_equal 'abc', recipe.to_s
-    assert_equal 'abc', recipe.to_s
-
-    recipe.write 'xyz'
-
-    assert_equal 'abcxyz', recipe.to_s
   end
 
   #
@@ -279,7 +244,7 @@ echo 'x y z'
   # capture test
   #
 
-  def test_capture_reassigns_document_for_block
+  def test_capture_reassigns_target_for_block
     setup_recipe do
       write 'a'
       capture do
@@ -291,9 +256,9 @@ echo 'x y z'
     assert_equal "ac", recipe.to_s
   end
 
-  def test_capture_returns_captured_doc
-    doc = recipe.capture { recipe.write 'abc' }
-    assert_equal "abc", doc.to_s
+  def test_capture_returns_capture_target
+    target = recipe.capture { recipe.write 'abc' }
+    assert_equal "abc", target
   end
 
   #
@@ -305,13 +270,6 @@ echo 'x y z'
     assert_equal 'content', recipe.to_s
   end
 
-  def test_write_unchains
-    recipe.chain
-    assert_equal true, recipe.chain?
-    recipe.write "abc\n"
-    assert_equal false, recipe.chain?
-  end
-
   #
   # writeln test
   #
@@ -319,158 +277,6 @@ echo 'x y z'
   def test_writeln_writes_to_target
     recipe.writeln 'content'
     assert_equal "content\n", recipe.to_s
-  end
-
-  def test_writeln_unchains
-    recipe.chain
-    assert_equal true, recipe.chain?
-    recipe.writeln "abc"
-    assert_equal false, recipe.chain?
-  end
-
-  #
-  # indent test
-  #
-
-  def test_indent_increases_indent_by_one_level_during_block
-    assert_recipe %q{
-      a
-        b
-        b
-      a
-    } do
-      writeln 'a'
-      indent do
-        writeln 'b'
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-  end
-
-  def test_indents_may_be_nested
-    assert_recipe %q{
-      a
-        b
-          c
-          c
-        b
-      a
-    } do
-      writeln 'a'
-      indent do
-        writeln 'b'
-        indent do
-          writeln 'c'
-          writeln 'c'
-        end
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-  end
-
-  def test_indent_allows_indent_by_more_than_one_level
-    assert_recipe %q{
-      a
-          b
-          b
-      a
-    } do
-      writeln 'a'
-      indent(2) do
-        writeln 'b'
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-  end
-
-  def test_indent_allows_specification_of_a_specific_indent_str
-    assert_recipe %q{
-      a
-      ..b
-      .c
-      .c
-      ..b
-      a
-    } do
-      writeln 'a'
-      indent('..') do
-        writeln 'b'
-        indent('.') do
-          writeln 'c'
-          writeln 'c'
-        end
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-  end
-
-  #
-  # outdent test
-  #
-
-  def test_outdent_sets_indent_level_to_zero_for_duration_of_block
-    assert_recipe %q{
-      a
-      .b
-      c
-      .x
-      ..y
-      z
-      z
-      ..y
-      .x
-      c
-      .b
-      a
-    } do
-      writeln 'a'
-      indent('.') do
-        writeln 'b'
-        outdent do
-          writeln 'c'
-          indent do
-            writeln 'x'
-            indent do
-              writeln 'y'
-              outdent do
-                writeln 'z'
-                writeln 'z'
-              end
-              writeln 'y'
-            end
-            writeln 'x'
-          end
-          writeln 'c'
-        end
-        writeln 'b'
-      end
-      writeln 'a'
-    end
-  end
-
-  def test_outdent_changes_indent_by_n_if_specified
-    assert_recipe %{
-      a
-      ..b
-      .c
-      ..b
-      a
-    } do
-      doc.set(:indent_str => '.')
-      writeln "a"
-      indent(2) do
-        writeln "b"
-        outdent(-1) do
-          writeln "c"
-        end
-        writeln "b"
-      end
-      writeln "a"
-    end
   end
 
   #
@@ -514,5 +320,25 @@ echo 'x y z'
 
   def test_chain_proxy_returns__proxy_
     assert_equal recipe._proxy_, recipe.chain_proxy
+  end
+
+  #
+  # to_s test
+  #
+
+  def test_to_s_returns_target
+    recipe.write "content"
+    assert_equal "content", recipe.to_s
+  end
+
+  def test_to_s_allows_further_modification
+    recipe.write 'abc'
+
+    assert_equal 'abc', recipe.to_s
+    assert_equal 'abc', recipe.to_s
+
+    recipe.write 'xyz'
+
+    assert_equal 'abcxyz', recipe.to_s
   end
 end

@@ -198,12 +198,6 @@ class CompileHelperCommandTest < Test::Unit::TestCase
           def a(*args)
             body
           end
-
-          def _a(*args, &block) # :nodoc:
-            str = capture { a(*args, &block) }
-            str.strip!
-            str
-          end
         end
       end
     }, cmd.build("A::B", [definition])
@@ -226,12 +220,6 @@ class CompileHelperCommandTest < Test::Unit::TestCase
           head
           def a()
             body
-          end
-
-          def _a(*args, &block) # :nodoc:
-            str = capture { a(*args, &block) }
-            str.strip!
-            str
           end
           foot
         end

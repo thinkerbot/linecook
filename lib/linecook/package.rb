@@ -6,9 +6,6 @@ module Linecook
     # The package environment
     attr_reader :env
 
-    # A hash of global to self
-    attr_reader :globals
-
     # A registry of (path, source_path) pairs recording what files are
     # included in the package.
     attr_reader :registry
@@ -22,7 +19,6 @@ module Linecook
 
     def initialize(env={})
       @env = env
-      @globals = {}
       @registry = {}
       @export_options = {}
       @default_export_options  = {}
